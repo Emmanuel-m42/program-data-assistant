@@ -72,6 +72,17 @@ def test_citation_parsing_and_validation():
     assert not agent.citations_valid([R()], [])
 
 
+def test_grounding_accepts_result_numbers_sums_and_differences():
+    class R:
+        ok = True
+        content = "office | goal_total | projected_total\nEastgate | 17800 | 14596\nHarbor | 20157 | 19150"
+
+    q = "Which offices will miss goal?"
+    assert agent.ungrounded_numbers("Eastgate lands at 14,596 of 17,800, short by 3,204 [table:v_office_pace].", q, [R()]) == []
+    assert agent.ungrounded_numbers("Harbor lands at 19,150 on Nov 3, 2026; 16 days left.", q, [R()]) == []
+    assert agent.ungrounded_numbers("Northside lands at 1,200 doors.", q, [R()]) == [1200.0]
+
+
 def test_refusal_detection():
     assert agent.REFUSAL.search("I can't confirm that from the program data or documents.")
     assert agent.REFUSAL.search("I cannot confirm turnout.")

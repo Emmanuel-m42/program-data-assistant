@@ -71,6 +71,10 @@ class Toolbox:
     def __init__(self, reader_conn: psycopg.Connection | None = None, docs_conn: psycopg.Connection | None = None):
         self._reader = reader_conn
         self._docs = docs_conn
+        self.seen_sql: set[str] = set()  # per question; reset by the agent
+
+    def reset(self):
+        self.seen_sql = set()
 
     @property
     def reader(self):
@@ -93,6 +97,11 @@ class Toolbox:
 
     def query_program_data(self, sql: str) -> ToolResult:
         args = {"sql": sql}
+        if sql.strip() in self.seen_sql:
+            return ToolResult("query_program_data", args, False,
+                              "You already ran this exact query; its result is above. Change the query or answer from what you have.",
+                              "repeated query")
+        self.seen_sql.add(sql.strip())
         try:
             checked = sql_guard.check(sql)
         except sql_guard.SQLRejected as e:
@@ -111,7 +120,10 @@ class Toolbox:
         shown = rows[:MODEL_ROWS]
         lines = [" | ".join(columns)] + [" | ".join(_fmt(v) for v in r) for r in shown]
         note = ""
-        if len(rows) > len(shown) or truncated:
+        if not rows:
+            note = ("\n(0 rows. The WHERE conditions are probably narrower than the question. "
+                    "Run it again without the extra conditions; do not answer with numbers you have not seen.)")
+        elif len(rows) > len(shown) or truncated:
             note = f"\n({len(rows)}{'+' if truncated else ''} rows, first {len(shown)} shown; aggregate in SQL instead)"
         content = f"tables: {', '.join(checked.tables)}\n" + "\n".join(lines) + note
         summary = f"{len(rows)}{'+' if truncated else ''} row{'s' if len(rows) != 1 else ''} from {', '.join(checked.tables) or 'query'}"

@@ -11,12 +11,17 @@ from . import prompts
 from .llm import Provider, Reply, ToolCall
 from .tools import TOOL_SPECS, Toolbox, ToolResult
 
-MAX_STEPS = 6
+MAX_STEPS = 7
 SOURCE_ROWS = 8
 REFUSAL = re.compile(r"\bcan(?:'|no|’)?t confirm\b|\bcannot confirm\b|\bcan not confirm\b", re.IGNORECASE)
 CITATION = re.compile(r"\b(table|doc)\s*:\s*([A-Za-z0-9_#\-]+)")
 RETRY_NUDGE = ("Your last query failed because of the SQL, not because the data is missing. "
                "Fix the query using the listed columns and run it again before answering.")
+NUMBER = re.compile(r"(?<![\w.])-?\$?((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)")
+BRACKETS = re.compile(r"\[[^\]]*\]")
+DATES = re.compile(r"\b\d{4}-\d{2}-\d{2}\b|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.? \d{1,2}\b")
+GROUNDING_NUDGE = ("These numbers in your answer do not appear in any tool result: {numbers}. Rewrite the answer using "
+                   "only numbers from the tool results above. If you need a number you don't have, query for it first.")
 INLINE_CALL = re.compile(r"\{\s*\"name\"\s*:\s*\"(query_program_data|search_documents)\".*\}", re.DOTALL)
 
 
@@ -29,6 +34,7 @@ class Answer:
     sources: list[dict] = field(default_factory=list)
     citations: list[dict] = field(default_factory=list)
     citations_valid: bool = False
+    ungrounded_numbers: list[float] = field(default_factory=list)
     latency_ms: int = 0
     model: str = ""
     steps: int = 0
@@ -86,6 +92,37 @@ def build_sources(results: list[ToolResult], citations: list[dict]) -> list[dict
     return out
 
 
+def _numbers(text: str) -> list[float]:
+    text = DATES.sub(" ", BRACKETS.sub(" ", text))
+    return [float(m.group(1).replace(",", "")) for m in NUMBER.finditer(text)]
+
+
+def ungrounded_numbers(answer: str, question: str, results: list[ToolResult]) -> list[float]:
+    """Numbers in the answer that no tool result supports, directly or as a sum or difference of two results.
+
+    Small whole numbers (up to 31) and years are ignored: they are usually days, counts read off a list, or dates.
+    """
+    seen = set(_numbers(question))
+    for r in results:
+        if r.ok:
+            seen.update(_numbers(r.content))
+    base = sorted(seen)
+    derived = {round(a + b, 2) for i, a in enumerate(base) for b in base[i:]} | {round(abs(a - b), 2) for a in base for b in base}
+
+    def close(n, pool):
+        return any(abs(n - v) <= max(0.051, 0.006 * abs(v)) for v in pool)
+
+    out = []
+    for n in _numbers(answer):
+        n = abs(n)
+        if (n <= 31 and n == int(n)) or 1900 <= n <= 2100:
+            continue
+        if close(n, base) or close(n * 100, base) or close(n / 100, base) or close(n, derived):
+            continue
+        out.append(n)
+    return out
+
+
 def citations_valid(results: list[ToolResult], citations: list[dict]) -> bool:
     if not citations:
         return False
@@ -107,7 +144,8 @@ class Assistant:
         calls_log: list[dict] = []
         reply = Reply("")
         steps = 0
-        nudged = False
+        nudged = revised = False
+        self.toolbox.reset()
         for steps in range(1, MAX_STEPS + 1):
             reply = self.provider.chat(messages, TOOL_SPECS)
             calls = reply.tool_calls or inline_tool_calls(reply.content)
@@ -118,6 +156,14 @@ class Assistant:
                     nudged = True
                     messages.append({"role": "assistant", "content": reply.content})
                     messages.append({"role": "user", "content": RETRY_NUDGE})
+                    continue
+                # Grounding check: every number in the answer must come from a tool result.
+                missing = [] if REFUSAL.search(reply.content or "") else ungrounded_numbers(reply.content or "", question, results)
+                if missing and not revised and steps < MAX_STEPS:
+                    revised = True
+                    shown = ", ".join(f"{n:g}" for n in missing[:8])
+                    messages.append({"role": "assistant", "content": reply.content})
+                    messages.append({"role": "user", "content": GROUNDING_NUDGE.format(numbers=shown)})
                     continue
                 break
             messages.append({"role": "assistant", "content": "" if not reply.tool_calls else reply.content,
@@ -132,10 +178,12 @@ class Assistant:
             reply = self.provider.chat(messages, None)
         text = (reply.content or "").strip()
         cites = parse_citations(text)
+        refused = bool(REFUSAL.search(text)) or not text
         return Answer(
+            ungrounded_numbers=[] if refused else ungrounded_numbers(text, question, results),
             question=question,
             answer=text,
-            refused=bool(REFUSAL.search(text)) or not text,
+            refused=refused,
             tool_calls=calls_log,
             sources=build_sources(results, cites),
             citations=cites,

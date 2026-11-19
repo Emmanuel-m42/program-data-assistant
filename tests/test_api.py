@@ -67,11 +67,38 @@ def test_refusal_flag():
 
 
 def test_step_limit_forces_an_answer():
-    loop = [sql_call("SELECT 1 FROM offices") for _ in range(6)]
+    loop = [sql_call(f"SELECT {i} FROM offices") for i in range(7)]
     c, _ = client(loop + [Reply("Three offices [table:offices].")])
     body = c.post("/ask", json={"question": "How many offices?"}).json()
-    assert len(body["tool_calls"]) == 6
+    assert len(body["tool_calls"]) == 7
     assert body["answer"] == "Three offices [table:offices]."
+
+
+def test_made_up_numbers_get_one_revision():
+    sql = "SELECT office, projected_vs_goal FROM v_office_pace WHERE office = 'Eastgate'"
+    c, provider = client([
+        sql_call(sql),
+        Reply("Eastgate misses goal by 1,234 doors [table:v_office_pace]."),
+        Reply("Eastgate misses goal by the amount shown [table:v_office_pace]."),
+    ])
+    body = c.post("/ask", json={"question": "Will Eastgate miss goal?"}).json()
+    assert "1234" in provider.seen[2]["content"] and "do not appear" in provider.seen[2]["content"]
+    assert body["answer"].startswith("Eastgate misses goal by the amount")
+
+
+def test_repeated_query_is_not_rerun():
+    sql = "SELECT office FROM offices"
+    c, provider = client([sql_call(sql), sql_call(sql), Reply("Three offices [table:offices].")])
+    body = c.post("/ask", json={"question": "List the offices"}).json()
+    assert [t["result"] for t in body["tool_calls"]][1] == "repeated query"
+
+
+def test_zero_rows_tells_the_model_to_widen_the_query():
+    c, provider = client([sql_call("SELECT office FROM offices WHERE office = 'Nowhere'"),
+                          Reply("I can't confirm that from the program data or documents."),
+                          Reply("I can't confirm that from the program data or documents.")])
+    c.post("/ask", json={"question": "Which offices?"})
+    assert "0 rows" in provider.seen[1]["content"]
 
 
 def test_question_validation():
