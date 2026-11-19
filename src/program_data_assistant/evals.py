@@ -158,7 +158,20 @@ def run(label: str, provider: str | None, model: str | None, only: list[str] | N
         truth = compute_truth(conn, cases)
         retrieved = {c["id"]: [h["chunk_id"] for h in retrieval.search(conn, c["question"])] for c in cases}
     assistant = Assistant(get_provider(provider, model))
+    out_dir.mkdir(parents=True, exist_ok=True)
+    partial = out_dir / f"{label}.partial.json"
     rows = []
+
+    def report_for(rows):
+        return {
+            "label": label,
+            "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+            "model": assistant.provider.name + "/" + assistant.provider.model,
+            "commit": git_commit(),
+            "summary": summarize(rows),
+            "cases": rows,
+        }
+
     for c in cases:
         ans = assistant.ask(c["question"]).to_dict()
         scored = score_case(c, ans, truth, retrieved[c["id"]], defaults)
@@ -167,17 +180,11 @@ def run(label: str, provider: str | None, model: str | None, only: list[str] | N
         sc = scored["scores"]
         print(f"{c['id']}  pass={sc['pass']:.0f}  facts={fmt(sc['facts'])}  tools={fmt(sc['tool_choice'])}  "
               f"cite={fmt(sc['citation'])}  refusal={sc['refusal']:.0f}  {ans['latency_ms'] / 1000:.0f}s", flush=True)
-    report = {
-        "label": label,
-        "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
-        "model": assistant.provider.name + "/" + assistant.provider.model,
-        "commit": git_commit(),
-        "summary": summarize(rows),
-        "cases": rows,
-    }
-    out_dir.mkdir(parents=True, exist_ok=True)
+        partial.write_text(json.dumps(report_for(rows), indent=2, default=str))  # progress, in case a long run stops
+    report = report_for(rows)
     (out_dir / f"{label}.json").write_text(json.dumps(report, indent=2, default=str))
     (out_dir / f"{label}.md").write_text(markdown(report))
+    partial.unlink()
     return report
 
 
