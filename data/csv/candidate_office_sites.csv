@@ -1,0 +1,5 @@
+site_id,name,address,lat,lon,monthly_rent
+S1,Mill Street storefront,215 Mill St,40.238,-86.701,2400
+S2,Westview Plaza suite,9 Westview Plaza,40.305,-86.672,3100
+S3,Depot Road warehouse,1630 Depot Rd,40.252,-86.552,1900
+S4,Canal Row office,47 Canal Row,40.268,-86.64,2700

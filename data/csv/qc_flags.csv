@@ -1,0 +1,37 @@
+flag_id,shift_id,canvasser_id,office,flag_date,flag_type,evidence,evidence_start,evidence_end,knock_count,status,knocks_rolled_back
+QC001,G00034,C028,Northside,2026-09-22,gap,"no knocks for 83 minutes, last knock 16:37:59, next knock 18:01:12, while clocked in",2026-09-22 16:37:59,2026-09-22 18:01:12,0,reviewed,false
+QC002,G00045,C086,Harbor,2026-09-22,gap,"no knocks for 86 minutes, last knock 15:57:51, next knock 17:24:12, while clocked in",2026-09-22 15:57:51,2026-09-22 17:24:12,0,reviewed,false
+QC003,G00041,C089,Harbor,2026-09-22,householding,"6 canvassed results at P25-0208 (units 1A, 1B, 1C, 1D, 2A, 2B) between 19:10:28 and 19:12:39, all answered 'undecided'",2026-09-22 19:10:28,2026-09-22 19:12:39,6,reviewed,false
+QC004,G00042,C082,Harbor,2026-09-22,gap,"no knocks for 86 minutes, last knock 17:37:09, next knock 19:03:20, while clocked in",2026-09-22 17:37:09,2026-09-22 19:03:20,0,reviewed,false
+QC005,G00070,C073,Harbor,2026-09-23,flash_knocking,"13 consecutive knocks between 17:36:04 and 17:38:22, median 12 s apart",2026-09-23 17:36:04,2026-09-23 17:38:22,13,reviewed,true
+QC006,G00096,C079,Harbor,2026-09-24,householding,"6 canvassed results at P26-0137 (units 1A, 1B, 1C, 1D, 2A, 2B) between 13:44:12 and 13:46:24, all answered 'supporter'",2026-09-24 13:44:12,2026-09-24 13:46:24,6,reviewed,false
+QC007,G00118,C066,Eastgate,2026-09-25,householding,"6 canvassed results at P13-0233 (units 1A, 1B, 1C, 1D, 2A, 2B) between 12:34:29 and 12:36:44, all answered 'supporter'",2026-09-25 12:34:29,2026-09-25 12:36:44,6,reviewed,false
+QC008,G00114,C042,Northside,2026-09-25,householding,"6 canvassed results at P02-0136 (units 1A, 1B, 1C, 1D, 2A, 2B) between 14:13:55 and 14:16:16, all answered 'undecided'",2026-09-25 14:13:55,2026-09-25 14:16:16,6,reviewed,false
+QC009,G00123,C097,Harbor,2026-09-25,flash_knocking,"13 consecutive knocks between 18:00:59 and 18:03:21, median 12 s apart",2026-09-25 18:00:59,2026-09-25 18:03:21,13,reviewed,true
+QC010,G00145,C037,Northside,2026-09-26,householding,"6 canvassed results at P02-0163 (units 1A, 1B, 1C, 1D, 2A, 2B) between 12:08:30 and 12:10:33, all answered 'undecided'",2026-09-26 12:08:30,2026-09-26 12:10:33,6,reviewed,false
+QC011,G00183,C068,Eastgate,2026-09-27,flash_knocking,"13 consecutive knocks between 12:25:57 and 12:28:25, median 12 s apart",2026-09-27 12:25:57,2026-09-27 12:28:25,13,reviewed,true
+QC012,G00223,C079,Harbor,2026-09-28,gap,"no knocks for 84 minutes, last knock 10:55:45, next knock 12:19:21, while clocked in",2026-09-28 10:55:45,2026-09-28 12:19:21,0,reviewed,false
+QC013,G00226,C097,Harbor,2026-09-28,householding,"6 canvassed results at P27-0264 (units 1A, 1B, 1C, 1D, 2A, 2B) between 18:04:57 and 18:07:05, all answered 'supporter'",2026-09-28 18:04:57,2026-09-28 18:07:05,6,reviewed,false
+QC014,G00247,C040,Northside,2026-09-29,gap,"no knocks for 88 minutes, last knock 11:40:00, next knock 13:07:53, while clocked in",2026-09-29 11:40:00,2026-09-29 13:07:53,0,reviewed,false
+QC015,G00281,C047,Eastgate,2026-09-30,flash_knocking,"13 consecutive knocks between 17:10:41 and 17:13:15, median 13 s apart",2026-09-30 17:10:41,2026-09-30 17:13:15,13,reviewed,true
+QC016,G00283,C066,Eastgate,2026-09-30,householding,"6 canvassed results at P15-0152 (units 1A, 1B, 1C, 1D, 2A, 2B) between 16:30:33 and 16:32:44, all answered 'undecided'",2026-09-30 16:30:33,2026-09-30 16:32:44,6,reviewed,false
+QC017,G00308,C030,Northside,2026-10-01,householding,"6 canvassed results at P03-0011 (units 1A, 1B, 1C, 1D, 2A, 2B) between 17:12:02 and 17:14:18, all answered 'supporter'",2026-10-01 17:12:02,2026-10-01 17:14:18,6,reviewed,false
+QC018,G00317,C068,Eastgate,2026-10-01,flash_knocking,"13 consecutive knocks between 16:31:01 and 16:33:44, median 15 s apart",2026-10-01 16:31:01,2026-10-01 16:33:44,13,reviewed,true
+QC019,G00393,C092,Harbor,2026-10-03,gap,"no knocks for 95 minutes, last knock 10:35:10, next knock 12:10:25, while clocked in",2026-10-03 10:35:10,2026-10-03 12:10:25,0,reviewed,false
+QC020,G00432,C097,Harbor,2026-10-04,householding,"6 canvassed results at P29-0124 (units 1A, 1B, 1C, 1D, 2A, 2B) between 12:41:53 and 12:44:08, all answered 'undecided'",2026-10-04 12:41:53,2026-10-04 12:44:08,6,reviewed,false
+QC021,G00431,C075,Harbor,2026-10-04,gap,"no knocks for 87 minutes, last knock 17:44:41, next knock 19:11:45, while clocked in",2026-10-04 17:44:41,2026-10-04 19:11:45,0,reviewed,false
+QC022,G00457,C031,Northside,2026-10-05,flash_knocking,"13 consecutive knocks between 12:19:23 and 12:21:40, median 11 s apart",2026-10-05 12:19:23,2026-10-05 12:21:40,13,reviewed,true
+QC023,G00471,C079,Harbor,2026-10-05,householding,"6 canvassed results at P29-0112 (units 1A, 1B, 1C, 1D, 2A, 2B) between 11:41:13 and 11:43:50, all answered 'undecided'",2026-10-05 11:41:13,2026-10-05 11:43:50,6,reviewed,false
+QC024,G00502,C047,Eastgate,2026-10-06,flash_knocking,"13 consecutive knocks between 17:46:20 and 17:48:31, median 11 s apart",2026-10-06 17:46:20,2026-10-06 17:48:31,13,reviewed,true
+QC025,G00527,C035,Northside,2026-10-07,householding,"6 canvassed results at P06-0112 (units 1A, 1B, 1C, 1D, 2A, 2B) between 11:16:07 and 11:18:20, all answered 'undecided'",2026-10-07 11:16:07,2026-10-07 11:18:20,6,reviewed,false
+QC026,G00542,C097,Harbor,2026-10-07,gap,"no knocks for 90 minutes, last knock 10:54:07, next knock 12:23:54, while clocked in",2026-10-07 10:54:07,2026-10-07 12:23:54,0,reviewed,false
+QC027,G00530,C056,Eastgate,2026-10-07,flash_knocking,"13 consecutive knocks between 12:18:03 and 12:20:15, median 10 s apart",2026-10-07 12:18:03,2026-10-07 12:20:15,13,reviewed,true
+QC028,G00573,C097,Harbor,2026-10-08,flash_knocking,"13 consecutive knocks between 12:37:16 and 12:39:47, median 13 s apart",2026-10-08 12:37:16,2026-10-08 12:39:47,13,reviewed,true
+QC029,G00611,C101,Harbor,2026-10-09,flash_knocking,"13 consecutive knocks between 11:19:07 and 11:21:08, median 10 s apart",2026-10-09 11:19:07,2026-10-09 11:21:08,13,reviewed,true
+QC030,G00725,C002,Eastgate,2026-10-12,flash_knocking,"142 knocks recorded between 16:28:20 and 17:05:03, median 15 s apart; whole shift rolled back",2026-10-12 16:28:20,2026-10-12 17:05:03,142,reviewed,true
+QC031,G00764,C001,Eastgate,2026-10-13,householding,"6 canvassed results at P21-0166 (units 1A, 1B, 1C, 1D, 2A, 2B) between 11:45:33 and 11:47:47, all answered 'supporter'",2026-10-13 11:45:33,2026-10-13 11:47:47,6,reviewed,false
+QC032,G00790,C003,Northside,2026-10-14,householding,"6 canvassed results at P09-0157 (units 1A, 1B, 1C, 1D, 2A, 2B) between 17:44:22 and 17:46:33, all answered 'undecided'",2026-10-14 17:44:22,2026-10-14 17:46:33,6,reviewed,false
+QC033,G00918,C005,Eastgate,2026-10-17,gap,"no knocks for 89 minutes, last knock 12:23:14, next knock 13:52:32, while clocked in",2026-10-17 12:23:14,2026-10-17 13:52:32,0,open,false
+QC034,G00917,C001,Eastgate,2026-10-17,householding,"6 canvassed results at P23-0431 (units 1A, 1B, 1C, 1D, 2A, 2B) between 17:58:56 and 18:01:18, all answered 'supporter'",2026-10-17 17:58:56,2026-10-17 18:01:18,6,open,false
+QC035,G00962,C001,Eastgate,2026-10-18,householding,"6 canvassed results at P23-0218 (units 1A, 1B, 1C, 1D, 2A, 2B) between 15:43:34 and 15:46:02, all answered 'supporter'",2026-10-18 15:43:34,2026-10-18 15:46:02,6,open,false
+QC036,G00972,C004,Harbor,2026-10-18,flash_knocking,"13 consecutive knocks between 17:02:53 and 17:05:21, median 12 s apart",2026-10-18 17:02:53,2026-10-18 17:05:21,13,open,false

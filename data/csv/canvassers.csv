@@ -1,0 +1,105 @@
+canvasser_id,full_name,office,program,role,start_date,days_worked
+C001,Dorian Pratt,Eastgate,gotv,canvasser,2026-09-26,9
+C002,Jalen Ortiz,Eastgate,gotv,canvasser,2026-09-22,4
+C003,Tomas Reyes,Northside,gotv,canvasser,2026-09-23,3
+C004,Priya Nandakumar,Harbor,gotv,canvasser,2026-09-25,8
+C005,Andre Whitfield,Eastgate,gotv,canvasser,2026-09-23,6
+C006,Ellis Warren,Northside,gotv,field lead,2026-09-24,22
+C007,Sofia Lindqvist,Eastgate,gotv,canvasser,2026-09-22,19
+C008,Marcus Bell,Harbor,vr,registration canvasser,2026-09-22,16
+C009,Renata Cole,Harbor,vr,registration canvasser,2026-09-21,8
+C010,Leon Mbeki,Harbor,gotv,canvasser,2026-09-22,8
+C011,Carmen Ruiz,Northside,vr,registration canvasser,2026-09-21,15
+C012,Hugo Brennan,Eastgate,gotv,canvasser,2026-09-22,8
+C013,Delia Haddad,Northside,gotv,field lead,2026-09-22,22
+C017,Gloria Grisham,Northside,gotv,canvasser,2026-10-01,13
+C018,Gloria Kowalczyk,Northside,gotv,canvasser,2026-09-21,1
+C019,Vera Kincaid,Northside,gotv,canvasser,2026-10-12,5
+C020,Uma Eastman,Northside,gotv,canvasser,2026-10-03,6
+C022,Maya Moreau,Northside,gotv,canvasser,2026-09-24,14
+C023,Hector Thibodeaux,Northside,gotv,canvasser,2026-09-22,1
+C025,Lena Ekwueme,Northside,gotv,canvasser,2026-09-21,1
+C026,Hana Whitlock,Northside,gotv,canvasser,2026-09-30,9
+C027,Milo Eastman,Northside,gotv,canvasser,2026-09-28,18
+C028,Uriel Ekwueme,Northside,gotv,canvasser,2026-09-22,6
+C029,Jade Underhill,Northside,gotv,canvasser,2026-09-22,19
+C030,Zoe Juarez,Northside,gotv,canvasser,2026-09-30,10
+C031,Jade Delgado,Northside,gotv,canvasser,2026-10-04,7
+C032,Brynn Moreau,Northside,gotv,canvasser,2026-09-21,1
+C033,Lena Dunmore,Northside,gotv,canvasser,2026-09-22,10
+C034,Noor Zielinski,Northside,gotv,canvasser,2026-10-04,7
+C035,Willa Moreau,Northside,gotv,canvasser,2026-09-24,10
+C037,Delia Moreau,Northside,gotv,canvasser,2026-09-21,20
+C038,Uma Marsh,Northside,gotv,canvasser,2026-09-21,1
+C039,Uriel Thibodeaux,Northside,gotv,canvasser,2026-10-18,1
+C040,Omar Jessup,Northside,gotv,canvasser,2026-09-21,21
+C042,Viktor Quarles,Northside,gotv,canvasser,2026-09-21,16
+C043,Liam Jessup,Northside,gotv,canvasser,2026-09-23,11
+C046,Ximena Haddad,Eastgate,gotv,field lead,2026-09-23,7
+C047,Tara Okafor,Eastgate,gotv,field lead,2026-09-21,26
+C048,Bianca Grisham,Eastgate,gotv,canvasser,2026-10-11,4
+C051,Uma Castellano,Eastgate,gotv,canvasser,2026-09-26,2
+C052,Theo Delgado,Eastgate,gotv,canvasser,2026-09-21,1
+C053,Bianca Iverson,Eastgate,gotv,canvasser,2026-09-24,9
+C054,Bianca Thibodeaux,Eastgate,gotv,canvasser,2026-09-28,1
+C056,Bianca Kowalczyk,Eastgate,gotv,canvasser,2026-10-06,8
+C057,Theo Zielinski,Eastgate,gotv,canvasser,2026-09-26,8
+C058,Tara Rasmussen,Eastgate,gotv,canvasser,2026-09-21,1
+C060,Zane Juarez,Eastgate,gotv,canvasser,2026-10-02,11
+C061,Cyrus Nkemelu,Eastgate,gotv,canvasser,2026-10-10,4
+C063,Omar Delgado,Eastgate,gotv,canvasser,2026-09-28,6
+C064,Yusuf Ibarra,Eastgate,gotv,canvasser,2026-09-25,9
+C065,Hana Abbott,Eastgate,gotv,canvasser,2026-09-23,16
+C066,Yara Ekwueme,Eastgate,gotv,canvasser,2026-09-25,9
+C067,Vera Juarez,Eastgate,gotv,canvasser,2026-10-03,6
+C068,Hector Pemberton,Eastgate,gotv,canvasser,2026-09-22,20
+C069,Quinn Ashby,Eastgate,gotv,canvasser,2026-09-21,1
+C071,Maya Abbott,Eastgate,gotv,canvasser,2026-10-04,1
+C072,Lena Grisham,Harbor,gotv,field lead,2026-09-29,1
+C073,Yara Ibarra,Harbor,gotv,field lead,2026-09-23,11
+C074,Avery Abbott,Harbor,gotv,canvasser,2026-10-08,7
+C075,Otis Castellano,Harbor,gotv,canvasser,2026-10-04,4
+C076,Uriel Delgado,Harbor,gotv,canvasser,2026-10-12,4
+C077,Avery Okafor,Harbor,gotv,canvasser,2026-09-21,10
+C079,Yara Haddad,Harbor,gotv,canvasser,2026-09-22,17
+C081,Sage Novak,Harbor,gotv,canvasser,2026-09-21,1
+C082,Milo Marsh,Harbor,gotv,canvasser,2026-09-22,23
+C086,Felix Dunmore,Harbor,gotv,canvasser,2026-09-21,20
+C088,Yusuf Fairbanks,Harbor,gotv,canvasser,2026-10-05,1
+C089,Gloria Lattimore,Harbor,gotv,canvasser,2026-09-22,18
+C090,Ximena Lattimore,Harbor,gotv,canvasser,2026-10-04,11
+C091,Petra Castellano,Harbor,gotv,canvasser,2026-09-21,1
+C092,Ximena Yamada,Harbor,gotv,canvasser,2026-09-28,14
+C094,Zane Fairbanks,Harbor,gotv,canvasser,2026-10-16,3
+C096,Sage Yamada,Harbor,gotv,canvasser,2026-09-26,8
+C097,Milo Lindgren,Harbor,gotv,canvasser,2026-09-22,21
+C098,Theo Lattimore,Harbor,gotv,canvasser,2026-10-04,1
+C099,Yusuf Brandt,Harbor,gotv,canvasser,2026-09-21,1
+C100,Felix Lattimore,Harbor,gotv,canvasser,2026-09-24,20
+C101,Jade Abbott,Harbor,gotv,canvasser,2026-09-22,23
+C102,Milo Sandoval,Harbor,gotv,canvasser,2026-09-21,1
+C103,Dana Ekwueme,Northside,vr,registration lead,2026-09-23,7
+C104,Viktor Ibarra,Northside,vr,registration canvasser,2026-09-22,3
+C105,Zoe Castellano,Northside,vr,registration canvasser,2026-09-21,24
+C106,Emmett Delgado,Northside,vr,registration canvasser,2026-09-21,28
+C108,Imani Galloway,Northside,vr,registration canvasser,2026-09-26,3
+C109,Sage Underhill,Northside,vr,registration canvasser,2026-10-04,13
+C110,Silas Farrow,Northside,vr,registration canvasser,2026-09-27,3
+C111,Viktor Lattimore,Northside,vr,registration canvasser,2026-10-05,13
+C112,Delia Hollis,Eastgate,vr,registration lead,2026-09-21,18
+C113,Jonah Yamada,Eastgate,vr,registration canvasser,2026-09-21,19
+C114,Tara Jessup,Eastgate,vr,registration canvasser,2026-10-13,1
+C115,Milo Moreau,Eastgate,vr,registration canvasser,2026-09-21,1
+C116,Rafael Jessup,Eastgate,vr,registration canvasser,2026-09-21,25
+C117,Paige Farrow,Eastgate,vr,registration canvasser,2026-09-23,11
+C118,Gideon Vasquez,Eastgate,vr,registration canvasser,2026-10-04,2
+C119,Willa Iverson,Eastgate,vr,registration canvasser,2026-09-28,14
+C120,Emmett Moreau,Eastgate,vr,registration canvasser,2026-10-10,1
+C121,Zoe Thibodeaux,Harbor,vr,registration lead,2026-09-27,2
+C122,Gideon Okafor,Harbor,vr,registration canvasser,2026-09-21,12
+C123,Aldo Dunmore,Harbor,vr,registration canvasser,2026-10-02,7
+C124,Jonah Delgado,Harbor,vr,registration canvasser,2026-09-22,20
+C125,Bianca Castellano,Harbor,vr,registration canvasser,2026-09-21,22
+C126,Lena Brandt,Harbor,vr,registration canvasser,2026-09-21,1
+C127,Jade Haddad,Harbor,vr,registration canvasser,2026-09-23,10
+C128,Ivo Grisham,Harbor,vr,registration canvasser,2026-09-22,9

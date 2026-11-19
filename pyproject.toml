@@ -1,0 +1,43 @@
+[project]
+name = "program-data-assistant"
+version = "0.1.0"
+description = "Answers field program questions from the program's own data and documents, with citations, refusals and evals."
+readme = "README.md"
+authors = [
+    { name = "Emmanuel-m42", email = "mammahemmanuel42@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.165.0",
+    "fastembed>=0.9.1",
+    "httpx>=0.28.1",
+    "pgserver>=0.1.4",
+    "psycopg[binary]>=3.3.9",
+    "pyyaml>=6.0.3",
+    "sqlglot>=30.33.0",
+    "uvicorn>=0.54.0",
+]
+
+[project.optional-dependencies]
+anthropic = [
+    "anthropic>=2.11.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.14,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]
+
+[project.scripts]
+pda-generate = "program_data_assistant.datagen:main"
+pda-load = "program_data_assistant.load:main"
+pda-ask = "program_data_assistant.cli:main"
+evals = "program_data_assistant.evals:main"
+pda-demo = "program_data_assistant.demo:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
