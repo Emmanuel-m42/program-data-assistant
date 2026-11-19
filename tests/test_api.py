@@ -1,7 +1,7 @@
 from conftest import ScriptedProvider, search_call, sql_call
 from fastapi.testclient import TestClient
 
-from program_data_assistant.agent import Assistant
+from program_data_assistant.agent import RETRY_NUDGE, Assistant
 from program_data_assistant.api import create_app
 from program_data_assistant.llm import Reply
 
@@ -39,11 +39,25 @@ def test_ask_runs_tools_and_returns_sources():
 
 
 def test_rejected_sql_goes_back_to_the_model():
-    c, provider = client([sql_call("DROP TABLE knocks"), Reply("I can't confirm that from the program data or documents.")])
+    refusal = Reply("I can't confirm that from the program data or documents.")
+    c, provider = client([sql_call("DROP TABLE knocks"), refusal, refusal])
     body = c.post("/ask", json={"question": "Delete the knocks"}).json()
     assert body["tool_calls"][0]["ok"] is False
     assert provider.seen[1]["content"].startswith("Query rejected")
+    assert provider.seen[2]["content"] == RETRY_NUDGE  # one retry nudge after a failed query, then it may refuse
     assert body["refused"] is True
+
+
+def test_bad_column_gets_the_real_columns_and_a_retry():
+    c, provider = client([
+        sql_call("SELECT office, shifts_needed FROM v_office_pace"),
+        sql_call("SELECT office, extra_shifts_per_day_needed FROM v_office_pace"),
+        Reply("Eastgate needs the most extra shifts [table:v_office_pace]."),
+    ])
+    body = c.post("/ask", json={"question": "How many more shifts a day does each office need?"}).json()
+    assert "Columns of v_office_pace:" in provider.seen[1]["content"]
+    assert "extra_shifts_per_day_needed" in provider.seen[1]["content"]
+    assert [t["ok"] for t in body["tool_calls"]] == [False, True]
 
 
 def test_refusal_flag():

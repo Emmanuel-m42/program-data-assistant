@@ -57,5 +57,16 @@ def test_search_documents_returns_passages_with_ids():
     assert "[doc:qc-rules#flash-knocking]" in r.content
 
 
+def test_guard_allow_list_matches_what_the_reader_can_see():
+    from program_data_assistant.sql_guard import ALLOWED_TABLES
+
+    with db.connect_reader() as conn:
+        visible = {r[0] for r in conn.execute(
+            "SELECT table_name FROM information_schema.tables WHERE table_schema = 'program'").fetchall()}
+        for t in ALLOWED_TABLES:
+            conn.execute(f"SELECT * FROM {t} LIMIT 1")
+    assert visible == ALLOWED_TABLES
+
+
 def test_unknown_tool():
     assert not Toolbox().run("send_email", {}).ok

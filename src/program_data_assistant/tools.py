@@ -103,7 +103,9 @@ class Toolbox:
             rows = [[_plain(v) for v in r] for r in cur.fetchmany(MAX_ROWS + 1)]
         except psycopg.Error as e:
             msg = (e.diag.message_primary or str(e)).strip()
-            return ToolResult("query_program_data", args, False, f"Database error: {msg}", f"error: {msg}")
+            hint = self.column_hint(checked.tables) if isinstance(e, psycopg.errors.UndefinedColumn) else ""
+            return ToolResult("query_program_data", args, False,
+                              f"Database error: {msg}{hint}\nFix the query and run it again.", f"error: {msg}")
         truncated = len(rows) > MAX_ROWS
         rows = rows[:MAX_ROWS]
         shown = rows[:MODEL_ROWS]
@@ -114,6 +116,17 @@ class Toolbox:
         content = f"tables: {', '.join(checked.tables)}\n" + "\n".join(lines) + note
         summary = f"{len(rows)}{'+' if truncated else ''} row{'s' if len(rows) != 1 else ''} from {', '.join(checked.tables) or 'query'}"
         return ToolResult("query_program_data", args, True, content, summary, checked.tables, columns, rows)
+
+    def column_hint(self, tables: list[str]) -> str:
+        """The real columns of the tables a failed query used, so the model can correct itself."""
+        if not tables:
+            return ""
+        rows = self.reader.execute(
+            """SELECT table_name, string_agg(column_name, ', ' ORDER BY ordinal_position) FROM information_schema.columns
+               WHERE table_schema = 'program' AND table_name = ANY(%s) GROUP BY table_name""",
+            (tables,),
+        ).fetchall()
+        return "".join(f"\nColumns of {t}: {cols}" for t, cols in rows)
 
     def search_documents(self, query: str) -> ToolResult:
         args = {"query": query}

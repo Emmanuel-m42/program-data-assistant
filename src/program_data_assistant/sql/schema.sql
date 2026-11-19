@@ -320,6 +320,114 @@ SELECT sh.office, sh.week_start, sh.shifts,
        round(100.0 * coalesce(f.flags, 0) / sh.shifts, 1) AS flags_per_100_shifts
 FROM sh LEFT JOIN f USING (office, week_start);
 
+-- ---------- helper views for common questions ----------
+
+-- Contact rate per office per week (Monday start), plus 'All offices'.
+CREATE VIEW v_contact_rates AS
+WITH w AS (
+    SELECT office, date_trunc('week', knock_date)::date AS week_start, sum(doors) AS doors, sum(contacts) AS contacts
+    FROM v_daily_doors GROUP BY 1, 2
+),
+u AS (
+    SELECT * FROM w
+    UNION ALL
+    SELECT 'All offices', week_start, sum(doors), sum(contacts) FROM w GROUP BY week_start
+)
+SELECT office, week_start, doors, contacts, round(100.0 * contacts / doors, 1) AS contact_rate_pct FROM u;
+
+-- GOTV wages and cost per door to date, plus 'All offices'.
+CREATE VIEW v_cost_per_door AS
+WITH p AS (
+    SELECT s.office, sum(s.paid_hours) AS paid_hours, sum(s.paid_hours * r.hourly_rate) AS wages
+    FROM shifts s JOIN canvassers c USING (canvasser_id) JOIN pay_rates r USING (role)
+    WHERE s.program = 'gotv' GROUP BY s.office
+),
+d AS (SELECT office, sum(doors) AS doors FROM v_daily_doors GROUP BY office),
+u AS (
+    SELECT p.office, p.paid_hours, p.wages, d.doors FROM p JOIN d USING (office)
+    UNION ALL
+    SELECT 'All offices', sum(p.paid_hours), sum(p.wages), sum(d.doors) FROM p JOIN d USING (office)
+)
+SELECT office, paid_hours, round(wages, 2) AS wages, doors, round(wages / doors, 2) AS cost_per_door FROM u;
+
+-- The weekly client report: doors, contacts, valid cards and paid hours per office per week.
+CREATE VIEW v_weekly_report AS
+WITH d AS (
+    SELECT office, date_trunc('week', knock_date)::date AS week_start, sum(doors) AS doors, sum(contacts) AS contacts
+    FROM v_daily_doors GROUP BY 1, 2
+),
+c AS (
+    SELECT office, date_trunc('week', collected_at)::date AS week_start, count(*) FILTER (WHERE NOT is_duplicate) AS valid_cards
+    FROM vr_cards GROUP BY 1, 2
+),
+h AS (
+    SELECT office, date_trunc('week', shift_date)::date AS week_start, sum(paid_hours) AS paid_hours,
+           count(*) FILTER (WHERE clock_out IS NULL) AS shifts_missing_clock_out
+    FROM shifts GROUP BY 1, 2
+),
+o AS (
+    SELECT office, week_start, d.doors, d.contacts, coalesce(c.valid_cards, 0) AS valid_cards, h.paid_hours,
+           h.shifts_missing_clock_out
+    FROM h LEFT JOIN d USING (office, week_start) LEFT JOIN c USING (office, week_start)
+)
+SELECT * FROM o
+UNION ALL
+SELECT 'All offices', week_start, sum(doors), sum(contacts), sum(valid_cards), sum(paid_hours), sum(shifts_missing_clock_out)
+FROM o GROUP BY week_start;
+
+-- One row per person with how much they have worked and whether they are active and regular.
+CREATE VIEW v_canvasser_status AS
+SELECT c.canvasser_id, c.full_name, c.office, c.program, c.role,
+       count(DISTINCT s.shift_date) AS days_worked,
+       min(s.shift_date) AS first_shift, max(s.shift_date) AS last_shift,
+       max(s.shift_date) > (SELECT as_of_date FROM program_settings) - 7 AS active,
+       CASE WHEN count(DISTINCT s.shift_date) >= 5 THEN 'regular'
+            WHEN count(DISTINCT s.shift_date) = 1 THEN 'one-day hire'
+            ELSE 'occasional' END AS staff_type
+FROM canvassers c JOIN shifts s USING (canvasser_id)
+GROUP BY c.canvasser_id, c.full_name, c.office, c.program, c.role;
+
+-- QC flags with the canvasser's name.
+CREATE VIEW v_qc_flags_detail AS
+SELECT f.flag_id, f.flag_date, f.office, f.canvasser_id, c.full_name, f.shift_id, f.flag_type, f.status, f.evidence,
+       f.evidence_start, f.evidence_end, f.knock_count, f.knocks_rolled_back
+FROM qc_flags f JOIN canvassers c USING (canvasser_id);
+
+-- Shifts that are not approved yet, with the reason.
+CREATE VIEW v_shifts_to_fix AS
+SELECT s.shift_id, s.shift_date, date_trunc('week', s.shift_date)::date AS week_start, c.full_name, s.office, s.program,
+       s.approval_status, s.fix_note, s.paid_hours
+FROM shifts s JOIN canvassers c USING (canvasser_id)
+WHERE s.approval_status <> 'approved';
+
+-- Registration results per registration canvasser.
+CREATE VIEW v_vr_canvassers AS
+SELECT c.canvasser_id, c.full_name, c.office,
+       count(v.card_id) AS cards_collected,
+       count(v.card_id) FILTER (WHERE v.is_duplicate) AS duplicate_cards,
+       round(100.0 * count(v.card_id) FILTER (WHERE v.is_duplicate) / nullif(count(v.card_id), 0), 1) AS duplicate_rate_pct,
+       count(q.call_id) AS qc_calls,
+       count(q.call_id) FILTER (WHERE q.outcome = 'confirmed') AS qc_confirmed,
+       count(q.call_id) FILTER (WHERE q.outcome = 'unreachable') AS qc_unreachable,
+       count(q.call_id) FILTER (WHERE q.outcome = 'wrong_info') AS qc_wrong_info
+FROM canvassers c
+JOIN vr_cards v USING (canvasser_id)
+LEFT JOIN vr_qc_calls q USING (card_id)
+WHERE c.program = 'vr'
+GROUP BY c.canvasser_id, c.full_name, c.office;
+
+-- Registration QC call outcomes per office, plus 'All offices'.
+CREATE VIEW v_qc_call_outcomes AS
+WITH o AS (
+    SELECT v.office, q.outcome, count(*) AS calls FROM vr_qc_calls q JOIN vr_cards v USING (card_id) GROUP BY 1, 2
+),
+u AS (
+    SELECT * FROM o
+    UNION ALL
+    SELECT 'All offices', outcome, sum(calls) FROM o GROUP BY outcome
+)
+SELECT office, outcome, calls, round(100.0 * calls / sum(calls) OVER (PARTITION BY office), 1) AS share_pct FROM u;
+
 -- ---------- documents ----------
 
 CREATE TABLE docs.documents (

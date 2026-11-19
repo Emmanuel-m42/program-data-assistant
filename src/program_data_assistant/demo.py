@@ -33,21 +33,31 @@ def clean_source(s: dict) -> dict:
     return {"type": "passage", "doc": s["doc"], "text": s["text"]}
 
 
-def question_entry(recorded: dict, before: dict | None, after: dict | None) -> dict:
-    a = recorded["answer"]
+def run_fields(case: dict) -> dict:
+    a = case["answer"]
     return {
-        "id": recorded["id"],
-        "question": recorded["question"],
-        "category": recorded["category"],
-        "keywords": recorded.get("keywords", []),
         "tool_calls": [{"name": t["name"], "args": t["args"], "result": t["result"]} for t in a["tool_calls"]],
         "sources": [clean_source(s) for s in a["sources"]],
         "answer": a["answer"],
         "refused": a["refused"],
         "latency_ms": a["latency_ms"],
-        "model": a["model"],
-        "eval": {"before": metric_scores(before), "after": metric_scores(after)},
     }
+
+
+def question_entry(recorded: dict, before: dict | None, after: dict | None) -> dict:
+    """Top-level fields are the recorded (after) run; the baseline attempt sits under `baseline`."""
+    entry = {
+        "id": recorded["id"],
+        "question": recorded["question"],
+        "category": recorded["category"],
+        "keywords": recorded.get("keywords", []),
+        **run_fields(recorded),
+        "model": recorded["answer"]["model"],
+    }
+    if after is not None and before is not None:
+        entry["baseline"] = run_fields(before)
+    entry["eval"] = {"before": metric_scores(before), "after": metric_scores(after)}
+    return entry
 
 
 def totals(report: dict | None) -> dict | None:

@@ -15,6 +15,8 @@ MAX_STEPS = 6
 SOURCE_ROWS = 8
 REFUSAL = re.compile(r"\bcan(?:'|no|’)?t confirm\b|\bcannot confirm\b|\bcan not confirm\b", re.IGNORECASE)
 CITATION = re.compile(r"\b(table|doc)\s*:\s*([A-Za-z0-9_#\-]+)")
+RETRY_NUDGE = ("Your last query failed because of the SQL, not because the data is missing. "
+               "Fix the query using the listed columns and run it again before answering.")
 INLINE_CALL = re.compile(r"\{\s*\"name\"\s*:\s*\"(query_program_data|search_documents)\".*\}", re.DOTALL)
 
 
@@ -105,10 +107,18 @@ class Assistant:
         calls_log: list[dict] = []
         reply = Reply("")
         steps = 0
+        nudged = False
         for steps in range(1, MAX_STEPS + 1):
             reply = self.provider.chat(messages, TOOL_SPECS)
             calls = reply.tool_calls or inline_tool_calls(reply.content)
             if not calls:
+                # Giving up right after a failed query usually means a fixable SQL mistake, not missing data.
+                if (REFUSAL.search(reply.content or "") and results and not results[-1].ok and not nudged
+                        and steps < MAX_STEPS):
+                    nudged = True
+                    messages.append({"role": "assistant", "content": reply.content})
+                    messages.append({"role": "user", "content": RETRY_NUDGE})
+                    continue
                 break
             messages.append({"role": "assistant", "content": "" if not reply.tool_calls else reply.content,
                              "tool_calls": [{"id": c.id, "name": c.name, "args": c.args} for c in calls]})
