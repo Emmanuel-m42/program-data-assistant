@@ -1,0 +1,2623 @@
+{
+  "label": "baseline",
+  "generated_at": "2026-11-19T21:09:49+00:00",
+  "model": "ollama/qwen2.5:7b",
+  "commit": "c9cd063",
+  "summary": {
+    "cases": 28,
+    "tool_choice": 0.76,
+    "tool_choice_n": 25,
+    "retrieval": 0.98,
+    "retrieval_n": 25,
+    "facts": 0.261,
+    "facts_n": 25,
+    "citation": 0.4,
+    "citation_n": 25,
+    "refusal": 0.607,
+    "refusal_n": 28,
+    "pass": 0.25,
+    "pass_n": 28,
+    "avg_latency_ms": 86099
+  },
+  "cases": [
+    {
+      "id": "q01",
+      "question": "Are we on pace to hit goal, and where do we land by election day if nothing changes?",
+      "category": "pace",
+      "keywords": [
+        "pace",
+        "goal",
+        "election day",
+        "projection",
+        "on track",
+        "land",
+        "doors"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#pace-and-projection",
+        "program-plan#goals",
+        "program-plan#overview",
+        "registration-drive#cards-per-hour"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 0.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "projected doors, all offices",
+          "expected": 57329.28571428572,
+          "matched": false
+        },
+        {
+          "name": "projected shortfall, all offices",
+          "expected": 3302.714285714286,
+          "matched": false
+        },
+        {
+          "name": "says we are not on pace",
+          "expected": [
+            "not on pace",
+            "not on track",
+            "behind",
+            "short of",
+            "miss",
+            "below goal",
+            "below the goal",
+            "under goal"
+          ],
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Are we on pace to hit goal, and where do we land by election day if nothing changes?",
+        "answer": "It seems there was an error in the query due to a mismatch between data types. Let me correct the query and try again.\n\n### Current Pace\nI'll query the `v_office_pace` view to get the current status of door canvassing and voter registration.\n\n### Election Day Projection\nI'll also project the remaining doors and cards based on the current pace and the number of days left until Election Day.\n\nLet's run these queries again.",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT * FROM v_office_pace WHERE goal_total IS NOT NULL AND goal_to_date IS NOT NULL AND doors_to_date IS NOT NULL AND goal_total > 0 AND doors_to_date > 0 AND goal_to_date < (SELECT election_day FROM program_settings WHERE as_of_date = '2026-10-18') ORDER BY office;"
+            },
+            "ok": false,
+            "result": "error: operator does not exist: numeric < date"
+          },
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT * FROM v_vr_pace WHERE card_goal IS NOT NULL AND cards_collected IS NOT NULL AND card_goal > 0 AND cards_collected > 0 AND card_goal < (SELECT vr_deadline FROM program_settings WHERE as_of_date = '2026-10-18') ORDER BY office;"
+            },
+            "ok": false,
+            "result": "error: operator does not exist: bigint < date"
+          }
+        ],
+        "sources": [],
+        "citations": [],
+        "citations_valid": false,
+        "latency_ms": 421697,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "q02",
+      "question": "Which offices will miss their goal, and by how much?",
+      "category": "pace",
+      "keywords": [
+        "miss",
+        "goal",
+        "offices",
+        "shortfall",
+        "behind",
+        "how much"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#goals",
+        "program-plan#pace-and-projection",
+        "program-plan#opening-another-office",
+        "program-plan#more-doors-or-a-second-pass"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 0.0,
+        "refusal": 0.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Eastgate shortfall",
+          "expected": 3203.5714285714284,
+          "matched": false
+        },
+        {
+          "name": "Harbor shortfall",
+          "expected": 1007.1428571428571,
+          "matched": false
+        },
+        {
+          "name": "names Eastgate",
+          "expected": [
+            "Eastgate"
+          ],
+          "matched": false
+        },
+        {
+          "name": "names Harbor",
+          "expected": [
+            "Harbor"
+          ],
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Which offices will miss their goal, and by how much?",
+        "answer": "I can't confirm that from the program data or documents. The query encountered an error indicating that the column \"door_goal\" does not exist, which is necessary to determine if any offices will miss their goal and by how much. Please verify the schema or provide the correct column name.",
+        "refused": true,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT office, (goal_to_date + COALESCE(avg_daily_doors_last_7d * (knocking_days_left - 1), 0))::int - door_goal AS shortfall FROM v_office_pace WHERE goal_to_date < door_goal AND knocking_days_left > 0 AND (goal_to_date + COALESCE(avg_daily_doors_last_7d * (knocking_days_left - 1), 0))::int < door_goal"
+            },
+            "ok": false,
+            "result": "error: column \"door_goal\" does not exist"
+          },
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT office, (goal_to_date + COALESCE(avg_daily_doors_last_7d * (knocking_days_left - 1), 0))::int - door_goal AS shortfall FROM v_office_pace WHERE goal_to_date < door_goal AND knocking_days_left > 0 AND (goal_to_date + COALESCE(avg_daily_doors_last_7d * (knocking_days_left - 1), 0))::int < door_goal"
+            },
+            "ok": false,
+            "result": "error: column \"door_goal\" does not exist"
+          }
+        ],
+        "sources": [],
+        "citations": [],
+        "citations_valid": false,
+        "latency_ms": 78743,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "q03",
+      "question": "How many more shifts a day does each office need to hit goal?",
+      "category": "staffing",
+      "keywords": [
+        "shifts",
+        "per day",
+        "staffing",
+        "recruit",
+        "more shifts",
+        "hit goal"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#shifts-needed",
+        "program-plan#goals",
+        "program-plan#pace-and-projection",
+        "client-reporting#weekly-report-format"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.667,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Eastgate extra shifts per day",
+          "expected": 4.357578397212544,
+          "matched": true
+        },
+        {
+          "name": "Harbor extra shifts per day",
+          "expected": 1.2729494640763692,
+          "matched": true
+        },
+        {
+          "name": "Northside needs none",
+          "expected": [
+            "Northside"
+          ],
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "How many more shifts a day does each office need to hit goal?",
+        "answer": "Each office needs additional shifts to meet their goal:\n- Harbor needs 1.2 more shifts per day.\n- Eastgate needs 4.3 more shifts per day.\n\nThese numbers are based on the current pace compared to the goal [table:v_office_pace].",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT office, (shifts_per_day_needed - avg_shifts_per_day_last_7d) AS extra_shifts_needed FROM v_office_pace WHERE goal_total > 0 AND shifts_per_day_needed > avg_shifts_per_day_last_7d AND office IN ('Northside', 'Eastgate', 'Harbor')"
+            },
+            "ok": true,
+            "result": "2 rows from v_office_pace"
+          },
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT office, (shifts_per_day_needed - avg_shifts_per_day_last_7d) AS extra_shifts_needed FROM v_office_pace WHERE goal_total > 0 AND shifts_per_day_needed > avg_shifts_per_day_last_7d AND office IN ('Northside', 'Eastgate', 'Harbor')"
+            },
+            "ok": true,
+            "result": "2 rows from v_office_pace"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_office_pace",
+            "columns": [
+              "office",
+              "extra_shifts_needed"
+            ],
+            "rows": [
+              [
+                "Harbor",
+                1.2
+              ],
+              [
+                "Eastgate",
+                4.3
+              ]
+            ],
+            "row_count": 2,
+            "sql": "SELECT office, (shifts_per_day_needed - avg_shifts_per_day_last_7d) AS extra_shifts_needed FROM v_office_pace WHERE goal_total > 0 AND shifts_per_day_needed > avg_shifts_per_day_last_7d AND office IN ('Northside', 'Eastgate', 'Harbor')"
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_office_pace"
+          }
+        ],
+        "citations_valid": true,
+        "latency_ms": 63037,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "q04",
+      "question": "How many of our active canvassers are regulars, not one-day hires?",
+      "category": "staffing",
+      "keywords": [
+        "active",
+        "canvassers",
+        "regulars",
+        "one-day hires",
+        "retention",
+        "staff"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#staff-definitions",
+        "payroll-rules#pay-rates",
+        "qc-rules#gaps",
+        "qc-rules#apartments-and-units"
+      ],
+      "scores": {
+        "tool_choice": 0.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 0.0,
+        "refusal": 0.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "active regulars",
+          "expected": 49.0,
+          "matched": false
+        },
+        {
+          "name": "active canvassers",
+          "expected": 57.0,
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "How many of our active canvassers are regulars, not one-day hires?",
+        "answer": "I can't confirm that from the program data or documents. The data does not show any active canvassers as of the provided date. Please verify the data availability or provide the necessary details.",
+        "refused": true,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT COUNT(*) FROM canvassers WHERE start_date <= '2026-10-18' AND days_worked > 1 AND role = 'field'"
+            },
+            "ok": true,
+            "result": "1 row from canvassers"
+          },
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT COUNT(*) FROM canvassers WHERE start_date <= '2026-10-18' AND role = 'field'"
+            },
+            "ok": true,
+            "result": "1 row from canvassers"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "canvassers",
+            "columns": [
+              "count"
+            ],
+            "rows": [
+              [
+                0
+              ]
+            ],
+            "row_count": 1,
+            "sql": "SELECT COUNT(*) FROM canvassers WHERE start_date <= '2026-10-18' AND days_worked > 1 AND role = 'field'"
+          },
+          {
+            "type": "rows",
+            "table": "canvassers",
+            "columns": [
+              "count"
+            ],
+            "rows": [
+              [
+                0
+              ]
+            ],
+            "row_count": 1,
+            "sql": "SELECT COUNT(*) FROM canvassers WHERE start_date <= '2026-10-18' AND role = 'field'"
+          }
+        ],
+        "citations": [],
+        "citations_valid": false,
+        "latency_ms": 40697,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "q05",
+      "question": "Based on our pace and what's left, should we ask the client for more doors, or a second pass on the turf we have?",
+      "category": "door gaps",
+      "keywords": [
+        "more doors",
+        "second pass",
+        "turf",
+        "client",
+        "run out",
+        "remaining"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#more-doors-or-a-second-pass",
+        "program-plan#opening-another-office",
+        "program-plan#pace-and-projection",
+        "counting-doors#attempts"
+      ],
+      "scores": {
+        "tool_choice": 0.0,
+        "retrieval": 1.0,
+        "facts": 0.667,
+        "citation": 0.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "untouched doors left in turf",
+          "expected": 10393.0,
+          "matched": false
+        },
+        {
+          "name": "doors we can knock in the days left",
+          "expected": 23826.285714285714,
+          "matched": true
+        },
+        {
+          "name": "recommends more doors",
+          "expected": [
+            "more doors",
+            "more turf",
+            "new turf",
+            "additional doors",
+            "additional turf"
+          ],
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Based on our pace and what's left, should we ask the client for more doors, or a second pass on the turf we have?",
+        "answer": "Based on the `v_office_pace` view, here's the current status for each office:\n\n- **Eastgate**: 89.3% of the goal completed, with 16 knocking days left. The projected total is 14,596 doors, which is 3,204 doors short of the goal.\n- **Harbor**: 105.3% of the goal completed, with 16 knocking days left. The projected total is 19,150 doors, which is 1,007 doors over the goal.\n- **Northside**: 112.5% of the goal completed, with 16 knocking days left. The projected total is 23,583 doors, which is 908 doors over the goal.\n\nGiven that Harbor and Northside are ahead of their goals, they might not need additional doors. However, Eastgate is behind and could benefit from either more doors or a second pass on the turf they have.\n\nTo make a decision, we should also consider the average daily doors per shift and the number of shifts needed. Eastgate has an average of 45.9 doors per shift, which is lower than the needed 12.6 doors per shift. This suggests that a second pass on the current turf might be more effective.\n\nI recommend focusing on a second pass for Eastgate to catch up, while maintaining the current pace in Harbor and Northside. If Eastgate still falls short, we can consider asking the client for more doors.\n\n[view:v_office_pace]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT * FROM v_office_pace WHERE goal_total IS NOT NULL AND goal_to_date IS NOT NULL AND doors_to_date IS NOT NULL AND goal_total > doors_to_date AND office IN ('Northside', 'Eastgate', 'Harbor') ORDER BY office, goal_total - doors_to_date DESC LIMIT 10;"
+            },
+            "ok": true,
+            "result": "3 rows from v_office_pace"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_office_pace",
+            "columns": [
+              "office",
+              "goal_total",
+              "goal_to_date",
+              "doors_to_date",
+              "pct_of_goal_to_date",
+              "avg_daily_doors_last_7d",
+              "knocking_days_left",
+              "projected_total",
+              "projected_vs_goal",
+              "projected_pct_of_goal",
+              "avg_shifts_per_day_last_7d",
+              "doors_per_shift_last_7d",
+              "shifts_per_day_needed",
+              "extra_shifts_per_day_needed"
+            ],
+            "rows": [
+              [
+                "Eastgate",
+                17800,
+                9521,
+                8505,
+                89.3,
+                380.7,
+                16,
+                14596,
+                -3204,
+                82,
+                8.3,
+                45.9,
+                12.6,
+                4.4
+              ],
+              [
+                "Harbor",
+                20157,
+                10782,
+                11351,
+                105.3,
+                487.4,
+                16,
+                19150,
+                -1007,
+                95,
+                9.9,
+                49.4,
+                11.1,
+                1.3
+              ],
+              [
+                "Northside",
+                22675,
+                12128,
+                13647,
+                112.5,
+                621,
+                16,
+                23583,
+                908,
+                104,
+                11.1,
+                55.7,
+                10.1,
+                0
+              ]
+            ],
+            "row_count": 3,
+            "sql": "SELECT * FROM v_office_pace WHERE goal_total IS NOT NULL AND goal_to_date IS NOT NULL AND doors_to_date IS NOT NULL AND goal_total > doors_to_date AND office IN ('Northside', 'Eastgate', 'Harbor') ORDER BY office, goal_total - doors_to_date DESC LIMIT 10;"
+          }
+        ],
+        "citations": [],
+        "citations_valid": false,
+        "latency_ms": 122743,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "q06",
+      "question": "If we open a fourth office, where should it go to be closest to the doors we still need?",
+      "category": "office siting",
+      "keywords": [
+        "fourth office",
+        "new office",
+        "location",
+        "site",
+        "closest",
+        "remaining doors"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#opening-another-office",
+        "program-plan#goals",
+        "program-plan#pace-and-projection",
+        "program-plan#more-doors-or-a-second-pass"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 0.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "picks the Mill Street site",
+          "expected": [
+            "Mill Street",
+            "S1",
+            "215 Mill"
+          ],
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "If we open a fourth office, where should it go to be closest to the doors we still need?",
+        "answer": "Based on the current distribution of untouched doors, Harbor has the highest number of doors that still need to be canvassed at 8096. Therefore, opening a fourth office in the Harbor area would be the most strategic choice to address the largest gap in coverage.\n\n[view:v_precinct_coverage] shows the detailed distribution, confirming that Harbor has the highest number of untouched doors.",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT office, SUM(doors_untouched) AS total_untouched_doors FROM v_precinct_coverage WHERE doors_untouched > 0 GROUP BY office ORDER BY total_untouched_doors DESC LIMIT 1;"
+            },
+            "ok": true,
+            "result": "1 row from v_precinct_coverage"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_precinct_coverage",
+            "columns": [
+              "office",
+              "total_untouched_doors"
+            ],
+            "rows": [
+              [
+                "Harbor",
+                8096
+              ]
+            ],
+            "row_count": 1,
+            "sql": "SELECT office, SUM(doors_untouched) AS total_untouched_doors FROM v_precinct_coverage WHERE doors_untouched > 0 GROUP BY office ORDER BY total_untouched_doors DESC LIMIT 1;"
+          }
+        ],
+        "citations": [],
+        "citations_valid": false,
+        "latency_ms": 40105,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "q07",
+      "question": "Why does the client's daily report show more doors than our dashboard for Oct 12?",
+      "category": "client report",
+      "keywords": [
+        "client report",
+        "dashboard",
+        "Oct 12",
+        "difference",
+        "gap",
+        "attempts",
+        "rollback"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "client-reporting#daily-report",
+        "client-reporting#weekly-report-format",
+        "counting-doors#why-the-client-s-numbers-differ-from-ours",
+        "program-plan#pace-and-projection"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.5,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "client reported doors Oct 12",
+          "expected": 1484.0,
+          "matched": false
+        },
+        {
+          "name": "dashboard doors Oct 12",
+          "expected": 1281.0,
+          "matched": false
+        },
+        {
+          "name": "rolled-back attempts Oct 12",
+          "expected": 142.0,
+          "matched": true
+        },
+        {
+          "name": "explains rollback",
+          "expected": [
+            "rolled back",
+            "rollback",
+            "roll back",
+            "rolled-back"
+          ],
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Why does the client's daily report show more doors than our dashboard for Oct 12?",
+        "answer": "The `qc_flags` table shows that there was a flash knocking flag on October 12 for shift G00725, which was reviewed and resulted in the rollback of 142 knocks. This explains why the client's daily report shows 558 doors reported, but the dashboard shows only 428 doors knocked.\n\nThe discrepancy is due to the flash knocking flag, which rolled back 142 doors from the count. Therefore, the client's report includes these doors, but they are not counted in the dashboard's recorded doors.\n\nKey numbers:\n- Client's daily report: 558 doors\n- Dashboard recorded doors: 428 doors\n- Flash knocking flag on October 12: 142 doors rolled back\n\nThis explains the difference between the client's report and the dashboard data. [table:qc_flags]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT doors_reported FROM client_daily_report WHERE report_date = '2026-10-12' AND office IN ('Northside', 'Eastgate', 'Harbor')"
+            },
+            "ok": true,
+            "result": "3 rows from client_daily_report"
+          },
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT COUNT(*) FROM knocks WHERE DATE(knocked_at) = '2026-10-12'"
+            },
+            "ok": true,
+            "result": "1 row from knocks"
+          },
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "flash_knocking, householding, qc_flags"
+            },
+            "ok": true,
+            "result": "4 passages: qc-rules#flash-knocking, counting-doors#rollbacks, qc-rules#what-happens-after-a-flag, qc-rules#householding"
+          },
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT * FROM qc_flags WHERE flag_type = 'flash_knocking' AND flag_date = '2026-10-12'"
+            },
+            "ok": true,
+            "result": "1 row from qc_flags"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "qc_flags",
+            "columns": [
+              "flag_id",
+              "shift_id",
+              "canvasser_id",
+              "office",
+              "flag_date",
+              "flag_type",
+              "evidence",
+              "evidence_start",
+              "evidence_end",
+              "knock_count",
+              "status",
+              "knocks_rolled_back"
+            ],
+            "rows": [
+              [
+                "QC030",
+                "G00725",
+                "C002",
+                "Eastgate",
+                "2026-10-12",
+                "flash_knocking",
+                "142 knocks recorded between 16:28:20 and 17:05:03, median 15 s apart; whole shift rolled back",
+                "2026-10-12 16:28:20",
+                "2026-10-12 17:05:03",
+                142,
+                "reviewed",
+                true
+              ]
+            ],
+            "row_count": 1,
+            "sql": "SELECT * FROM qc_flags WHERE flag_type = 'flash_knocking' AND flag_date = '2026-10-12'"
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "qc_flags"
+          }
+        ],
+        "citations_valid": true,
+        "latency_ms": 158775,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 5
+      }
+    },
+    {
+      "id": "q08",
+      "question": "Which precincts are untouched or only lightly touched, and is what's left dense enough to keep knocking efficiently?",
+      "category": "door gaps",
+      "keywords": [
+        "precincts",
+        "untouched",
+        "lightly touched",
+        "dense",
+        "density",
+        "turf left"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#opening-another-office",
+        "counting-doors#contacts-and-contact-rate",
+        "qc-rules#flash-knocking",
+        "counting-doors#rollbacks"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.5,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "names the dense untouched cluster",
+          "expected": [
+            "P37",
+            "P38",
+            "P39",
+            "P40",
+            "Precinct 37",
+            "Precinct 38",
+            "Precinct 39",
+            "Precinct 40"
+          ],
+          "matched": true
+        },
+        {
+          "name": "untouched doors in dense untouched precincts",
+          "expected": 7118.0,
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Which precincts are untouched or only lightly touched, and is what's left dense enough to keep knocking efficiently?",
+        "answer": "Based on the data, the following precincts are untouched or only lightly touched, and are dense enough to warrant continued knocking:\n\n- Precinct 39, 37, 40, and 38 in Harbor: These precincts have over 4,000 doors per square mile, making them dense enough to keep knocking efficiently.\n- Precinct 11 in Northside: This precinct has 530 doors per square mile, which is also dense enough for knocking.\n\nPrecinct 24 in Eastgate has only 281 doors per square mile, which is less dense and may be better handled with drive-out shifts at the end.\n\n[doc:program-plan#opening-another-office] suggests that these dense precincts are worth considering for a new office to maximize efficiency. [table:v_precinct_coverage] shows the specific doors untouched in each precinct.",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "untouched precincts, light coverage, density for knocking efficiently"
+            },
+            "ok": true,
+            "result": "4 passages: program-plan#opening-another-office, qc-rules#flash-knocking, qc-rules#apartments-and-units, counting-doors#contacts-and-contact-rate"
+          },
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT precinct_id, name, office, doors_touched, doors_untouched, doors_per_sq_mi FROM v_precinct_coverage WHERE coverage IN ('untouched', 'light') ORDER BY doors_per_sq_mi DESC;"
+            },
+            "ok": true,
+            "result": "7 rows from v_precinct_coverage"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_precinct_coverage",
+            "columns": [
+              "precinct_id",
+              "name",
+              "office",
+              "doors_touched",
+              "doors_untouched",
+              "doors_per_sq_mi"
+            ],
+            "rows": [
+              [
+                "P39",
+                "Precinct 39",
+                "Harbor",
+                0,
+                1788,
+                4094
+              ],
+              [
+                "P37",
+                "Precinct 37",
+                "Harbor",
+                0,
+                1601,
+                4039
+              ],
+              [
+                "P40",
+                "Precinct 40",
+                "Harbor",
+                0,
+                1882,
+                3676
+              ],
+              [
+                "P38",
+                "Precinct 38",
+                "Harbor",
+                0,
+                1847,
+                3304
+              ],
+              [
+                "P11",
+                "Precinct 11",
+                "Northside",
+                0,
+                890,
+                530
+              ],
+              [
+                "P36",
+                "Precinct 36",
+                "Harbor",
+                0,
+                766,
+                398
+              ],
+              [
+                "P24",
+                "Precinct 24",
+                "Eastgate",
+                0,
+                817,
+                281
+              ]
+            ],
+            "row_count": 7,
+            "sql": "SELECT precinct_id, name, office, doors_touched, doors_untouched, doors_per_sq_mi FROM v_precinct_coverage WHERE coverage IN ('untouched', 'light') ORDER BY doors_per_sq_mi DESC;"
+          },
+          {
+            "type": "passage",
+            "doc": "program-plan#opening-another-office",
+            "text": "A new office should sit closest to the doors we still need: the untouched doors in our turf, weighted by how many doors each precinct has left. Untouched or lightly touched precincts (under 25 percent of doors touched) that are dense (over 2,000 doors per square mile) are worth a new office; sparse precincts (under 1,000 doors per square mile) are slow to knock and are better handled at the end with drive-out shifts. Candidate sites are listed in the candidate office sites table."
+          }
+        ],
+        "citations": [
+          {
+            "type": "doc",
+            "id": "program-plan#opening-another-office"
+          },
+          {
+            "type": "table",
+            "id": "v_precinct_coverage"
+          }
+        ],
+        "citations_valid": true,
+        "latency_ms": 110639,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "q09",
+      "question": "Are contact rates up or down from last week, and in which offices?",
+      "category": "pace",
+      "keywords": [
+        "contact rate",
+        "last week",
+        "up",
+        "down",
+        "offices",
+        "conversations"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "client-reporting#weekly-report-format",
+        "counting-doors#contacts-and-contact-rate",
+        "client-reporting#daily-report",
+        "qc-rules#qc-rate"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 0.0,
+        "refusal": 0.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Northside this week",
+          "expected": 30.06671267540833,
+          "matched": false
+        },
+        {
+          "name": "Northside last week",
+          "expected": 26.37772675086108,
+          "matched": false
+        },
+        {
+          "name": "Eastgate this week",
+          "expected": 24.9906191369606,
+          "matched": false
+        },
+        {
+          "name": "Eastgate last week",
+          "expected": 28.77254729432468,
+          "matched": false
+        },
+        {
+          "name": "Harbor this week",
+          "expected": 27.286049237983587,
+          "matched": false
+        },
+        {
+          "name": "Harbor last week",
+          "expected": 26.110753380553767,
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Are contact rates up or down from last week, and in which offices?",
+        "answer": "I can't confirm that from the program data or documents. The query encountered an error indicating that the column \"contacts_reported\" does not exist in the relevant tables. Please provide the correct column name or additional context.",
+        "refused": true,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT office, SUM(contacts_reported) AS contacts_this_week, SUM(contacts_reported) FILTER (WHERE knocked_at::date >= last_week_start AND knocked_at::date <= this_week_start) AS contacts_last_week FROM v_daily_doors WHERE knock_date >= last_week_start AND knock_date <= this_week_start GROUP BY office;"
+            },
+            "ok": false,
+            "result": "error: column \"contacts_reported\" does not exist"
+          }
+        ],
+        "sources": [],
+        "citations": [],
+        "citations_valid": false,
+        "latency_ms": 42274,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "q10",
+      "question": "What are we paying per door by office, and which office is most expensive?",
+      "category": "payroll",
+      "keywords": [
+        "cost per door",
+        "paying",
+        "pay",
+        "expensive",
+        "wages",
+        "office"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "payroll-rules#cost-per-door",
+        "program-plan#opening-another-office",
+        "counting-doors#doors",
+        "program-plan#goals"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 0.0,
+        "refusal": 0.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Northside cost per door",
+          "expected": 1.667654429544955,
+          "matched": false
+        },
+        {
+          "name": "Eastgate cost per door",
+          "expected": 2.073392122281011,
+          "matched": false
+        },
+        {
+          "name": "Harbor cost per door",
+          "expected": 1.778074178486477,
+          "matched": false
+        },
+        {
+          "name": "Eastgate is most expensive",
+          "expected": [
+            "Eastgate"
+          ],
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "What are we paying per door by office, and which office is most expensive?",
+        "answer": "I can't confirm that from the program data or documents. The query encountered an error because the `precinct_id` column does not exist in the `shifts` table. We need to use the `knocks` table to link shifts to precincts, but since the error occurred, I cannot proceed with the query as intended. Please verify the schema or provide the correct table structure.",
+        "refused": true,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT office, SUM(paid_hours * hourly_rate) / SUM(doors) AS cost_per_door FROM shifts s JOIN canvassers c ON s.canvasser_id = c.canvasser_id JOIN precincts p ON s.precinct_id = p.precinct_id JOIN offices o ON p.office = o.office WHERE s.shift_date BETWEEN '2026-10-05' AND '2026-10-18' GROUP BY office ORDER BY cost_per_door DESC;"
+            },
+            "ok": false,
+            "result": "error: column s.precinct_id does not exist"
+          },
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT office, SUM(paid_hours * hourly_rate) / SUM(doors) AS cost_per_door FROM shifts s JOIN canvassers c ON s.canvasser_id = c.canvasser_id JOIN precincts p ON s.precinct_id = p.precinct_id JOIN offices o ON p.office = o.office WHERE s.shift_date BETWEEN '2026-10-05' AND '2026-10-18' GROUP BY office ORDER BY cost_per_door DESC;"
+            },
+            "ok": false,
+            "result": "error: column s.precinct_id does not exist"
+          }
+        ],
+        "sources": [],
+        "citations": [],
+        "citations_valid": false,
+        "latency_ms": 83605,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "q11",
+      "question": "Which canvassers had flash knocking or householding flags this week, and is it one person or the whole office?",
+      "category": "QC",
+      "keywords": [
+        "flash knocking",
+        "householding",
+        "flags",
+        "canvassers",
+        "this week",
+        "QC"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "qc-rules#what-happens-after-a-flag",
+        "qc-rules#apartments-and-units",
+        "qc-rules#householding",
+        "client-reporting#daily-report"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 0.5,
+        "facts": 0.2,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Dorian Pratt",
+          "expected": [
+            "Dorian Pratt"
+          ],
+          "matched": false
+        },
+        {
+          "name": "Jalen Ortiz",
+          "expected": [
+            "Jalen Ortiz"
+          ],
+          "matched": false
+        },
+        {
+          "name": "Tomas Reyes",
+          "expected": [
+            "Tomas Reyes"
+          ],
+          "matched": false
+        },
+        {
+          "name": "Priya Nandakumar",
+          "expected": [
+            "Priya Nandakumar"
+          ],
+          "matched": false
+        },
+        {
+          "name": "Dorian's householding flags this week",
+          "expected": 3.0,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Which canvassers had flash knocking or householding flags this week, and is it one person or the whole office?",
+        "answer": "This week, the following canvassers had flash knocking or householding flags:\n\n- C003 at Northside with 1 flag\n- C002 at Eastgate with 1 flag\n- C001 at Eastgate with 3 flags\n- C004 at Harbor with 1 flag\n\nThese flags indicate that each canvasser had either flash knocking or householding issues during their shifts. The flags are specific to individual canvassers, not the entire office. [doc:qc-rules#what-happens-after-a-flag] Each open flag needs a conversation between the field lead and the canvasser before the canvasser's next shift. After the conversation, the flag is marked reviewed. Two or more householding or flash knocking flags in one week for the same canvasser go to the field director.",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "flash knocking or householding flags this week"
+            },
+            "ok": true,
+            "result": "4 passages: qc-rules#flash-knocking, qc-rules#what-happens-after-a-flag, counting-doors#rollbacks, qc-rules#householding"
+          },
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT canvasser_id, office, COUNT(*) as flag_count FROM qc_flags WHERE flag_type IN ('flash_knocking', 'householding') AND flag_date >= '2026-10-12' AND flag_date <= '2026-10-18' GROUP BY canvasser_id, office;"
+            },
+            "ok": true,
+            "result": "4 rows from qc_flags"
+          }
+        ],
+        "sources": [
+          {
+            "type": "passage",
+            "doc": "qc-rules#what-happens-after-a-flag",
+            "text": "Every open flag needs a conversation between the field lead and the canvasser before the canvasser's next shift, using the timestamped evidence on the flag. After the conversation the flag is marked reviewed. Two or more householding or flash knocking flags in one week for the same canvasser go to the field director."
+          }
+        ],
+        "citations": [
+          {
+            "type": "doc",
+            "id": "qc-rules#what-happens-after-a-flag"
+          }
+        ],
+        "citations_valid": true,
+        "latency_ms": 112750,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "q12",
+      "question": "Which shifts need a conversation today, and what's the evidence behind each flag?",
+      "category": "QC",
+      "keywords": [
+        "conversation",
+        "today",
+        "open flags",
+        "evidence",
+        "shifts",
+        "QC"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "qc-rules#what-happens-after-a-flag",
+        "counting-doors#rollbacks",
+        "program-plan#shifts-needed",
+        "qc-rules#qc-rate"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 0.0,
+        "refusal": 0.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Dorian Pratt (open householding)",
+          "expected": [
+            "Dorian Pratt"
+          ],
+          "matched": false
+        },
+        {
+          "name": "Andre Whitfield (open gap)",
+          "expected": [
+            "Andre Whitfield"
+          ],
+          "matched": false
+        },
+        {
+          "name": "Priya Nandakumar (open flash knocking)",
+          "expected": [
+            "Priya Nandakumar"
+          ],
+          "matched": false
+        },
+        {
+          "name": "open flag count",
+          "expected": 4.0,
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Which shifts need a conversation today, and what's the evidence behind each flag?",
+        "answer": "There are no open flags that need a conversation today according to the data. The evidence for each flag is as follows:\n\n- Flag Type: Household, Flash Knocking\n- Evidence: Detailed notes or recordings attached to the flag\n- Evidence Start: Timestamp when the flag was raised\n- Evidence End: Timestamp when the flag was raised\n\nFor any flags that need a conversation, the field lead will review the evidence and discuss it with the canvasser before their next shift. Flags that are householding or flash knocking and occur two or more times in a week for the same canvasser will be escalated to the field director.\n\nI can't confirm that from the program data or documents. The specific shifts and canvassers involved are not provided in the data.",
+        "refused": true,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT shift_id, canvasser_id, office, flag_type, evidence, evidence_start, evidence_end FROM qc_flags WHERE flag_date = CURRENT_DATE AND status = 'open'"
+            },
+            "ok": true,
+            "result": "0 rows from qc_flags"
+          },
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "definition of 'needs a conversation' in context of QC flags"
+            },
+            "ok": true,
+            "result": "4 passages: qc-rules#what-happens-after-a-flag, qc-rules#qc-rate, counting-doors#contacts-and-contact-rate, qc-rules#gaps"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "qc_flags",
+            "columns": [
+              "shift_id",
+              "canvasser_id",
+              "office",
+              "flag_type",
+              "evidence",
+              "evidence_start",
+              "evidence_end"
+            ],
+            "rows": [],
+            "row_count": 0,
+            "sql": "SELECT shift_id, canvasser_id, office, flag_type, evidence, evidence_start, evidence_end FROM qc_flags WHERE flag_date = CURRENT_DATE AND status = 'open'"
+          },
+          {
+            "type": "passage",
+            "doc": "qc-rules#what-happens-after-a-flag",
+            "text": "Every open flag needs a conversation between the field lead and the canvasser before the canvasser's next shift, using the timestamped evidence on the flag. After the conversation the flag is marked reviewed. Two or more householding or flash knocking flags in one week for the same canvasser go to the field director."
+          },
+          {
+            "type": "passage",
+            "doc": "qc-rules#qc-rate",
+            "text": "The QC rate is flags per 100 GOTV shifts for an office in a week. Week over week trends use this rate, not raw flag counts, because the number of shifts grows during the program."
+          }
+        ],
+        "citations": [],
+        "citations_valid": false,
+        "latency_ms": 145631,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "q13",
+      "question": "Is QC getting better or worse week over week, and which office is improving?",
+      "category": "QC",
+      "keywords": [
+        "QC",
+        "week over week",
+        "better",
+        "worse",
+        "improving",
+        "flags rate"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "qc-rules#qc-rate",
+        "client-reporting#weekly-report-format",
+        "client-reporting#daily-report",
+        "counting-doors#rollbacks"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [
+        {
+          "name": "Harbor is improving",
+          "expected": [
+            "Harbor"
+          ],
+          "matched": true
+        },
+        {
+          "name": "Harbor flags per 100 shifts this week",
+          "expected": 1.4492753623188406,
+          "matched": true
+        },
+        {
+          "name": "Harbor flags per 100 shifts last week",
+          "expected": 6.153846153846154,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Is QC getting better or worse week over week, and which office is improving?",
+        "answer": "QC is getting worse week over week based on the flags per 100 shifts metric. Here are the key numbers:\n\n- **Last Week (Oct 5-11):**\n  - Harbor: 6.2 flags per 100 shifts\n  - Eastgate: 3.8 flags per 100 shifts\n  - Northside: 3 flags per 100 shifts\n\n- **This Week (Oct 12-18):**\n  - Harbor: 1.4 flags per 100 shifts\n  - Eastgate: 8.6 flags per 100 shifts\n  - Northside: 1.3 flags per 100 shifts\n\nEastgate has seen a significant increase in QC issues, going from 3.8 to 8.6 flags per 100 shifts. Harbor has also seen an improvement, dropping from 6.2 to 1.4 flags per 100 shifts. Northside has shown a slight improvement, going from 3 to 1.3 flags per 100 shifts.\n\nSources:\n- [table:v_qc_weekly]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "QC weekly view"
+            },
+            "ok": true,
+            "result": "4 passages: qc-rules#qc-rate, registration-drive#qc-calls, counting-doors#rollbacks, client-reporting#weekly-report-format"
+          },
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT * FROM v_qc_weekly WHERE week_start IN ('2026-10-05', '2026-10-12') ORDER BY week_start;"
+            },
+            "ok": true,
+            "result": "6 rows from v_qc_weekly"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_qc_weekly",
+            "columns": [
+              "office",
+              "week_start",
+              "shifts",
+              "flags",
+              "flash_knocking",
+              "householding",
+              "gaps",
+              "flags_per_100_shifts"
+            ],
+            "rows": [
+              [
+                "Harbor",
+                "2026-10-05",
+                65,
+                4,
+                2,
+                1,
+                1,
+                6.2
+              ],
+              [
+                "Eastgate",
+                "2026-10-05",
+                52,
+                2,
+                2,
+                0,
+                0,
+                3.8
+              ],
+              [
+                "Northside",
+                "2026-10-05",
+                67,
+                2,
+                1,
+                1,
+                0,
+                3
+              ],
+              [
+                "Eastgate",
+                "2026-10-12",
+                58,
+                5,
+                1,
+                3,
+                1,
+                8.6
+              ],
+              [
+                "Harbor",
+                "2026-10-12",
+                69,
+                1,
+                1,
+                0,
+                0,
+                1.4
+              ],
+              [
+                "Northside",
+                "2026-10-12",
+                78,
+                1,
+                0,
+                1,
+                0,
+                1.3
+              ]
+            ],
+            "row_count": 6,
+            "sql": "SELECT * FROM v_qc_weekly WHERE week_start IN ('2026-10-05', '2026-10-12') ORDER BY week_start;"
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_qc_weekly"
+          }
+        ],
+        "citations_valid": true,
+        "latency_ms": 276649,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "q14",
+      "question": "Are we on pace for the registration goal, and what cards per hour do we need from here?",
+      "category": "VR rate",
+      "keywords": [
+        "registration",
+        "goal",
+        "cards per hour",
+        "pace",
+        "needed",
+        "cards"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "registration-drive#cards-per-hour",
+        "registration-drive#valid-cards-and-duplicates",
+        "program-plan#pace-and-projection",
+        "client-reporting#weekly-report-format"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 0.0,
+        "refusal": 0.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "cards per hour needed",
+          "expected": 2.9580550918196993,
+          "matched": false
+        },
+        {
+          "name": "current cards per hour, last 7 days",
+          "expected": 2.8559503935129977,
+          "matched": false
+        },
+        {
+          "name": "says not on pace",
+          "expected": [
+            "not on pace",
+            "not on track",
+            "behind",
+            "short",
+            "below",
+            "under",
+            "miss"
+          ],
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Are we on pace for the registration goal, and what cards per hour do we need from here?",
+        "answer": "I can't confirm that from the program data or documents.\n\nThe `vr_goals` table provides the registration card goals for each office, but the necessary data on current progress is missing. We need to query the current number of cards collected and compare it against the goal to determine if we are on pace. Additionally, the required cards per hour from here would need the current number of hours worked and the remaining cards to be collected. Please provide the current number of cards collected and the remaining hours to calculate the pace and needed cards per hour.",
+        "refused": true,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT * FROM v_vr_pace WHERE week_start <= '2026-10-18' AND office = 'All offices'"
+            },
+            "ok": false,
+            "result": "error: column \"week_start\" does not exist"
+          },
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT * FROM vr_goals WHERE office = 'All offices'"
+            },
+            "ok": true,
+            "result": "0 rows from vr_goals"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "vr_goals",
+            "columns": [
+              "office",
+              "card_goal"
+            ],
+            "rows": [],
+            "row_count": 0,
+            "sql": "SELECT * FROM vr_goals WHERE office = 'All offices'"
+          }
+        ],
+        "citations": [],
+        "citations_valid": false,
+        "latency_ms": 190858,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "q15",
+      "question": "Which offices are under that cards per hour?",
+      "category": "VR rate",
+      "keywords": [
+        "offices",
+        "under",
+        "cards per hour",
+        "registration",
+        "below rate"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "registration-drive#cards-per-hour",
+        "client-reporting#weekly-report-format",
+        "payroll-rules#cost-per-door",
+        "registration-drive#valid-cards-and-duplicates"
+      ],
+      "scores": {
+        "tool_choice": 0.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 0.0,
+        "refusal": 0.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Eastgate is under",
+          "expected": [
+            "Eastgate"
+          ],
+          "matched": false
+        },
+        {
+          "name": "Harbor is under",
+          "expected": [
+            "Harbor"
+          ],
+          "matched": false
+        },
+        {
+          "name": "Eastgate cards per hour, last 7 days",
+          "expected": 2.406790587729666,
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Which offices are under that cards per hour?",
+        "answer": "I can't confirm that from the program data or documents. The question seems to be asking about which offices are underperforming in terms of cards collected per hour, but I don't have the specific data or definition for \"cards per hour\" in the provided information. Could you clarify what metric you're referring to or provide more context?",
+        "refused": true,
+        "tool_calls": [],
+        "sources": [],
+        "citations": [],
+        "citations_valid": false,
+        "latency_ms": 23956,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 1
+      }
+    },
+    {
+      "id": "q16",
+      "question": "Which offices or canvassers have the most duplicate registrations, and is it one person or across the board?",
+      "category": "QC",
+      "keywords": [
+        "duplicate",
+        "registrations",
+        "cards",
+        "canvassers",
+        "one person",
+        "across the board"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "registration-drive#valid-cards-and-duplicates",
+        "qc-rules#apartments-and-units",
+        "payroll-rules#pay-rates",
+        "counting-doors#attempts"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Renata Cole",
+          "expected": [
+            "Renata Cole"
+          ],
+          "matched": false
+        },
+        {
+          "name": "Renata's duplicate cards",
+          "expected": 42.0,
+          "matched": false
+        },
+        {
+          "name": "Harbor duplicates",
+          "expected": 66.0,
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Which offices or canvassers have the most duplicate registrations, and is it one person or across the board?",
+        "answer": "The canvasser with the most duplicate registrations is C009 with 47 duplicates. Across offices, Harbor has the highest number of duplicate registrations with 131.\n\nSources:\n- [table:vr_cards] for duplicate counts by canvasser and office.",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT canvasser_id, COUNT(*) AS duplicate_count FROM vr_cards WHERE duplicate_group_id IS NOT NULL GROUP BY canvasser_id ORDER BY duplicate_count DESC LIMIT 10;"
+            },
+            "ok": true,
+            "result": "10 rows from vr_cards"
+          },
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT office, COUNT(*) AS duplicate_count FROM vr_cards WHERE duplicate_group_id IS NOT NULL GROUP BY office ORDER BY duplicate_count DESC LIMIT 10;"
+            },
+            "ok": true,
+            "result": "3 rows from vr_cards"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "vr_cards",
+            "columns": [
+              "canvasser_id",
+              "duplicate_count"
+            ],
+            "rows": [
+              [
+                "C009",
+                47
+              ],
+              [
+                "C124",
+                19
+              ],
+              [
+                "C125",
+                19
+              ],
+              [
+                "C008",
+                17
+              ],
+              [
+                "C105",
+                14
+              ],
+              [
+                "C116",
+                13
+              ],
+              [
+                "C106",
+                13
+              ],
+              [
+                "C122",
+                12
+              ]
+            ],
+            "row_count": 10,
+            "sql": "SELECT canvasser_id, COUNT(*) AS duplicate_count FROM vr_cards WHERE duplicate_group_id IS NOT NULL GROUP BY canvasser_id ORDER BY duplicate_count DESC LIMIT 10;"
+          },
+          {
+            "type": "rows",
+            "table": "vr_cards",
+            "columns": [
+              "office",
+              "duplicate_count"
+            ],
+            "rows": [
+              [
+                "Harbor",
+                131
+              ],
+              [
+                "Northside",
+                47
+              ],
+              [
+                "Eastgate",
+                44
+              ]
+            ],
+            "row_count": 3,
+            "sql": "SELECT office, COUNT(*) AS duplicate_count FROM vr_cards WHERE duplicate_group_id IS NOT NULL GROUP BY office ORDER BY duplicate_count DESC LIMIT 10;"
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "vr_cards"
+          }
+        ],
+        "citations_valid": true,
+        "latency_ms": 59223,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "q17",
+      "question": "What share of QC calls confirmed the registrant, couldn't reach them, or found wrong information?",
+      "category": "QC",
+      "keywords": [
+        "QC calls",
+        "confirmed",
+        "unreachable",
+        "wrong information",
+        "share",
+        "registration"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "registration-drive#qc-calls",
+        "counting-doors#rollbacks",
+        "counting-doors#why-the-client-s-numbers-differ-from-ours",
+        "qc-rules#qc-rate"
+      ],
+      "scores": {
+        "tool_choice": 0.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 0.0,
+        "refusal": 0.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "confirmed share",
+          "expected": 72.3159509202454,
+          "matched": false
+        },
+        {
+          "name": "unreachable share",
+          "expected": 20.322085889570552,
+          "matched": false
+        },
+        {
+          "name": "wrong information share",
+          "expected": 7.361963190184049,
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "What share of QC calls confirmed the registrant, couldn't reach them, or found wrong information?",
+        "answer": "I can't confirm that from the program data or documents.\n\nThe documents do not provide specific information on the share of QC calls that confirmed registrants, couldn't reach them, or found wrong information. The relevant documents discuss QC call outcomes in general terms but do not break down the specific percentages or shares for the outcomes mentioned.",
+        "refused": true,
+        "tool_calls": [
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "QC calls, confirmation, unreachable, wrong information"
+            },
+            "ok": true,
+            "result": "4 passages: registration-drive#qc-calls, counting-doors#rollbacks, qc-rules#qc-rate, counting-doors#why-the-client-s-numbers-differ-from-ours"
+          }
+        ],
+        "sources": [
+          {
+            "type": "passage",
+            "doc": "registration-drive#qc-calls",
+            "text": "A sample of valid cards gets a QC call a day or two after collection. Outcomes are confirmed (the registrant confirms they filled out the card), unreachable (no answer after two tries) and wrong_info (the person says the details are wrong or they did not register). Wrong information above 10 percent of calls for a canvasser is escalated."
+          },
+          {
+            "type": "passage",
+            "doc": "counting-doors#rollbacks",
+            "text": "When QC confirms flash knocking, the knocks in the flagged window are rolled back: they stay in the data with rolled_back = true but are removed from doors and contacts. Rollbacks happen after the day's client report has been pulled, so they never change a report that was already sent."
+          }
+        ],
+        "citations": [],
+        "citations_valid": false,
+        "latency_ms": 44239,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "q18",
+      "question": "Who's over the weekly overtime threshold, and whose hours still need fixing or approval before payroll runs?",
+      "category": "payroll",
+      "keywords": [
+        "overtime",
+        "40 hours",
+        "payroll",
+        "approval",
+        "fix",
+        "hours",
+        "threshold"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "payroll-rules#overtime",
+        "payroll-rules#payroll-deadline",
+        "payroll-rules#shifts-that-need-fixing",
+        "registration-drive#cards-per-hour"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 0.0,
+        "refusal": 0.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Ellis Warren over 40",
+          "expected": [
+            "Ellis Warren"
+          ],
+          "matched": false
+        },
+        {
+          "name": "Sofia Lindqvist over 40",
+          "expected": [
+            "Sofia Lindqvist"
+          ],
+          "matched": false
+        },
+        {
+          "name": "Marcus Bell over 40",
+          "expected": [
+            "Marcus Bell"
+          ],
+          "matched": false
+        },
+        {
+          "name": "Leon Mbeki needs fix",
+          "expected": [
+            "Leon Mbeki"
+          ],
+          "matched": false
+        },
+        {
+          "name": "Carmen Ruiz needs fix",
+          "expected": [
+            "Carmen Ruiz"
+          ],
+          "matched": false
+        },
+        {
+          "name": "Hugo Brennan needs fix",
+          "expected": [
+            "Hugo Brennan"
+          ],
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Who's over the weekly overtime threshold, and whose hours still need fixing or approval before payroll runs?",
+        "answer": "I can't confirm that from the program data or documents. The query returned an error indicating that the column \"overtime_threshold_hours\" does not exist in the relevant tables. Please verify if this column is correctly defined in the schema.",
+        "refused": true,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT canvasser_id, full_name, office, program, week_start, shifts, paid_hours, shifts_pending, shifts_needs_fix FROM v_weekly_hours WHERE overtime_threshold_hours IS NOT NULL AND (shifts_needs_fix > 0 OR shifts_pending > 0)"
+            },
+            "ok": false,
+            "result": "error: column \"overtime_threshold_hours\" does not exist"
+          }
+        ],
+        "sources": [],
+        "citations": [],
+        "citations_valid": false,
+        "latency_ms": 67211,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "q19",
+      "question": "Pull this week's numbers for the client report: doors, contacts, cards and hours by office.",
+      "category": "client report",
+      "keywords": [
+        "client report",
+        "this week",
+        "doors",
+        "contacts",
+        "cards",
+        "hours",
+        "weekly"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "client-reporting#weekly-report-format",
+        "client-reporting#daily-report",
+        "program-plan#goals",
+        "counting-doors#why-the-client-s-numbers-differ-from-ours"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 0.0,
+        "refusal": 0.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Northside doors",
+          "expected": 4347.0,
+          "matched": false
+        },
+        {
+          "name": "Eastgate doors",
+          "expected": 2665.0,
+          "matched": false
+        },
+        {
+          "name": "Harbor doors",
+          "expected": 3412.0,
+          "matched": false
+        },
+        {
+          "name": "Northside contacts",
+          "expected": 1307.0,
+          "matched": false
+        },
+        {
+          "name": "Eastgate contacts",
+          "expected": 666.0,
+          "matched": false
+        },
+        {
+          "name": "Harbor contacts",
+          "expected": 931.0,
+          "matched": false
+        },
+        {
+          "name": "Northside cards",
+          "expected": 382.0,
+          "matched": false
+        },
+        {
+          "name": "Eastgate cards",
+          "expected": 224.0,
+          "matched": false
+        },
+        {
+          "name": "Harbor cards",
+          "expected": 352.0,
+          "matched": false
+        },
+        {
+          "name": "Northside hours",
+          "expected": 463.64,
+          "matched": false
+        },
+        {
+          "name": "Eastgate hours",
+          "expected": 362.67,
+          "matched": false
+        },
+        {
+          "name": "Harbor hours",
+          "expected": 417.64,
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Pull this week's numbers for the client report: doors, contacts, cards and hours by office.",
+        "answer": "I can't confirm that from the program data or documents. The query returned an error indicating that the \"paid_hours\" column does not exist in the view `v_daily_doors`. Please verify the required columns in the view or the existence of the \"paid_hours\" field.",
+        "refused": true,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT office, SUM(doors) AS doors, SUM(contacts) AS contacts, SUM(paid_hours) AS hours, SUM(cards_collected) AS cards_collected FROM v_daily_doors WHERE knock_date BETWEEN '2026-10-12' AND '2026-10-18' GROUP BY office;"
+            },
+            "ok": false,
+            "result": "error: column \"paid_hours\" does not exist"
+          }
+        ],
+        "sources": [],
+        "citations": [],
+        "citations_valid": false,
+        "latency_ms": 60388,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "x01",
+      "question": "Which office is furthest behind its door goal?",
+      "category": "pace",
+      "keywords": [],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#goals",
+        "program-plan#opening-another-office",
+        "program-plan#pace-and-projection",
+        "program-plan#overview"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 0.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Eastgate",
+          "expected": [
+            "Eastgate"
+          ],
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Which office is furthest behind its door goal?",
+        "answer": "The office furthest behind its door goal is \"All offices\" with 27,129 doors behind its goal. [view:v_office_pace]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT office, goal_total, doors_to_date, goal_total - doors_to_date AS behind FROM v_office_pace WHERE goal_total > 0 ORDER BY behind DESC LIMIT 1;"
+            },
+            "ok": true,
+            "result": "1 row from v_office_pace"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_office_pace",
+            "columns": [
+              "office",
+              "goal_total",
+              "doors_to_date",
+              "behind"
+            ],
+            "rows": [
+              [
+                "All offices",
+                60632,
+                33503,
+                27129
+              ]
+            ],
+            "row_count": 1,
+            "sql": "SELECT office, goal_total, doors_to_date, goal_total - doors_to_date AS behind FROM v_office_pace WHERE goal_total > 0 ORDER BY behind DESC LIMIT 1;"
+          }
+        ],
+        "citations": [],
+        "citations_valid": false,
+        "latency_ms": 25958,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "x02",
+      "question": "Which office costs the most per door?",
+      "category": "payroll",
+      "keywords": [],
+      "should_refuse": false,
+      "retrieved": [
+        "payroll-rules#cost-per-door",
+        "program-plan#opening-another-office",
+        "program-plan#goals",
+        "counting-doors#doors"
+      ],
+      "scores": {
+        "tool_choice": 0.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 0.0,
+        "refusal": 0.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Eastgate",
+          "expected": [
+            "Eastgate"
+          ],
+          "matched": false
+        },
+        {
+          "name": "Eastgate cost per door",
+          "expected": 2.073392122281011,
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Which office costs the most per door?",
+        "answer": "I can't confirm that from the program data or documents.\n\nThe provided documents do not include specific data on the monthly rent for each office site or the number of doors each office has targeted or touched. To calculate the cost per door for each office, we would need the monthly rent for each office site and the number of doors each office has targeted or touched. These details are necessary to perform the cost per door calculation.",
+        "refused": true,
+        "tool_calls": [
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "office site monthly rent, target doors, doors touched"
+            },
+            "ok": true,
+            "result": "4 passages: program-plan#opening-another-office, program-plan#goals, counting-doors#doors, qc-rules#apartments-and-units"
+          }
+        ],
+        "sources": [
+          {
+            "type": "passage",
+            "doc": "program-plan#opening-another-office",
+            "text": "A new office should sit closest to the doors we still need: the untouched doors in our turf, weighted by how many doors each precinct has left. Untouched or lightly touched precincts (under 25 percent of doors touched) that are dense (over 2,000 doors per square mile) are worth a new office; sparse precincts (under 1,000 doors per square mile) are slow to knock and are better handled at the end with drive-out shifts. Candidate sites are listed in the candidate office sites table."
+          },
+          {
+            "type": "passage",
+            "doc": "program-plan#goals",
+            "text": "The door goal for each office is the sum of its daily goals from September 21 through November 3. Program goal is the sum of the three offices. Daily goals ramp from about 60 percent of the average day at the start to about 150 percent in the final week."
+          }
+        ],
+        "citations": [],
+        "citations_valid": false,
+        "latency_ms": 59617,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "x03",
+      "question": "How many registration QC calls came back with wrong information?",
+      "category": "QC",
+      "keywords": [],
+      "should_refuse": false,
+      "retrieved": [
+        "registration-drive#qc-calls",
+        "counting-doors#rollbacks",
+        "qc-rules#qc-rate",
+        "counting-doors#why-the-client-s-numbers-differ-from-ours"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [
+        {
+          "name": "wrong information calls",
+          "expected": 96.0,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "How many registration QC calls came back with wrong information?",
+        "answer": "There were 96 registration QC calls that came back with wrong information. [table:vr_qc_calls]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT COUNT(*) FROM vr_qc_calls WHERE outcome = 'wrong_info';"
+            },
+            "ok": true,
+            "result": "1 row from vr_qc_calls"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "vr_qc_calls",
+            "columns": [
+              "count"
+            ],
+            "rows": [
+              [
+                96
+              ]
+            ],
+            "row_count": 1,
+            "sql": "SELECT COUNT(*) FROM vr_qc_calls WHERE outcome = 'wrong_info';"
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "vr_qc_calls"
+          }
+        ],
+        "citations_valid": true,
+        "latency_ms": 16748,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "x04",
+      "question": "What counts as flash knocking under our QC rules?",
+      "category": "QC",
+      "keywords": [],
+      "should_refuse": false,
+      "retrieved": [
+        "qc-rules#flash-knocking",
+        "counting-doors#rollbacks",
+        "qc-rules#what-happens-after-a-flag",
+        "registration-drive#qc-calls"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [
+        {
+          "name": "10 consecutive knocks",
+          "expected": [
+            "10 ",
+            "ten"
+          ],
+          "matched": true
+        },
+        {
+          "name": "under 30 seconds apart",
+          "expected": [
+            "30 seconds",
+            "thirty seconds"
+          ],
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "What counts as flash knocking under our QC rules?",
+        "answer": "Flash knocking is defined as recording doors faster than a person can walk to them and knock. Specifically, a shift is flagged when 10 or more consecutive knocks are recorded less than 30 seconds apart. Confirmed flash knocking results in the knocks being rolled back, meaning they remain in the data but are not counted in the doors or contacts. Each flagged shift is fully rolled back. [doc:qc-rules#flash-knocking, doc:counting-doors#rollbacks]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "flash knocking QC rules"
+            },
+            "ok": true,
+            "result": "4 passages: qc-rules#flash-knocking, counting-doors#rollbacks, qc-rules#what-happens-after-a-flag, qc-rules#qc-rate"
+          }
+        ],
+        "sources": [
+          {
+            "type": "passage",
+            "doc": "qc-rules#flash-knocking",
+            "text": "Flash knocking is recording doors faster than a person can walk to them and knock. A shift is flagged when 10 or more consecutive knocks are recorded less than 30 seconds apart. Confirmed flash knocking is rolled back: the knocks in the window no longer count as doors or contacts. A whole shift recorded this way is rolled back in full."
+          },
+          {
+            "type": "passage",
+            "doc": "counting-doors#rollbacks",
+            "text": "When QC confirms flash knocking, the knocks in the flagged window are rolled back: they stay in the data with rolled_back = true but are removed from doors and contacts. Rollbacks happen after the day's client report has been pulled, so they never change a report that was already sent."
+          }
+        ],
+        "citations": [
+          {
+            "type": "doc",
+            "id": "qc-rules#flash-knocking"
+          },
+          {
+            "type": "doc",
+            "id": "counting-doors#rollbacks"
+          }
+        ],
+        "citations_valid": true,
+        "latency_ms": 54544,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "x05",
+      "question": "When does payroll run, and who has to approve overtime?",
+      "category": "payroll",
+      "keywords": [],
+      "should_refuse": false,
+      "retrieved": [
+        "payroll-rules#payroll-deadline",
+        "payroll-rules#overtime",
+        "payroll-rules#shifts-that-need-fixing",
+        "payroll-rules#pay-rates"
+      ],
+      "scores": {
+        "tool_choice": 0.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Tuesday at noon",
+          "expected": [
+            "Tuesday"
+          ],
+          "matched": false
+        },
+        {
+          "name": "field director approves",
+          "expected": [
+            "field director"
+          ],
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "When does payroll run, and who has to approve overtime?",
+        "answer": "Payroll runs as of Sunday, October 18, 2026. Overtime is approved if the threshold of 40 paid hours is exceeded. [table:program_settings]\n\nAccording to the program settings, overtime is approved if the number of paid hours exceeds 40 hours. [table:program_settings]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT * FROM program_settings WHERE as_of_date <= CURRENT_DATE LIMIT 1;"
+            },
+            "ok": true,
+            "result": "1 row from program_settings"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "program_settings",
+            "columns": [
+              "as_of_date",
+              "this_week_start",
+              "last_week_start",
+              "election_day",
+              "gotv_last_knock_day",
+              "vr_deadline",
+              "overtime_threshold_hours"
+            ],
+            "rows": [
+              [
+                "2026-10-18",
+                "2026-10-12",
+                "2026-10-05",
+                "2026-11-03",
+                "2026-11-03",
+                "2026-10-30",
+                40
+              ]
+            ],
+            "row_count": 1,
+            "sql": "SELECT * FROM program_settings WHERE as_of_date <= CURRENT_DATE LIMIT 1;"
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "program_settings"
+          }
+        ],
+        "citations_valid": true,
+        "latency_ms": 33757,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "x06",
+      "question": "How should a canvasser record a locked apartment building?",
+      "category": "QC",
+      "keywords": [],
+      "should_refuse": false,
+      "retrieved": [
+        "qc-rules#apartments-and-units",
+        "qc-rules#householding",
+        "counting-doors#attempts",
+        "qc-rules#gaps"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [
+        {
+          "name": "inaccessible",
+          "expected": [
+            "inaccessible"
+          ],
+          "matched": true
+        },
+        {
+          "name": "once, not per unit",
+          "expected": [
+            "once",
+            "first unit",
+            "one time"
+          ],
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "How should a canvasser record a locked apartment building?",
+        "answer": "A canvasser should record a locked apartment building by marking it as \"inaccessible\" on its first unit and moving on, rather than marking each unit. This is to avoid householding, which is recording doors faster than a person can walk to them and knock. If the canvasser cannot get into the building, they should not mark each unit but record the building once. This follows the QC rules for flash knocking and counting doors [doc:qc-rules#apartments-and-units, doc:qc-rules#flash-knocking, doc:counting-doors#attempts, doc:counting-doors#doors].",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "locked apartment building recording"
+            },
+            "ok": true,
+            "result": "4 passages: qc-rules#apartments-and-units, qc-rules#flash-knocking, counting-doors#attempts, counting-doors#doors"
+          }
+        ],
+        "sources": [
+          {
+            "type": "passage",
+            "doc": "qc-rules#apartments-and-units",
+            "text": "Every apartment unit is its own door and must be knocked on its own. If a building is locked and the canvasser cannot get in, record the building once as \"inaccessible\" on its first unit and move on; do not mark each unit. A canvasser who marks a whole building from the lobby is householding."
+          },
+          {
+            "type": "passage",
+            "doc": "qc-rules#flash-knocking",
+            "text": "Flash knocking is recording doors faster than a person can walk to them and knock. A shift is flagged when 10 or more consecutive knocks are recorded less than 30 seconds apart. Confirmed flash knocking is rolled back: the knocks in the window no longer count as doors or contacts. A whole shift recorded this way is rolled back in full."
+          },
+          {
+            "type": "passage",
+            "doc": "counting-doors#attempts",
+            "text": "An attempt is every knock record the canvassing app submits. If a canvasser knocks a not-home door at 11:00 and comes back at 14:00, that is two attempts and one door. Attempts are always equal to or higher than doors."
+          },
+          {
+            "type": "passage",
+            "doc": "counting-doors#doors",
+            "text": "A door is one address unit (a house, or one apartment unit) knocked on one day. Our dashboard counts each door once per day no matter how many times it was knocked that day. Doors knocked on different days count again on each day, so a second pass on a not-home door adds a door on the day of the second pass."
+          }
+        ],
+        "citations": [
+          {
+            "type": "doc",
+            "id": "qc-rules#apartments-and-units"
+          },
+          {
+            "type": "doc",
+            "id": "qc-rules#flash-knocking"
+          },
+          {
+            "type": "doc",
+            "id": "counting-doors#attempts"
+          },
+          {
+            "type": "doc",
+            "id": "counting-doors#doors"
+          }
+        ],
+        "citations_valid": true,
+        "latency_ms": 51318,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "x07",
+      "question": "What will turnout be in Harbor's precincts on election day?",
+      "category": "pace",
+      "keywords": [],
+      "should_refuse": true,
+      "retrieved": [
+        "program-plan#overview",
+        "registration-drive#overview",
+        "program-plan#pace-and-projection",
+        "program-plan#more-doors-or-a-second-pass"
+      ],
+      "scores": {
+        "tool_choice": null,
+        "retrieval": null,
+        "facts": null,
+        "citation": null,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [],
+      "answer": {
+        "question": "What will turnout be in Harbor's precincts on election day?",
+        "answer": "I can't confirm that from the program data or documents. The provided data does not include information on voter turnout or specific predictions for Harbor's precincts on election day.",
+        "refused": true,
+        "tool_calls": [],
+        "sources": [],
+        "citations": [],
+        "citations_valid": false,
+        "latency_ms": 7943,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 1
+      }
+    },
+    {
+      "id": "x08",
+      "question": "What is Dorian Pratt's phone number?",
+      "category": "QC",
+      "keywords": [],
+      "should_refuse": true,
+      "retrieved": [
+        "registration-drive#qc-calls",
+        "registration-drive#overview",
+        "program-plan#more-doors-or-a-second-pass",
+        "program-plan#overview"
+      ],
+      "scores": {
+        "tool_choice": null,
+        "retrieval": null,
+        "facts": null,
+        "citation": null,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [],
+      "answer": {
+        "question": "What is Dorian Pratt's phone number?",
+        "answer": "I can't confirm that from the program data or documents. The provided tables and views do not include a field for phone numbers of canvassers.",
+        "refused": true,
+        "tool_calls": [],
+        "sources": [],
+        "citations": [],
+        "citations_valid": false,
+        "latency_ms": 6987,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 1
+      }
+    },
+    {
+      "id": "x09",
+      "question": "How many doors did Riverbend Votes knock in the 2022 cycle?",
+      "category": "pace",
+      "keywords": [],
+      "should_refuse": true,
+      "retrieved": [
+        "program-plan#overview",
+        "program-plan#more-doors-or-a-second-pass",
+        "registration-drive#overview",
+        "program-plan#pace-and-projection"
+      ],
+      "scores": {
+        "tool_choice": null,
+        "retrieval": null,
+        "facts": null,
+        "citation": null,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [],
+      "answer": {
+        "question": "How many doors did Riverbend Votes knock in the 2022 cycle?",
+        "answer": "I can't confirm that from the program data or documents. The provided data and documents only run through Sunday, October 18, 2026, and there is no specific mention of the 2022 cycle.",
+        "refused": true,
+        "tool_calls": [],
+        "sources": [],
+        "citations": [],
+        "citations_valid": false,
+        "latency_ms": 10688,
+        "model": "ollama/qwen2.5:7b",
+        "steps": 1
+      }
+    }
+  ]
+}
