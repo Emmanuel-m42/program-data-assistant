@@ -1,0 +1,18 @@
+# Postgres with pgvector for people who prefer Docker over the bundled pgserver.
+# Local development only: trust auth, no password. Not tested on the machine this repo was built on.
+#
+#   docker compose up -d
+#   export PDA_DATABASE_URL=postgresql://postgres@localhost:5432/postgres
+#   export PDA_READER_URL=postgresql://pda_reader@localhost:5432/postgres
+#   uv run pda-load
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:

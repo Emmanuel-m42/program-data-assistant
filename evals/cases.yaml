@@ -157,7 +157,7 @@ cases:
     expected_docs: [program-plan#opening-another-office]
     facts:
       - name: names the dense untouched cluster
-        any_of: [P37, P38, P39, P40]
+        any_of: [P37, P38, P39, P40, Precinct 37, Precinct 38, Precinct 39, Precinct 40]
       - name: untouched doors in dense untouched precincts
         sql: |
           SELECT sum(p.target_doors) FROM precincts p

@@ -188,6 +188,24 @@ def run(label: str, provider: str | None, model: str | None, only: list[str] | N
     return report
 
 
+def rescore(path: Path) -> dict:
+    """Score the saved answers in a report again with the current cases and scorers (no model calls)."""
+    report = json.loads(path.read_text())
+    cases, defaults = load_cases()
+    by_id = {c["id"]: c for c in cases}
+    with db.connect_admin() as conn:
+        truth = compute_truth(conn, cases)
+        for r in report["cases"]:
+            c = by_id[r["id"]]
+            r["retrieved"] = [h["chunk_id"] for h in retrieval.search(conn, c["question"])]
+            r.update(score_case(c, r["answer"], truth, r["retrieved"], defaults))
+    report["summary"] = summarize(report["cases"])
+    report["rescored_at"] = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+    path.write_text(json.dumps(report, indent=2, default=str))
+    path.with_suffix(".md").write_text(markdown(report))
+    return report
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Run the eval suite against the assistant.")
     ap.add_argument("--label", default="latest")
@@ -195,7 +213,13 @@ def main() -> None:
     ap.add_argument("--model", default=None)
     ap.add_argument("--only", nargs="*", help="case ids to run")
     ap.add_argument("--out", default=str(REPORTS))
+    ap.add_argument("--rescore", help="re-score a saved report with the current cases instead of running the model")
     args = ap.parse_args()
+    if args.rescore:
+        report = rescore(Path(args.rescore))
+        s = report["summary"]
+        print("  ".join(f"{m}={fmt(s[m])}" for m in METRICS + ["pass"]))
+        return
     report = run(args.label, args.provider, args.model, args.only, Path(args.out))
     s = report["summary"]
     print("\n" + "  ".join(f"{m}={fmt(s[m])}" for m in METRICS + ["pass"]))

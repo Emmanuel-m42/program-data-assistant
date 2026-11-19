@@ -47,6 +47,8 @@ class OllamaProvider:
         if not self.host.startswith("http"):
             self.host = "http://" + self.host
         self.num_ctx = num_ctx
+        # Fewer threads than cores keeps generation steady on a shared machine.
+        self.num_thread = int(os.environ.get("PDA_OLLAMA_THREADS", "5"))
         self.client = httpx.Client(timeout=timeout)
 
     def chat(self, messages, tools):
@@ -63,7 +65,8 @@ class OllamaProvider:
             "model": self.model,
             "messages": out,
             "stream": False,
-            "options": {"temperature": 0, "seed": 7, "num_ctx": self.num_ctx, "num_predict": 900},
+            "options": {"temperature": 0, "seed": 7, "num_ctx": self.num_ctx, "num_predict": 900,
+                        "num_thread": self.num_thread},
         }
         if tools:
             body["tools"] = [{"type": "function", "function": t} for t in tools]
