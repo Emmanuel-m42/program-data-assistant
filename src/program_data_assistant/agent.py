@@ -20,6 +20,8 @@ RETRY_NUDGE = ("Your last query failed because of the SQL, not because the data 
 NUMBER = re.compile(r"(?<![\w.])-?\$?((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)")
 BRACKETS = re.compile(r"\[[^\]]*\]")
 DATES = re.compile(r"\b\d{4}-\d{2}-\d{2}\b|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.? \d{1,2}\b")
+WITHHELD = ("I can't confirm that from the program data or documents. My draft answer used numbers that aren't in "
+            "the query results, so I'm not giving it.")
 GROUNDING_NUDGE = ("These numbers in your answer do not appear in any tool result: {numbers}. Rewrite the answer using "
                    "only numbers from the tool results above. If you need a number you don't have, query for it first.")
 INLINE_CALL = re.compile(r"\{\s*\"name\"\s*:\s*\"(query_program_data|search_documents)\".*\}", re.DOTALL)
@@ -35,6 +37,7 @@ class Answer:
     citations: list[dict] = field(default_factory=list)
     citations_valid: bool = False
     ungrounded_numbers: list[float] = field(default_factory=list)
+    withheld_draft: str = ""
     latency_ms: int = 0
     model: str = ""
     steps: int = 0
@@ -73,7 +76,7 @@ def build_sources(results: list[ToolResult], citations: list[dict]) -> list[dict
     for r in results:
         if not r.ok:
             continue
-        if r.name == "query_program_data":
+        if r.name != "search_documents":
             rows.append((bool(cited_tables & set(r.tables)),
                          {"type": "rows", "table": ", ".join(r.tables), "columns": r.columns, "rows": r.rows[:SOURCE_ROWS],
                           "row_count": len(r.rows), "sql": r.args.get("sql", "")}))
@@ -177,10 +180,16 @@ class Assistant:
             messages.append({"role": "user", "content": "Answer now from the tool results above, with citations."})
             reply = self.provider.chat(messages, None)
         text = (reply.content or "").strip()
-        cites = parse_citations(text)
         refused = bool(REFUSAL.search(text)) or not text
+        missing = [] if refused else ungrounded_numbers(text, question, results)
+        withheld = ""
+        if len(missing) >= 2:
+            # Still unsupported after a revision: don't pass made-up numbers on. Keep the draft for the record.
+            withheld, text, refused = text, WITHHELD, True
+        cites = parse_citations(text)
         return Answer(
-            ungrounded_numbers=[] if refused else ungrounded_numbers(text, question, results),
+            ungrounded_numbers=missing,
+            withheld_draft=withheld,
             question=question,
             answer=text,
             refused=refused,

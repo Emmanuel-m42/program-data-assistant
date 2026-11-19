@@ -29,7 +29,7 @@ def test_database_errors_are_returned_not_raised():
 def test_row_limit():
     r = Toolbox().run("query_program_data", {"sql": "SELECT knock_id FROM knocks"})
     assert r.ok and len(r.rows) == MAX_ROWS
-    assert "aggregate in SQL" in r.content
+    assert "filter or aggregate" in r.content
 
 
 def test_reader_role_cannot_write_even_without_the_guard():

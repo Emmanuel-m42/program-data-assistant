@@ -77,6 +77,8 @@ def fact_matches(fact: dict, truth: float | None, answer: str, defaults: dict) -
 def score_case(case: dict, answer: dict, truth: dict, retrieved: list[str], defaults: dict) -> dict:
     should_refuse = bool(case.get("should_refuse"))
     called = {t["name"] for t in answer["tool_calls"]}
+    if "get_view" in called:  # get_view is a narrower way to query program data
+        called.add("query_program_data")
     scores: dict[str, float | None] = dict.fromkeys(METRICS)
     details = []
     scores["refusal"] = 1.0 if answer["refused"] == should_refuse else 0.0
@@ -150,7 +152,8 @@ def markdown(report: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
-def run(label: str, provider: str | None, model: str | None, only: list[str] | None, out_dir: Path) -> dict:
+def run(label: str, provider: str | None, model: str | None, only: list[str] | None, out_dir: Path,
+        resume: bool = False) -> dict:
     cases, defaults = load_cases()
     if only:
         cases = [c for c in cases if c["id"] in only]
@@ -161,6 +164,10 @@ def run(label: str, provider: str | None, model: str | None, only: list[str] | N
     out_dir.mkdir(parents=True, exist_ok=True)
     partial = out_dir / f"{label}.partial.json"
     rows = []
+    if resume and partial.exists():  # pick up after the last saved case
+        rows = [r for r in json.loads(partial.read_text())["cases"] if r["id"] in {c["id"] for c in cases}]
+        print(f"resuming after {len(rows)} saved cases", flush=True)
+    done = {r["id"] for r in rows}
 
     def report_for(rows):
         return {
@@ -173,6 +180,8 @@ def run(label: str, provider: str | None, model: str | None, only: list[str] | N
         }
 
     for c in cases:
+        if c["id"] in done:
+            continue
         ans = assistant.ask(c["question"]).to_dict()
         scored = score_case(c, ans, truth, retrieved[c["id"]], defaults)
         rows.append({"id": c["id"], "question": c["question"], "category": c["category"], "keywords": c.get("keywords", []),
@@ -213,6 +222,7 @@ def main() -> None:
     ap.add_argument("--model", default=None)
     ap.add_argument("--only", nargs="*", help="case ids to run")
     ap.add_argument("--out", default=str(REPORTS))
+    ap.add_argument("--resume", action="store_true", help="continue from <label>.partial.json")
     ap.add_argument("--rescore", help="re-score a saved report with the current cases instead of running the model")
     args = ap.parse_args()
     if args.rescore:
@@ -220,7 +230,7 @@ def main() -> None:
         s = report["summary"]
         print("  ".join(f"{m}={fmt(s[m])}" for m in METRICS + ["pass"]))
         return
-    report = run(args.label, args.provider, args.model, args.only, Path(args.out))
+    report = run(args.label, args.provider, args.model, args.only, Path(args.out), args.resume)
     s = report["summary"]
     print("\n" + "  ".join(f"{m}={fmt(s[m])}" for m in METRICS + ["pass"]))
     print(f"wrote {args.out}/{args.label}.json and .md")

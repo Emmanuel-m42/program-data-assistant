@@ -3,7 +3,8 @@ from fastapi.testclient import TestClient
 
 from program_data_assistant.agent import RETRY_NUDGE, Assistant
 from program_data_assistant.api import create_app
-from program_data_assistant.llm import Reply
+from program_data_assistant.llm import Reply, ToolCall
+from program_data_assistant.tools import Toolbox
 
 
 def client(replies):
@@ -84,6 +85,25 @@ def test_made_up_numbers_get_one_revision():
     body = c.post("/ask", json={"question": "Will Eastgate miss goal?"}).json()
     assert "1234" in provider.seen[2]["content"] and "do not appear" in provider.seen[2]["content"]
     assert body["answer"].startswith("Eastgate misses goal by the amount")
+
+
+def test_numbers_still_made_up_after_revision_are_withheld():
+    sql = "SELECT office, projected_vs_goal FROM v_office_pace WHERE office = 'Eastgate'"
+    made_up = Reply("Eastgate lands at 1,234 doors, 5,678 short [table:v_office_pace].")
+    c, _ = client([sql_call(sql), made_up, made_up])
+    body = c.post("/ask", json={"question": "Will Eastgate miss goal?"}).json()
+    assert body["refused"] is True
+    assert "aren't in the query results" in body["answer"]
+
+
+def test_get_view_returns_a_whole_view_or_one_office():
+    c, _ = client([Reply("", [ToolCall("v1", "get_view", {"view": "v_cost_per_door", "office": "Eastgate"})]),
+                   Reply("Eastgate costs the most per door [table:v_cost_per_door].")])
+    body = c.post("/ask", json={"question": "Which office costs the most per door?"}).json()
+    src = body["sources"][0]
+    assert src["table"] == "v_cost_per_door" and [r[0] for r in src["rows"]] == ["Eastgate"]
+    assert Toolbox().run("get_view", {"view": "knocks"}).ok is False
+    assert len(Toolbox().run("get_view", {"view": "v_office_pace"}).rows) == 4
 
 
 def test_repeated_query_is_not_rerun():

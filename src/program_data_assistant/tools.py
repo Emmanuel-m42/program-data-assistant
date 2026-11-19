@@ -14,7 +14,44 @@ from . import db, retrieval, sql_guard
 MAX_ROWS = 200  # rows fetched from the database
 MODEL_ROWS = 60  # rows shown to the model
 
+# Metric views the get_view tool can return, with the order rows come back in.
+VIEWS = {
+    "v_office_pace": "office",
+    "v_contact_rates": "week_start DESC, office",
+    "v_cost_per_door": "cost_per_door DESC",
+    "v_weekly_report": "week_start DESC, office",
+    "v_precinct_coverage": "pct_touched, doors_per_sq_mi DESC",
+    "v_site_options": "avg_km_to_untouched_doors",
+    "v_canvasser_status": "active DESC, days_worked DESC",
+    "v_qc_flags_detail": "flag_date DESC, full_name",
+    "v_qc_weekly": "week_start DESC, office",
+    "v_vr_pace": "office",
+    "v_vr_canvassers": "duplicate_cards DESC",
+    "v_qc_call_outcomes": "office, calls DESC",
+    "v_weekly_hours": "week_start DESC, paid_hours DESC NULLS LAST",
+    "v_shifts_to_fix": "shift_date DESC",
+    "v_daily_doors": "knock_date DESC, office",
+}
+WEEK_COLUMN = {"v_contact_rates", "v_weekly_report", "v_qc_weekly", "v_weekly_hours", "v_shifts_to_fix"}
+
 TOOL_SPECS = [
+    {
+        "name": "get_view",
+        "description": (
+            "Return the rows of one metric view, optionally for one office or one week. This is the easiest way to get "
+            "pace, projections, shifts needed, contact rates, cost per door, the weekly report, turf coverage, site "
+            "options, staff status, QC flags, registration pace, duplicates, QC call outcomes, weekly hours and shifts to fix."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "view": {"type": "string", "enum": sorted(VIEWS)},
+                "office": {"type": "string", "description": "Optional: 'Northside', 'Eastgate', 'Harbor' or 'All offices'."},
+                "week_start": {"type": "string", "description": "Optional Monday date for weekly views; this week is 2026-10-12, last week 2026-10-05."},
+            },
+            "required": ["view"],
+        },
+    },
     {
         "name": "query_program_data",
         "description": (
@@ -93,6 +130,8 @@ class Toolbox:
             return self.query_program_data(str(args.get("sql", "")))
         if name == "search_documents":
             return self.search_documents(str(args.get("query", "")))
+        if name == "get_view":
+            return self.get_view(args)
         return ToolResult(name, args, False, f"Unknown tool '{name}'.", "unknown tool")
 
     def query_program_data(self, sql: str) -> ToolResult:
@@ -106,28 +145,52 @@ class Toolbox:
             checked = sql_guard.check(sql)
         except sql_guard.SQLRejected as e:
             return ToolResult("query_program_data", args, False, f"Query rejected: {e}", f"rejected: {e}")
+        return self._run_select(checked.sql, checked.tables, args, "query_program_data")
+
+    def _run_select(self, sql: str, tables: list[str], args: dict, tool: str, params=None) -> ToolResult:
         try:
-            cur = self.reader.execute(checked.sql)
+            cur = self.reader.execute(sql, params or None)
             columns = [d.name for d in cur.description]
             rows = [[_plain(v) for v in r] for r in cur.fetchmany(MAX_ROWS + 1)]
         except psycopg.Error as e:
             msg = (e.diag.message_primary or str(e)).strip()
-            hint = self.column_hint(checked.tables) if isinstance(e, psycopg.errors.UndefinedColumn) else ""
-            return ToolResult("query_program_data", args, False,
-                              f"Database error: {msg}{hint}\nFix the query and run it again.", f"error: {msg}")
+            hint = self.column_hint(tables) if isinstance(e, psycopg.errors.UndefinedColumn) else ""
+            return ToolResult(tool, args, False, f"Database error: {msg}{hint}\nFix the query and run it again.", f"error: {msg}")
+        checked = sql_guard.CheckedSQL(sql, tables)
         truncated = len(rows) > MAX_ROWS
         rows = rows[:MAX_ROWS]
         shown = rows[:MODEL_ROWS]
         lines = [" | ".join(columns)] + [" | ".join(_fmt(v) for v in r) for r in shown]
         note = ""
-        if not rows:
+        if not rows and tool == "query_program_data":
             note = ("\n(0 rows. The WHERE conditions are probably narrower than the question. "
                     "Run it again without the extra conditions; do not answer with numbers you have not seen.)")
         elif len(rows) > len(shown) or truncated:
-            note = f"\n({len(rows)}{'+' if truncated else ''} rows, first {len(shown)} shown; aggregate in SQL instead)"
+            note = f"\n({len(rows)}{'+' if truncated else ''} rows, first {len(shown)} shown; filter or aggregate to see the rest)"
         content = f"tables: {', '.join(checked.tables)}\n" + "\n".join(lines) + note
         summary = f"{len(rows)}{'+' if truncated else ''} row{'s' if len(rows) != 1 else ''} from {', '.join(checked.tables) or 'query'}"
-        return ToolResult("query_program_data", args, True, content, summary, checked.tables, columns, rows)
+        return ToolResult(tool, args, True, content, summary, checked.tables, columns, rows)
+
+    def get_view(self, args: dict) -> ToolResult:
+        view = str(args.get("view", ""))
+        if view not in VIEWS:
+            return ToolResult("get_view", args, False, f"Unknown view '{view}'. Choose one of: {', '.join(sorted(VIEWS))}.",
+                              "unknown view")
+        where, params = [], []
+        office = str(args.get("office") or "").strip()
+        if office and view not in ("v_site_options",):
+            where.append("office = %s")
+            params.append(office)
+        week = str(args.get("week_start") or "").strip()
+        if week and view in WEEK_COLUMN:
+            where.append("week_start = %s")
+            params.append(week)
+        # Built only from the fixed view names and order clauses above; values are bound parameters.
+        sql = f"SELECT * FROM {view}" + (f" WHERE {' AND '.join(where)}" if where else "") + f" ORDER BY {VIEWS[view]}"
+        res = self._run_select(sql, [view], args, "get_view", params)
+        if res.ok and not res.rows and (office or week):
+            res.content += f"\n(No rows for that filter. Offices are Northside, Eastgate, Harbor and 'All offices'.)"
+        return res
 
     def column_hint(self, tables: list[str]) -> str:
         """The real columns of the tables a failed query used, so the model can correct itself."""

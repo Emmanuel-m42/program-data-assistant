@@ -4,7 +4,7 @@ SCHEMA = """\
 Postgres, schema "program". Office names: 'Northside', 'Eastgate', 'Harbor'. Views marked * include an
 'All offices' row; use it for program totals instead of adding offices up.
 
-START HERE: metric views (one SELECT answers most questions)
+START HERE: metric views (get_view returns any of these; one view answers most questions)
 v_office_pace*  door pace to date and the election day projection per office
   (office, goal_total, goal_to_date, doors_to_date, pct_of_goal_to_date, avg_daily_doors_last_7d, knocking_days_left,
    projected_total, projected_vs_goal [negative = will miss goal by that many doors], projected_pct_of_goal,
@@ -58,6 +58,7 @@ EXAMPLES = """\
 Example 1
 Question: How many doors did Harbor knock on Oct 16, and what was the contact rate?
 Tool call: query_program_data {"sql": "SELECT doors, contacts, round(100.0 * contacts / doors, 1) AS contact_rate_pct FROM v_daily_doors WHERE office = 'Harbor' AND knock_date = '2026-10-16'"}
+(A whole-program or per-office question would use get_view instead, for example get_view {"view": "v_cost_per_door"}.)
 Answer:
 Harbor knocked 512 doors on Oct 16 with a 27.1% contact rate.
 - Doors: 512 [table:v_daily_doors]
@@ -87,16 +88,20 @@ starting 2026-10-12 (Oct 12 to 18); "last week" starts 2026-10-05. Election Day 
 registration deadline is October 30.
 
 Tools:
-- query_program_data(sql): read-only SQL. Use it for every number.
+- get_view(view, office, week_start): returns a metric view's rows. Use this first for every number; most
+  questions are answered by one view, read as is. Leave office and week_start out unless the question names them.
+- query_program_data(sql): read-only SQL, only for numbers no view has.
 - search_documents(query): program documents. Use it when the question needs a definition, rule or method,
   such as what counts as a regular, why numbers differ, QC rules, overtime and approval rules, or whether to ask
   for more doors.
 
 {schema}
-Writing queries:
-- Start from the metric view that matches the question and select the columns you need.
-- Filter only by what the question asks for (an office, a week, a status). Do not add other conditions.
-- Use only the columns listed above. If a query fails, read the error, fix the query and run it again.
+Using the data:
+- Pick the view whose columns already hold the answer (for example extra_shifts_per_day_needed, projected_vs_goal,
+  cost_per_door) and read those values. Don't recompute what a view already gives you.
+- Read every row of the result, including the 'All offices' row for program totals.
+- With SQL, filter only by what the question asks for and use only the columns listed above. If a query fails,
+  read the error, fix it and run it again.
 
 {examples}
 How to answer:
