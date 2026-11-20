@@ -166,6 +166,33 @@ def test_citations_are_rendered_from_provenance_and_unknown_ids_dropped(monkeypa
                               "Rates come from the payroll rules.")
 
 
+def test_offices_endpoint_reads_the_views():
+    c, _ = client([])
+    body = c.get("/offices").json()
+    assert body["as_of"] == "2026-10-18"
+    by = {o["office"]: o for o in body["offices"]}
+    assert list(by) == ["All offices", "Northside", "Eastgate", "Harbor"]
+    assert by["Eastgate"]["pace"]["projected_vs_goal"] < 0 < by["Northside"]["pace"]["projected_vs_goal"]
+    assert by["Eastgate"]["cost_per_door"] == max(o["cost_per_door"] for o in body["offices"])
+    assert [w["week_start"] for w in by["Harbor"]["contact_rates"]][-1] == "2026-10-12"
+    assert by["All offices"]["qc_this_week"]["flags"] == sum(by[o]["qc_this_week"]["flags"] for o in ("Northside", "Eastgate", "Harbor"))
+
+
+def test_evals_and_recorded_endpoints_serve_the_demo_file():
+    c, _ = client([])
+    ev = c.get("/evals").json()
+    assert ev["scoreboard"]["after"]["heldout"]["pass"] == 11 and ev["scoreboard"]["after"]["tuned"]["pass"] == 13
+    assert len(ev["questions"]) == 19 and "answer" not in ev["questions"][0]
+    rec = c.get("/recorded").json()
+    assert len(rec["questions"]) == 19 and "baseline" in rec["questions"][0]
+
+
+def test_cors_allows_the_configured_origin():
+    c, _ = client([])
+    r = c.options("/ask", headers={"Origin": "http://localhost:5173", "Access-Control-Request-Method": "POST"})
+    assert r.headers.get("access-control-allow-origin") == "http://localhost:5173"
+
+
 def test_question_validation():
     c, _ = client([])
     assert c.post("/ask", json={"question": ""}).status_code == 422

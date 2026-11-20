@@ -38,6 +38,7 @@ pda-load = "program_data_assistant.load:main"
 pda-ask = "program_data_assistant.cli:main"
 evals = "program_data_assistant.evals:main"
 pda-demo = "program_data_assistant.demo:main"
+pda-offices = "program_data_assistant.overview:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
