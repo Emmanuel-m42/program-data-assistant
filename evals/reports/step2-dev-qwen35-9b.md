@@ -1,0 +1,38 @@
+# Eval report: step2-dev-qwen35-9b
+
+Model `ollama/qwen3.5:9b`, commit `0f32a2c`, 2026-11-20T03:36:57+00:00, 14 cases (split dev, 1 run(s) per case; pass_all is pass^k).
+
+| metric | score | cases scored |
+| --- | --- | --- |
+| tool_choice | 0.83 | 12 |
+| retrieval | 0.96 | 12 |
+| facts | 0.86 | 12 |
+| citation | 0.67 | 12 |
+| refusal | 1.00 | 14 |
+| pass | 0.64 | 14 |
+| pass_all | 0.64 | 14 |
+
+Average latency 9.2 s per question.
+
+| case | category | tool choice | retrieval | facts | citation | refusal | pass | latency s |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| q01 | pace | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 12 |
+| q03 | staffing | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 7 |
+| q05 | door gaps | 0.00 | 1.00 | 0.33 | 0.00 | 1.00 | 0.00 | 10 |
+| q07 | client report | 0.00 | 1.00 | 0.25 | 1.00 | 1.00 | 0.00 | 9 |
+| q09 | pace | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 10 |
+| q11 | QC | 1.00 | 0.50 | 0.80 | 0.00 | 1.00 | 0.00 | 14 |
+| q13 | QC | 1.00 | 1.00 | 1.00 | 0.00 | 1.00 | 0.00 | 14 |
+| q15 | VR rate | 1.00 | 1.00 | 1.00 | 0.00 | 1.00 | 0.00 | 9 |
+| q17 | QC | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 5 |
+| q19 | client report | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 10 |
+| x01 | pace | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 7 |
+| x04 | QC | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 10 |
+| x07 | pace | n/a | n/a | n/a | n/a | 1.00 | 1.00 | 4 |
+| x09 | pace | n/a | n/a | n/a | n/a | 1.00 | 1.00 | 7 |
+
+## Missed facts
+
+- q05: untouched doors left in turf, doors we can knock in the days left
+- q07: client reported doors Oct 12, dashboard doors Oct 12, rolled-back attempts Oct 12
+- q11: Dorian's householding flags this week

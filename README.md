@@ -109,6 +109,32 @@ What changed between the baseline and the final code:
 
 Two earlier attempts at the improved code were stopped after a few cases because the model still made up numbers after empty results. A qwen2.5:14b attempt was also stopped: it answered without calling tools, and the grounding check withheld those answers. None of these are reported as runs. The demo (`demo/recorded_runs.json`) uses the qwen3.8:27b run, with the CPU baseline shown alongside.
 
+### Tuning with a held-out split
+
+After the runs above, the 28 cases were split into 14 dev and 14 held-out test cases (refusal cases on both sides; `split` in `cases.yaml`). Changes were tried on dev only, on qwen3.5:9b, one at a time:
+
+| step | dev pass | dev facts | dev citation | s per answer |
+| --- | --- | --- | --- | --- |
+| starting point (improved-gpu-qwen35-9b) | 10 of 14 | 75% | 92% | 8 |
+| grounding prompt: answer only from tool results, copy figures exactly, permission to decline | 10 of 14 | 75% | 92% | 7 |
+| tool descriptions (answers, doesn't answer, example, get_view before SQL), routing policy, week filter on the flags view | 11 of 14 | 87% | 100% | 5 |
+| structured citations: {text, source} lines with an enum of returned ids, rendered by code | 9 of 14 | 87% | 67% | 9 |
+| same, plus code-assigned sources for lines whose figures match a result | 10 of 14 | 87% | 83% | 9 |
+| business glossary (grain, date windows, denominators), structured citations off | 10 of 14 | 87% | 83% | 6 |
+| drop citations to ids no tool returned | 11 of 14 | 87% | 100% | 6 |
+
+Structured citations scored below typed citations plus the citation check on dev, so they are off by default (`PDA_STRUCTURED_CITATIONS=1` turns them on). The glossary made the model cite document ids that don't exist, and the last step removes those. Constrained JSON routing and per-model sampling settings were not tried.
+
+Final comparison, all 28 cases run 3 times each at temperature 0 (`final-qwen35-9b-x3`):
+
+| split | tool choice | retrieval | facts | citation | refusal | pass | pass^3 | s per answer |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| dev | 83% | 96% | 87% | 100% | 100% | 11 of 14 | 11 of 14 | 6 |
+| test (held out) | 92% | 100% | 78% | 100% | 100% | 10 of 14 | 10 of 14 | 10 |
+| all 28 | 88% | 98% | 82% | 100% | 100% | 21 of 28 | 21 of 28 | 8 |
+
+Against the targets, qwen3.5:9b now meets retrieval, facts, citation, refusal, pass (21 of 28) and speed (8 s). It misses tool choice (88% against 90%). The held-out test facts score (78%) is below the dev score (87%), which is the gap the split is there to show. At temperature 0 the three runs rarely differ, so pass^3 equals pass here. Cases still failing: q04 (counts registration canvassers too), q05 (more doors vs second pass numbers), q07 (Oct 12 totals), q08 (dense untouched doors total), q11 (one name missed), q12 (counts written as words), q16 (Harbor duplicates total).
+
 ## Tests
 
 `uv run pytest` covers the SQL guard (allowed and rejected statements), the read-only role and timeout, retrieval, the scorers, the data stories the questions depend on, and the API through FastAPI's TestClient with a scripted model in place of a real one.
