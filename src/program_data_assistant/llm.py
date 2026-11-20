@@ -38,13 +38,14 @@ class Provider(Protocol):
     name: str
     model: str
 
-    def chat(self, messages: list[dict], tools: list[dict] | None) -> Reply: ...
+    def chat(self, messages: list[dict], tools: list[dict] | None, format: dict | None = None) -> Reply: ...
 
 
 class OllamaProvider:
     """Local open model served by Ollama (default qwen2.5:7b)."""
 
     name = "ollama"
+    supports_format = True
 
     def __init__(self, model: str | None = None, host: str | None = None, num_ctx: int = 8192, timeout: float = 600):
         self.model = model or os.environ.get("PDA_OLLAMA_MODEL", "qwen2.5:7b")
@@ -63,7 +64,7 @@ class OllamaProvider:
             self.think = False if THINKING_MODELS.match(self.model) else None
         self.client = httpx.Client(timeout=timeout)
 
-    def chat(self, messages, tools):
+    def chat(self, messages, tools, format=None):
         out = []
         for m in messages:
             if m["role"] == "assistant":
@@ -84,6 +85,8 @@ class OllamaProvider:
             body["tools"] = [{"type": "function", "function": t} for t in tools]
         if self.think is not None:
             body["think"] = self.think
+        if format is not None:  # Ollama structured output: a JSON schema the reply must follow
+            body["format"] = format
         r = self.client.post(f"{self.host}/api/chat", json=body)
         r.raise_for_status()
         msg = r.json()["message"]
@@ -113,7 +116,9 @@ class AnthropicProvider:
         self.max_tokens = max_tokens
         self.client = anthropic.Anthropic()
 
-    def chat(self, messages, tools):
+    supports_format = False  # structured citations fall back to citations typed in the text
+
+    def chat(self, messages, tools, format=None):
         system = "\n\n".join(m["content"] for m in messages if m["role"] == "system")
         out: list[dict] = []
         for m in messages:

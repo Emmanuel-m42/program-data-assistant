@@ -39,7 +39,7 @@ class ScriptedProvider:
         self.replies = list(replies)
         self.seen = []
 
-    def chat(self, messages, tools):
+    def chat(self, messages, tools, format=None):
         self.seen.append(messages[-1])
         return self.replies.pop(0)
 

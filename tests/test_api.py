@@ -1,3 +1,5 @@
+import json
+
 from conftest import ScriptedProvider, search_call, sql_call
 from fastapi.testclient import TestClient
 
@@ -142,6 +144,25 @@ def test_zero_rows_tells_the_model_to_widen_the_query():
                           Reply("I can't confirm that from the program data or documents.")])
     c.post("/ask", json={"question": "Which offices?"})
     assert "0 rows" in provider.seen[1]["content"]
+
+
+def test_citations_are_rendered_from_provenance_and_unknown_ids_dropped():
+    lines = {"lines": [
+        {"text": "Eastgate is the most expensive office [table:made_up].", "source": "table:v_cost_per_door"},
+        {"text": "- Eastgate: $2.07 per door", "source": "table:v_cost_per_door"},
+        {"text": "Rates come from the payroll rules.", "source": "doc:payroll-rules#nowhere"},
+    ]}
+    provider = ScriptedProvider([
+        sql_call("SELECT office, cost_per_door FROM v_cost_per_door"),
+        Reply("Eastgate is the most expensive office.\n- Eastgate: $2.07 per door"),
+        Reply(json.dumps(lines)),
+    ])
+    provider.supports_format = True
+    c = TestClient(create_app(Assistant(provider)))
+    body = c.post("/ask", json={"question": "Which office costs the most per door?"}).json()
+    assert body["answer"] == ("Eastgate is the most expensive office. [table:v_cost_per_door]\n"
+                              "- Eastgate: $2.07 per door [table:v_cost_per_door]\n"
+                              "Rates come from the payroll rules.")
 
 
 def test_question_validation():
