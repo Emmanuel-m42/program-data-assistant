@@ -1,0 +1,181 @@
+{
+  "as_of": "2026-10-18",
+  "offices": [
+    {
+      "office": "All offices",
+      "pace": {
+        "goal_total": 60632,
+        "goal_to_date": 32431,
+        "doors_to_date": 33503,
+        "projected_total": 57329,
+        "projected_vs_goal": -3303,
+        "projected_pct_of_goal": 94.6,
+        "avg_shifts_per_day_last_7d": 29.3,
+        "extra_shifts_per_day_needed": 4.1
+      },
+      "contact_rates": [
+        {
+          "week_start": "2026-09-21",
+          "contact_rate_pct": 27.1
+        },
+        {
+          "week_start": "2026-09-28",
+          "contact_rate_pct": 28.1
+        },
+        {
+          "week_start": "2026-10-05",
+          "contact_rate_pct": 26.9
+        },
+        {
+          "week_start": "2026-10-12",
+          "contact_rate_pct": 27.9
+        }
+      ],
+      "cost_per_door": 1.81,
+      "registration": {
+        "card_goal": 5370,
+        "valid_cards": 3669,
+        "duplicate_cards": 112,
+        "cards_per_hour_last_7d": 2.86,
+        "cards_per_hour_needed": 2.96,
+        "projected_valid_cards": 5311
+      },
+      "qc_this_week": {
+        "flags": 7,
+        "flags_per_100_shifts": 3.4
+      }
+    },
+    {
+      "office": "Northside",
+      "pace": {
+        "goal_total": 22675,
+        "goal_to_date": 12128,
+        "doors_to_date": 13647,
+        "projected_total": 23583,
+        "projected_vs_goal": 908,
+        "projected_pct_of_goal": 104,
+        "avg_shifts_per_day_last_7d": 11.1,
+        "extra_shifts_per_day_needed": 0
+      },
+      "contact_rates": [
+        {
+          "week_start": "2026-09-21",
+          "contact_rate_pct": 28.2
+        },
+        {
+          "week_start": "2026-09-28",
+          "contact_rate_pct": 28.9
+        },
+        {
+          "week_start": "2026-10-05",
+          "contact_rate_pct": 26.4
+        },
+        {
+          "week_start": "2026-10-12",
+          "contact_rate_pct": 30.1
+        }
+      ],
+      "cost_per_door": 1.67,
+      "registration": {
+        "card_goal": 2170,
+        "valid_cards": 1482,
+        "duplicate_cards": 24,
+        "cards_per_hour_last_7d": 3.35,
+        "cards_per_hour_needed": 3.52,
+        "projected_valid_cards": 2137
+      },
+      "qc_this_week": {
+        "flags": 1,
+        "flags_per_100_shifts": 1.3
+      }
+    },
+    {
+      "office": "Eastgate",
+      "pace": {
+        "goal_total": 17800,
+        "goal_to_date": 9521,
+        "doors_to_date": 8505,
+        "projected_total": 14596,
+        "projected_vs_goal": -3204,
+        "projected_pct_of_goal": 82,
+        "avg_shifts_per_day_last_7d": 8.3,
+        "extra_shifts_per_day_needed": 4.4
+      },
+      "contact_rates": [
+        {
+          "week_start": "2026-09-21",
+          "contact_rate_pct": 27.4
+        },
+        {
+          "week_start": "2026-09-28",
+          "contact_rate_pct": 29.1
+        },
+        {
+          "week_start": "2026-10-05",
+          "contact_rate_pct": 28.8
+        },
+        {
+          "week_start": "2026-10-12",
+          "contact_rate_pct": 25
+        }
+      ],
+      "cost_per_door": 2.07,
+      "registration": {
+        "card_goal": 1380,
+        "valid_cards": 941,
+        "duplicate_cards": 22,
+        "cards_per_hour_last_7d": 2.41,
+        "cards_per_hour_needed": 2.75,
+        "projected_valid_cards": 1325
+      },
+      "qc_this_week": {
+        "flags": 5,
+        "flags_per_100_shifts": 8.6
+      }
+    },
+    {
+      "office": "Harbor",
+      "pace": {
+        "goal_total": 20157,
+        "goal_to_date": 10782,
+        "doors_to_date": 11351,
+        "projected_total": 19150,
+        "projected_vs_goal": -1007,
+        "projected_pct_of_goal": 95,
+        "avg_shifts_per_day_last_7d": 9.9,
+        "extra_shifts_per_day_needed": 1.3
+      },
+      "contact_rates": [
+        {
+          "week_start": "2026-09-21",
+          "contact_rate_pct": 25.6
+        },
+        {
+          "week_start": "2026-09-28",
+          "contact_rate_pct": 26.4
+        },
+        {
+          "week_start": "2026-10-05",
+          "contact_rate_pct": 26.1
+        },
+        {
+          "week_start": "2026-10-12",
+          "contact_rate_pct": 27.3
+        }
+      ],
+      "cost_per_door": 1.78,
+      "registration": {
+        "card_goal": 1820,
+        "valid_cards": 1246,
+        "duplicate_cards": 66,
+        "cards_per_hour_last_7d": 2.74,
+        "cards_per_hour_needed": 2.61,
+        "projected_valid_cards": 1849
+      },
+      "qc_this_week": {
+        "flags": 1,
+        "flags_per_100_shifts": 1.4
+      }
+    }
+  ]
+}
