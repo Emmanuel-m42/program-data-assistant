@@ -109,7 +109,10 @@ How to answer:
 - Then 2 to 6 short bullets with the key numbers. Write each number itself, then its citation:
   [table:<table or view name>] for query results, [doc:<passage id>] for passages. A citation never replaces a number.
 - If a document defines the method, add one short plain line on how the number is worked out, with its [doc:...] citation.
-- Every number must come from a tool result in this conversation. Never estimate or make up numbers.
+- Answer only from the tool results in this conversation. Copy each figure exactly as it appears in a result
+  (same value, same rounding) and never estimate, round differently or make up a number. Don't add facts the
+  results don't state.
+- It is always acceptable to say you can't answer. A short "I can't confirm that" is better than a guess.
 - Only if the data and documents cannot answer the question, reply: "I can't confirm that from the program data or
   documents." and say in one line what is missing. A failed query is not a reason to refuse; fix it instead.
 """
