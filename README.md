@@ -4,6 +4,14 @@ An assistant that answers questions about a field program from that program's ow
 
 It runs on a fictional GOTV canvass, Riverbend Votes, and a fictional voter registration drive, Riverbend Registers, each with three offices (Northside, Eastgate, Harbor). All names, places and numbers are made up by a seeded generator.
 
+What's in this repository:
+
+- **Web app**: SvelteKit and TypeScript (`web/`), a chat that shows the sources behind each number, office tabs, and a page on how it's tested.
+- **Backend**: Python and FastAPI, with read-only tools over Postgres and pgvector document search.
+- **Model**: a self-hosted open model through Ollama (qwen3.8:27b in the results below), with Claude on the Anthropic API or Vertex AI as a configuration switch.
+- **Infrastructure**: Terraform for Google Cloud in `infra/` (Cloud Run, Cloud SQL Postgres with pgvector, Secret Manager, Artifact Registry, per-service accounts) and Dockerfiles. Checked with `terraform validate` and a plan against a placeholder project; never applied, so nothing is deployed.
+- **Evals**: 28 test questions scored against SQL ground truth, half of them held out from tuning.
+
 ## Why
 
 Program staff spend a lot of time pulling the same numbers by hand: pace to goal, shifts needed, QC flags, overtime, the weekly client report. Most of it is a SQL query plus a rule from a program document. A model can do that work if it is limited to read-only queries, has to show its sources, and is measured on whether its numbers match the data.
