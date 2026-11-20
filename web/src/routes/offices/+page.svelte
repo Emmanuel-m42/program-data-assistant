@@ -32,7 +32,7 @@
 
 <h1>Offices</h1>
 <p class="lede">
-	Straight from the program's metric views, no model involved.{#if data} Data through {data.as_of}.{/if}
+	Straight from the program's metric views, no model involved.{#if data}{' '}Data through {data.as_of}.{/if}
 </p>
 
 {#if error}
@@ -134,7 +134,10 @@
 	.grid {
 		display: grid;
 		gap: 0.75rem;
-		grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
+	}
+	.grid > :global(*) {
+		min-width: 0; /* let a card shrink to the screen instead of to its widest content */
 	}
 	.panel h2 {
 		margin-top: 0;
