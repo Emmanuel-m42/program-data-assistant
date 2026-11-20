@@ -185,10 +185,6 @@ Against the targets, qwen3.5:9b now meets retrieval, facts, citation, refusal, p
 
 In `web/`, `npm test` (vitest) covers the question matcher, citation-to-source mapping and the markdown subset (markup in an answer stays text), and `npm run check` runs svelte-check.
 
-## Model hosts
-
-The eval runs above used the build server's CPU and a laptop RTX 3080. A spot check on a GPD Win 5 (Ryzen AI Max+ 395, Radeon 8060S, 16 GB assigned to the GPU, Ollama with ROCm) loaded qwen3.8:27b fully on the GPU. It passed 5 of 5 eval cases at about 23 s per answer once the system prompt was cached (94 s for the first). The report is `evals/reports/gpd-qwen38-27b-16gb.json`.
-
 ## Limits
 
 - The data is synthetic and built so each question has a clear answer. Real program data is messier: late clock-outs, turf changes, reassigned canvassers.
