@@ -95,7 +95,7 @@ def main() -> None:
     ids = DEMO_IDS[: args.limit] if args.limit else DEMO_IDS
     data = build(before, after, args.what_changed, ids)
     text = json.dumps(data, indent=2, ensure_ascii=False, default=str)
-    if "·" in text:
+    if "\u00b7" in text:
         raise SystemExit("refusing to write a middle dot")
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(text + "\n")
