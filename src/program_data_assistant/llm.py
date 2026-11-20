@@ -160,11 +160,30 @@ class AnthropicProvider:
         return Reply(text, calls)
 
 
-PROVIDERS = {"ollama": OllamaProvider, "anthropic": AnthropicProvider}
+class VertexProvider(AnthropicProvider):
+    """Claude on Google Vertex AI. Signs in as the runtime's own Google identity (on Cloud Run, its
+    service account with roles/aiplatform.user), so there is no API key. Needs `uv sync --extra vertex`.
+
+    PDA_VERTEX_PROJECT and PDA_VERTEX_REGION pick the project and region; PDA_VERTEX_MODEL the model ID
+    as Vertex names it.
+    """
+
+    name = "vertex"
+
+    def __init__(self, model: str | None = None, max_tokens: int = 1500, client=None):
+        if client is None:
+            from anthropic import AnthropicVertex
+
+            client = AnthropicVertex(project_id=os.environ.get("PDA_VERTEX_PROJECT"),
+                                     region=os.environ.get("PDA_VERTEX_REGION", "global"))
+        super().__init__(model or os.environ.get("PDA_VERTEX_MODEL"), max_tokens, client)
+
+
+PROVIDERS = {"ollama": OllamaProvider, "anthropic": AnthropicProvider, "vertex": VertexProvider}
 
 
 def get_provider(name: str | None = None, model: str | None = None) -> Provider:
-    """PDA_PROVIDER picks the backend: ollama (open model, default) or anthropic (Claude)."""
+    """PDA_PROVIDER picks the backend: ollama (open model, default), anthropic (Claude) or vertex (Claude on Vertex AI)."""
     name = name or os.environ.get("PDA_PROVIDER", "ollama")
     if name not in PROVIDERS:
         raise ValueError(f"unknown provider '{name}', choose one of {', '.join(PROVIDERS)}")

@@ -22,6 +22,9 @@ dependencies = [
 anthropic = [
     "anthropic>=2.11.0",
 ]
+vertex = [
+    "anthropic[vertex]>=2.11.0",
+]
 
 [build-system]
 requires = ["uv_build>=0.12.14,<0.13.0"]
