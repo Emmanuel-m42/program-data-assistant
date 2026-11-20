@@ -146,7 +146,7 @@ def test_zero_rows_tells_the_model_to_widen_the_query():
     assert "0 rows" in provider.seen[1]["content"]
 
 
-def test_citations_are_rendered_from_provenance_and_unknown_ids_dropped():
+def test_citations_are_rendered_from_provenance_and_unknown_ids_dropped(monkeypatch):
     lines = {"lines": [
         {"text": "Eastgate is the most expensive office [table:made_up].", "source": "table:v_cost_per_door"},
         {"text": "- Eastgate: $2.07 per door", "source": "table:v_cost_per_door"},
@@ -158,6 +158,7 @@ def test_citations_are_rendered_from_provenance_and_unknown_ids_dropped():
         Reply(json.dumps(lines)),
     ])
     provider.supports_format = True
+    monkeypatch.setenv("PDA_STRUCTURED_CITATIONS", "1")
     c = TestClient(create_app(Assistant(provider)))
     body = c.post("/ask", json={"question": "Which office costs the most per door?"}).json()
     assert body["answer"] == ("Eastgate is the most expensive office. [table:v_cost_per_door]\n"

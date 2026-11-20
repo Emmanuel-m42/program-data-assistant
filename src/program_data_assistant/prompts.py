@@ -52,6 +52,21 @@ vr_cards(card_id, shift_id, canvasser_id, office, collected_at, registrant_name,
 vr_qc_calls(call_id, card_id, called_at, outcome)
 Function km_between(lat1, lon1, lat2, lon2) returns kilometers.
 There is no data on turnout, election results, voters' or staff contact details, or earlier cycles.
+
+Glossary (grain, windows, denominators)
+- door: one door_id on one day, rollbacks removed. attempt: one knocks row. contact: a 'canvassed' knock.
+- contact rate = contacts / doors for the same office and week. cost per door = GOTV wages / doors, to date.
+- pace = doors to date vs goal to date. projection = doors to date + last 7 days' average daily doors x 16
+  knocking days left (Oct 19 to Nov 3). A negative projected_vs_goal is the shortfall.
+- "last 7 days" = Oct 12 to Oct 18. Weeks start on Monday (week_start).
+- active = worked a shift in the last 7 days. regular = 5 or more days worked. These apply to GOTV canvassers
+  (program 'gotv'); registration canvassers are program 'vr'.
+- valid card = not a duplicate. cards per hour = valid cards / paid registration hours; the rate needed is on the
+  'All offices' row of v_vr_pace (12 days left to Oct 30). An office is under it when its last-7-days rate is lower.
+- QC rate = flags per 100 GOTV shifts per office per week. open flag = needs a conversation.
+- overtime = over 40 paid hours in a Monday to Sunday week.
+- client daily report: doors_reported counts attempts before rollbacks; gap vs our doors = repeat attempts +
+  rolled-back attempts.
 """
 
 EXAMPLES = """\

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import time
 from dataclasses import asdict, dataclass, field
@@ -217,6 +218,9 @@ class Assistant:
         self.provider = provider
         self.toolbox = toolbox or Toolbox()
         self.system = system or prompts.system_prompt()
+        # Off by default: on the dev split it scored below typed citations plus the citation check (README).
+        self.structured_citations = (os.environ.get("PDA_STRUCTURED_CITATIONS") == "1"
+                                     and getattr(provider, "supports_format", False))
 
     def ask(self, question: str) -> Answer:
         t0 = time.monotonic()
@@ -253,7 +257,7 @@ class Assistant:
                     messages.append({"role": "user", "content": LOOK_NUDGE})
                     continue
                 # Citation check: an answer must cite sources this conversation actually returned.
-                if (not getattr(self.provider, "supports_format", False)
+                if (not self.structured_citations
                         and not REFUSAL.search(reply.content or "") and results and not cite_fixed and steps < MAX_STEPS
                         and not citations_valid(results, parse_citations(reply.content or ""))):
                     cite_fixed = True
@@ -272,7 +276,7 @@ class Assistant:
             messages.append({"role": "user", "content": "Answer now from the tool results above, with citations."})
             reply = self.provider.chat(messages, None)
         text = (reply.content or "").strip()
-        if getattr(self.provider, "supports_format", False) and results and text and not REFUSAL.search(text):
+        if self.structured_citations and results and text and not REFUSAL.search(text):
             text = self.cite_from_provenance(messages, text, results)
         refused = bool(REFUSAL.search(text)) or not text
         missing = [] if refused else ungrounded_numbers(text, question, results)
