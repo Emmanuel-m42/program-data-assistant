@@ -12,9 +12,9 @@ Program staff spend a lot of time pulling the same numbers by hand: pace to goal
 
 ```mermaid
 flowchart LR
-    Q[Question] --> API[FastAPI POST /ask]
+    W[SvelteKit web app] --> API[FastAPI<br/>/ask /offices /evals]
     API --> A[Agent loop]
-    A <--> M[Model provider<br/>Ollama qwen2.5:7b or Anthropic]
+    A <--> M[Model provider<br/>Ollama open model or Claude]
     A --> T0[get_view]
     T0 --> R
     A --> T1[query_program_data]
@@ -30,7 +30,9 @@ flowchart LR
 - **Documents**: six short markdown files (`corpus/`) on how doors are counted, QC rules, the program plan, payroll rules, client reporting and the registration drive. Each is split on its headings, embedded with `BAAI/bge-small-en-v1.5` (local, via fastembed) and stored in pgvector.
 - **Tools**: `get_view(view, office, week_start)` returns a metric view, `query_program_data(sql)` runs read-only SQL, `search_documents(query)` searches the documents. SQL goes through a guard (sqlglot parse: exactly one SELECT, only program tables and views, no writes, locks or system functions) and then runs as a Postgres role that is read-only with a statement timeout. Results are capped at 200 rows. When a query names a column that doesn't exist, the tool returns the table's real columns so the model can fix it.
 - **Answers** cite `[table:...]` and `[doc:...]`. The API returns the tool calls, the rows and passages used, and a `refused` flag.
-- **Models**: a provider interface with two implementations. The default is a local open model through Ollama (`qwen2.5:7b`), which is what every result below comes from. The Anthropic provider is written but was not run here (no key on the build machine).
+- **Models**: a provider interface with two implementations, picked with `PDA_PROVIDER`. The default is a self-hosted open model through Ollama, which is what every result below comes from. `PDA_PROVIDER=anthropic` uses Claude through the Anthropic API instead. That path is covered by tests with a mocked client, but it hasn't been run against the real API. Every answer reports which model produced it.
+- **Web app** (`web/`): SvelteKit and TypeScript. It shows the answer with citation chips that open the rows or passage behind each number, the tools called, office tabs, and a page on how it's tested. Built as static files; it also runs with no backend in demo mode, from the recorded runs. See `web/README.md`.
+- **API** (`docs/api.md`): `POST /ask`, `GET /offices` (office summaries straight from the views), `GET /evals` and `GET /recorded` (the eval scoreboard and recorded runs), `GET /health`.
 
 ## Run it
 
@@ -48,11 +50,40 @@ uv run uvicorn program_data_assistant.api:app
 curl -s localhost:8000/ask -H 'content-type: application/json' -d '{"question": "Who is over 40 hours this week?"}'
 ```
 
+The web app, against that API:
+
+```bash
+PDA_CORS_ORIGINS=http://localhost:5173 uv run uvicorn program_data_assistant.api:app --port 8000
+cd web && npm install && PUBLIC_API_URL=http://localhost:8000 npm run dev
+```
+
+Leave out `PUBLIC_API_URL` and the web app runs in demo mode from the recorded runs, with no API or model.
+
 With Docker instead of pgserver, `docker compose up -d` starts Postgres with pgvector; set `PDA_DATABASE_URL` and `PDA_READER_URL` as shown in `docker-compose.yml`. That path wasn't tested on the build machine.
 
-Anthropic instead of Ollama: `uv sync --extra anthropic`, set `ANTHROPIC_API_KEY`, and pass `--provider anthropic` (or `PDA_PROVIDER=anthropic`). Untested here.
+Claude instead of an open model: `uv sync --extra anthropic`, set `ANTHROPIC_API_KEY` and `PDA_PROVIDER=anthropic` (optionally `PDA_ANTHROPIC_MODEL`). The eval runner takes the same switch: `uv run evals --provider anthropic --label claude`. Not run against the real API here.
 
-Settings: `PDA_OLLAMA_MODEL`, `OLLAMA_HOST`, `PDA_OLLAMA_THREADS`, `PDA_ANTHROPIC_MODEL`, `PDA_PGDATA`.
+Settings:
+- Model: `PDA_PROVIDER` (`ollama` or `anthropic`), `PDA_OLLAMA_MODEL`, `OLLAMA_HOST`, `PDA_OLLAMA_CTX`, `PDA_OLLAMA_THREADS`, `PDA_OLLAMA_THINK`, `PDA_ANTHROPIC_MODEL`, `ANTHROPIC_API_KEY`.
+- Database: `PDA_DATABASE_URL`, `PDA_READER_URL`, `PDA_PGDATA`.
+- API: `PDA_CORS_ORIGINS`.
+
+## Repository layout
+
+| path | what's there |
+| --- | --- |
+| `src/program_data_assistant/` | FastAPI app (`api.py`), agent loop, tools, SQL guard, retrieval, model providers, eval runner, data generator and loader |
+| `src/program_data_assistant/sql/schema.sql` | tables, metric views, the read-only role |
+| `data/csv/`, `corpus/` | the fictional program data and its six documents |
+| `evals/` | `cases.yaml` (28 cases with a dev/held-out split) and every report |
+| `demo/` | recorded runs the web app's demo mode uses |
+| `web/` | SvelteKit and TypeScript front end |
+| `docs/api.md` | the API contract |
+| `tests/` | pytest suite, through FastAPI's TestClient and the eval runner |
+
+## Deployment
+
+Terraform for Google Cloud (Cloud Run, Cloud SQL Postgres with pgvector, Secret Manager, Artifact Registry) and the Dockerfiles are on the `change-agent-infra` branch; this section is filled in when that branch merges. Nothing has been deployed.
 
 ## Evals
 
