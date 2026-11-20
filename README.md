@@ -177,7 +177,17 @@ Against the targets, qwen3.5:9b now meets retrieval, facts, citation, refusal, p
 
 ## Tests
 
-`uv run pytest` covers the SQL guard (allowed and rejected statements), the read-only role and timeout, retrieval, the scorers, the data stories the questions depend on, and the API through FastAPI's TestClient with a scripted model in place of a real one.
+`uv run pytest` covers:
+- the SQL guard (allowed and rejected statements), the read-only role and the timeout;
+- retrieval, the scorers, and the data stories the questions depend on;
+- the API (`/ask`, `/offices`, `/evals`, `/recorded`, CORS) through FastAPI's TestClient, with a scripted model in place of a real one;
+- the Claude backend through the same API and the eval runner, with a fake Messages client, so no key and no paid calls.
+
+In `web/`, `npm test` (vitest) covers the question matcher, citation-to-source mapping and the markdown subset (markup in an answer stays text), and `npm run check` runs svelte-check.
+
+## Model hosts
+
+The eval runs above used the build server's CPU and a laptop RTX 3080. A spot check on a GPD Win 5 (Ryzen AI Max+ 395, Radeon 8060S, 16 GB assigned to the GPU, Ollama with ROCm) loaded qwen3.8:27b fully on the GPU. It passed 5 of 5 eval cases at about 23 s per answer once the system prompt was cached (94 s for the first). The report is `evals/reports/gpd-qwen38-27b-16gb.json`.
 
 ## Limits
 
