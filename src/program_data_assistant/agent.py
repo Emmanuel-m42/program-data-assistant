@@ -47,6 +47,7 @@ class Answer:
     citations_valid: bool = False
     ungrounded_numbers: list[float] = field(default_factory=list)
     withheld_draft: str = ""
+    dropped_citations: list[str] = field(default_factory=list)
     latency_ms: int = 0
     model: str = ""
     steps: int = 0
@@ -157,6 +158,24 @@ def source_ids(results: list[ToolResult]) -> list[str]:
         if r.ok:
             ids += [f"table:{t}" for t in r.tables] + [f"doc:{p['chunk_id']}" for p in r.passages]
     return list(dict.fromkeys(ids))
+
+
+def drop_unknown_citations(text: str, results: list[ToolResult]) -> tuple[str, list[str]]:
+    """Remove citations to tables or passages this conversation never returned; report which ones."""
+    valid = set(source_ids(results))
+    dropped: list[str] = []
+
+    def keep(m: re.Match) -> str:
+        parts = [f"{k}:{v.rstrip('-#')}" for k, v in CITATION.findall(m.group(0))]
+        if not parts:
+            return m.group(0)  # not a citation, leave it
+        good = [p for p in parts if p in valid]
+        dropped.extend(p for p in parts if p not in valid)
+        return " ".join(f"[{p}]" for p in good)
+
+    out = re.sub(r"\s*\[[^\]]*\b(?:table|doc)\s*:[^\]]*\]", lambda m: (" " + keep(m)) if keep(m) else "", text)
+    out = re.sub(r"[ \t]+([.,;:])", r"\1", out)
+    return out, list(dict.fromkeys(dropped))
 
 
 def source_for_numbers(body: str, results: list[ToolResult]) -> str | None:
@@ -278,6 +297,7 @@ class Assistant:
         text = (reply.content or "").strip()
         if self.structured_citations and results and text and not REFUSAL.search(text):
             text = self.cite_from_provenance(messages, text, results)
+        text, dropped = drop_unknown_citations(text, results)
         refused = bool(REFUSAL.search(text)) or not text
         missing = [] if refused else ungrounded_numbers(text, question, results)
         withheld = ""
@@ -288,6 +308,7 @@ class Assistant:
         return Answer(
             ungrounded_numbers=missing,
             withheld_draft=withheld,
+            dropped_citations=dropped,
             question=question,
             answer=text,
             refused=refused,

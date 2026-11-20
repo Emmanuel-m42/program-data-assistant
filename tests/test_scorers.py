@@ -141,3 +141,16 @@ def test_repeated_runs_average_and_pass_all():
     s = evals.combine_scores([a, a, b])
     assert s["facts"] == 0.833 and s["pass"] == 0.667 and s["pass_all"] == 0.0
     assert evals.combine_scores([a, a])["pass_all"] == 1.0
+
+
+def test_unknown_citations_are_dropped_and_reported():
+    class R:
+        ok = True
+        tables = ["v_office_pace"]
+        passages = [{"chunk_id": "program-plan#pace-and-projection"}]
+
+    text = ("Eastgate misses by 3,204 doors [table:v_office_pace]. Method [doc:program-plan#projection] "
+            "[doc:program-plan#pace-and-projection].")
+    out, dropped = agent.drop_unknown_citations(text, [R()])
+    assert out == "Eastgate misses by 3,204 doors [table:v_office_pace]. Method [doc:program-plan#pace-and-projection]."
+    assert dropped == ["doc:program-plan#projection"]
