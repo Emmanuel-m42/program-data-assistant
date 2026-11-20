@@ -99,8 +99,9 @@ NUMBER=$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')
 gcloud auth configure-docker "$REGION-docker.pkg.dev"
 
 docker build --platform linux/amd64 -t "$REG/api:$TAG" ..
-docker build --platform linux/amd64 -t "$REG/web:$TAG" \
-  --build-arg PUBLIC_API_URL="https://pda-api-$NUMBER.$REGION.run.app" ../web
+# The web image builds from the repo root: it bundles demo/recorded_runs.json.
+docker build --platform linux/amd64 -f ../web/Dockerfile -t "$REG/web:$TAG" \
+  --build-arg PUBLIC_API_URL="https://pda-api-$NUMBER.$REGION.run.app" ..
 docker push "$REG/api:$TAG" && docker push "$REG/web:$TAG"
 ```
 
@@ -125,7 +126,7 @@ Rough monthly estimates at us-central1 list prices, for a demo with light traffi
 | --- | --- | --- |
 | Cloud SQL, `db-f1-micro`, 10 GB SSD, 7 backups | about $10 to $15 | runs all the time, so it's most of the bill. Shared core, no SLA. A dedicated core (`db-custom-1-3840`) is roughly $50 |
 | Cloud Run, API and web | about $0 | both scale to zero and only bill CPU during requests. Light demo traffic fits in the monthly free tier |
-| Artifact Registry | under $1 | first 0.5 GB free, then $0.10 per GB per month. The API image is likely 1.5 to 2 GB (Python packages, onnxruntime, the embedding model; not measured) |
+| Artifact Registry | under $1 | first 0.5 GB free, then $0.10 per GB per month. The API image should be around 500 MB (a 293 MB environment, the 65 MB embedding model and the Python base; the image itself wasn't built) |
 | Secret Manager | a few cents | |
 | Cloud VPN to the model server | about $35 or more | only if you use one; billed per tunnel hour |
 | The model | varies | Ollama runs on your own hardware. Claude through Vertex or the Anthropic API is billed per token |
@@ -143,11 +144,12 @@ On the build machine (no Docker, no GCP credentials):
 - `tflint` with the Google ruleset: no findings.
 - `checkov`: 26 passed, 0 failed, 8 skipped. Each skip has its reason next to the resource (public IP through the connector, Postgres 16, Google-managed encryption, statement and audit logging left off for made-up data).
 - `hadolint` on both Dockerfiles: no findings.
+- The Dockerfiles' build steps, run by hand in a temporary copy of the repo: `uv sync --frozen --no-dev` with both Claude extras, the embedding model download, `pda-load` into a throwaway local Postgres, then the image's `uvicorn` command with the model hub set offline. `/health`, `/offices` and `/evals` answered, and a CORS preflight from a `run.app` web origin was allowed. For the web app, `npm ci` and `npm run build` with `PUBLIC_API_URL` set produced `build/` with the URL in the bundle.
 - `uv run pytest`, including the reader password step of `pda-load` and the Vertex provider's configuration (no request sent).
 
 Not tested:
 
-- The Docker images were never built: Docker isn't available on the build machine. The Dockerfiles are linted only, and the nginx config was not run.
+- The Docker images were never built: Docker isn't available on the build machine. Their steps were run outside Docker as above, but the base images, the non-root users, file permissions inside the image and the nginx config were not exercised.
 - `terraform apply` was never run, so nothing here has met real GCP: API enablement timing, the Cloud SQL instance, `CREATE EXTENSION vector` as the `postgres` user, the socket URLs with psycopg, Secret Manager mounts, the load job and the public access bindings.
 - No calls to Vertex AI, and no Ollama server over a VPN.
 - Organization policies. A policy that blocks `allUsers` (domain restricted sharing) stops the public access step; the services still deploy.

@@ -22,8 +22,8 @@ RUN uv sync --frozen --no-dev --extra anthropic --extra vertex --no-install-proj
 COPY src ./src
 RUN uv sync --frozen --no-dev --extra anthropic --extra vertex
 
-# Bake the embedding model (BAAI/bge-small-en-v1.5, about 130 MB) into the image, so containers
-# don't download it on every cold start. A separate layer from the install on purpose.
+# Bake the embedding model (BAAI/bge-small-en-v1.5, about 65 MB) into the image, so containers
+# don't download it on every cold start; HF_HUB_OFFLINE below keeps them from trying. A separate layer from the install on purpose.
 # hadolint ignore=DL3059
 RUN /app/.venv/bin/python -c "from program_data_assistant.retrieval import embed_query; embed_query('warm up')"
 
@@ -45,6 +45,7 @@ COPY evals/cases.yaml ./evals/cases.yaml
 ENV PATH=/app/.venv/bin:$PATH \
     PYTHONUNBUFFERED=1 \
     FASTEMBED_CACHE_PATH=/app/models \
+    HF_HUB_OFFLINE=1 \
     HOME=/app
 
 USER 10001
