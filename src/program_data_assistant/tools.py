@@ -32,7 +32,7 @@ VIEWS = {
     "v_shifts_to_fix": "shift_date DESC",
     "v_daily_doors": "knock_date DESC, office",
 }
-WEEK_COLUMN = {"v_contact_rates", "v_weekly_report", "v_qc_weekly", "v_weekly_hours", "v_shifts_to_fix"}
+WEEK_COLUMN = {"v_contact_rates", "v_weekly_report", "v_qc_weekly", "v_weekly_hours", "v_shifts_to_fix", "v_qc_flags_detail"}
 OFFICE_COLUMN = set(VIEWS) - {"v_site_options"}
 ALL_OFFICES = {"all", "all offices", "all_offices", "any", "*", "program", "total"}
 
@@ -40,9 +40,14 @@ TOOL_SPECS = [
     {
         "name": "get_view",
         "description": (
-            "Return the rows of one metric view, optionally for one office or one week. This is the easiest way to get "
-            "pace, projections, shifts needed, contact rates, cost per door, the weekly report, turf coverage, site "
-            "options, staff status, QC flags, registration pace, duplicates, QC call outcomes, weekly hours and shifts to fix."
+            "Answers: program metrics that already have a view, read as is. Pace, projection and shortfall by office, "
+            "shifts needed, contact rate by week, cost per door, the weekly client report, turf coverage by precinct, "
+            "sites for a new office, staff status (active, regular), QC flags with evidence, QC rate by week, "
+            "registration pace and cards per hour, duplicates by canvasser, QC call outcomes, weekly hours and overtime, "
+            "shifts waiting for a fix or approval. "
+            "Doesn't answer: one specific day or shift, custom joins, rules or definitions. "
+            'Example: {"view": "v_office_pace"}. '
+            "Use this before query_program_data; switch to SQL only when no view has the columns you need."
         ),
         "parameters": {
             "type": "object",
@@ -57,8 +62,11 @@ TOOL_SPECS = [
     {
         "name": "query_program_data",
         "description": (
-            "Run one read-only SQL SELECT (Postgres) over the program tables and views described in the system "
-            "prompt. Use it for every number: doors, goals, shifts, hours, flags, cards, costs. Returns columns and rows."
+            "Answers: numbers no view covers, such as one day (for example Oct 12), one shift, one canvasser's knocks, "
+            "or a join across tables. Runs one read-only Postgres SELECT over the tables and views in the system prompt; "
+            "results are capped at 200 rows. "
+            "Doesn't answer: rules or definitions, or anything a view already gives as a column. "
+            "Example: {\"sql\": \"SELECT office, doors, attempts, rolled_back_attempts FROM v_daily_doors WHERE knock_date = '2026-10-16'\"}."
         ),
         "parameters": {
             "type": "object",
@@ -69,8 +77,13 @@ TOOL_SPECS = [
     {
         "name": "search_documents",
         "description": (
-            "Search the program documents (counting rules, QC rules, program plan, payroll rules, client reporting, "
-            "registration drive). Use it for definitions, rules, methods and policies. Returns passages with ids."
+            "Answers: definitions, rules, methods and the reasons behind numbers: how doors, attempts and contacts are "
+            "counted, why the client's report differs from ours, QC rules (flash knocking, householding, gaps, apartments), "
+            "the program plan (goals, projection method, regulars, more doors or a second pass, a new office), payroll "
+            "rules (overtime, approval, deadline), client reporting and the registration drive. "
+            "Doesn't answer: numbers. "
+            'Example: {"query": "how overtime is approved"}. '
+            "Use it with a data tool whenever the question asks why, or uses a program term that needs a definition."
         ),
         "parameters": {
             "type": "object",

@@ -18,7 +18,7 @@ v_site_options  candidate sites for a new office (site_id, name, address, monthl
   [lower = closer to the doors still needed], untouched_doors_within_3km, km_to_nearest_office)
 v_canvasser_status  one row per person (canvasser_id, full_name, office, program, role, days_worked, first_shift,
   last_shift, active [worked in the last 7 days], staff_type ['regular','occasional','one-day hire'])
-v_qc_flags_detail  QC flags with names (flag_id, flag_date, office, canvasser_id, full_name, shift_id, flag_type
+v_qc_flags_detail  QC flags with names (flag_id, flag_date, week_start, office, canvasser_id, full_name, shift_id, flag_type
   ['flash_knocking','householding','gap'], status ['open' = needs a conversation,'reviewed'], evidence, evidence_start,
   evidence_end, knock_count, knocks_rolled_back)
 v_qc_weekly  QC rate per office per week (office, week_start, shifts, flags, flash_knocking, householding, gaps, flags_per_100_shifts)
@@ -96,6 +96,14 @@ Tools:
   for more doors.
 
 {schema}
+Routing:
+1. Metric question: get_view on the view that has the answer as a column.
+2. Only if no view has it (one day, one shift, a custom join): query_program_data.
+3. Question asks why, or uses a program term (regular, on pace, contact rate, more doors or a second pass,
+   QC rate, overtime, duplicate, cards per hour needed): also search_documents.
+4. Neither data nor documents can have it (turnout, results, personal contact details, earlier cycles): say you
+   can't confirm it.
+
 Using the data:
 - Pick the view whose columns already hold the answer (for example extra_shifts_per_day_needed, projected_vs_goal,
   cost_per_door) and read those values. Don't recompute what a view already gives you.

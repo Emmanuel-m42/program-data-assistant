@@ -389,7 +389,8 @@ GROUP BY c.canvasser_id, c.full_name, c.office, c.program, c.role;
 
 -- QC flags with the canvasser's name.
 CREATE VIEW v_qc_flags_detail AS
-SELECT f.flag_id, f.flag_date, f.office, f.canvasser_id, c.full_name, f.shift_id, f.flag_type, f.status, f.evidence,
+SELECT f.flag_id, f.flag_date, date_trunc('week', f.flag_date)::date AS week_start, f.office, f.canvasser_id, c.full_name,
+       f.shift_id, f.flag_type, f.status, f.evidence,
        f.evidence_start, f.evidence_end, f.knock_count, f.knocks_rolled_back
 FROM qc_flags f JOIN canvassers c USING (canvasser_id);
 
