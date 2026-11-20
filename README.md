@@ -133,6 +133,15 @@ Final comparison, all 28 cases run 3 times each at temperature 0 (`final-qwen35-
 | test (held out) | 92% | 100% | 78% | 100% | 100% | 10 of 14 | 10 of 14 | 10 |
 | all 28 | 88% | 98% | 82% | 100% | 100% | 21 of 28 | 21 of 28 | 8 |
 
+The same final code on qwen3.8:27b, 3 runs per case with a 16,384-token context (`final-qwen38-27b-dev-x3`, `final-qwen38-27b-test-x3`):
+
+| split | tool choice | retrieval | facts | citation | refusal | pass | pass^3 | s per answer |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| dev | 100% | 96% | 96% | 100% | 100% | 13 of 14 | 13 of 14 | 57 |
+| test (held out) | 92% | 100% | 87% | 100% | 100% | 11 of 14 | 11 of 14 | 59 |
+
+On the held-out half, 27B is one case ahead of 9B (11 against 10) and nine points higher on facts, at about six times the time per answer. The larger context is needed because a long second turn overflowed 8,192 tokens; Ollama then dropped the question from the conversation and the request failed.
+
 Against the targets, qwen3.5:9b now meets retrieval, facts, citation, refusal, pass (21 of 28) and speed (8 s). It misses tool choice (88% against 90%). The held-out test facts score (78%) is below the dev score (87%), which is the gap the split is there to show. At temperature 0 the three runs rarely differ, so pass^3 equals pass here. Cases still failing: q04 (counts registration canvassers too), q05 (more doors vs second pass numbers), q07 (Oct 12 totals), q08 (dense untouched doors total), q11 (one name missed), q12 (counts written as words), q16 (Harbor duplicates total).
 
 ## Tests
