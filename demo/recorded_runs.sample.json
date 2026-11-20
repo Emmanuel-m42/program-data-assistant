@@ -1,0 +1,167 @@
+{
+  "program": "Riverbend Votes (GOTV) and Riverbend Registers (voter registration), fictional programs",
+  "generated_at": "2026-11-19T20:23:55+00:00",
+  "model": "ollama/qwen2.5:7b",
+  "scoreboard": {
+    "before": {
+      "label": "baseline",
+      "commit": "eb4363b",
+      "cases": 8,
+      "tool_choice": 0.625,
+      "retrieval": 1.0,
+      "facts": 0.177,
+      "citation": 0.375,
+      "refusal": 0.75,
+      "pass": 0.0,
+      "avg_latency_ms": 77205
+    },
+    "after": null,
+    "what_changed": "Sample only: baseline runs of the first two questions. The final file adds the improved run."
+  },
+  "questions": [
+    {
+      "id": "q01",
+      "question": "Are we on pace to hit goal, and where do we land by election day if nothing changes?",
+      "category": "pace",
+      "keywords": [
+        "pace",
+        "goal",
+        "election day",
+        "projection",
+        "on track",
+        "land",
+        "doors"
+      ],
+      "tool_calls": [
+        {
+          "name": "query_program_data",
+          "args": {
+            "sql": "SELECT * FROM v_office_pace WHERE goal_total IS NOT NULL AND goal_to_date IS NOT NULL AND doors_to_date IS NOT NULL AND goal_total > 0 AND goal_to_date > 0 AND doors_to_date > 0 AND goal_total > doors_to_date AND goal_total - doors_to_date > 0 AND goal_to_date - doors_to_date > 0 AND goal_to_date - doors_to_date < 7 AND goal_total - doors_to_date < 7 ORDER BY goal_total - doors_to_date ASC, goal_to_date - doors_to_date ASC, office ASC LIMIT 1;"
+          },
+          "result": "0 rows from v_office_pace"
+        },
+        {
+          "name": "query_program_data",
+          "args": {
+            "sql": "SELECT * FROM v_vr_pace WHERE card_goal IS NOT NULL AND cards_collected IS NOT NULL AND card_goal > 0 AND cards_collected > 0 AND card_goal - cards_collected > 0 AND card_goal - cards_collected < 7 AND card_goal - cards_collected < 7 ORDER BY card_goal - cards_collected ASC, card_goal - cards_collected ASC, office ASC LIMIT 1;"
+          },
+          "result": "0 rows from v_vr_pace"
+        }
+      ],
+      "sources": [
+        {
+          "type": "rows",
+          "table": "v_office_pace",
+          "columns": [
+            "office",
+            "goal_total",
+            "goal_to_date",
+            "doors_to_date",
+            "pct_of_goal_to_date",
+            "avg_daily_doors_last_7d",
+            "knocking_days_left",
+            "projected_total",
+            "projected_vs_goal",
+            "projected_pct_of_goal",
+            "avg_shifts_per_day_last_7d",
+            "doors_per_shift_last_7d",
+            "shifts_per_day_needed",
+            "extra_shifts_per_day_needed"
+          ],
+          "rows": []
+        },
+        {
+          "type": "rows",
+          "table": "v_vr_pace",
+          "columns": [
+            "office",
+            "card_goal",
+            "cards_collected",
+            "duplicate_cards",
+            "valid_cards",
+            "cards_remaining",
+            "hours_to_date",
+            "cards_per_hour_to_date",
+            "cards_per_hour_last_7d",
+            "avg_daily_hours_last_7d",
+            "days_left",
+            "projected_valid_cards",
+            "cards_per_hour_needed"
+          ],
+          "rows": []
+        }
+      ],
+      "answer": "Based on the current pace:\n\n### Door Canvassing\n- **Goal Total**: [table:v_office_pace]\n- **Goal to Date**: [table:v_office_pace]\n- **Doors to Date**: [table:v_office_pace]\n- **Pct of Goal to Date**: [table:v_office_pace]\n- **Avg Daily Doors Last 7 Days**: [table:v_office_pace]\n- **Knocking Days Left**: [table:v_office_pace]\n- **Projected Total**: [table:v_office_pace]\n- **Projected vs Goal**: [table:v_office_pace]\n- **Projected Pct of Goal**: [table:v_office_pace]\n- **Avg Shifts per Day Last 7 Days**: [table:v_office_pace]\n- **Doors per Shift Last 7 Days**: [table:v_office_pace]\n- **Shifts per Day Needed**: [table:v_office_pace]\n- **Extra Shifts per Day Needed**: [table:v_office_pace]\n\n### Voter Registration\n- **Card Goal**: [table:v_vr_pace]\n- **Cards Collected**: [table:v_vr_pace]\n- **Duplicate Cards**: [table:v_vr_pace]\n- **Valid Cards**: [table:v_vr_pace]\n- **Cards Remaining**: [table:v_vr_pace]\n- **Hours to Date**: [table:v_vr_pace]\n- **Cards per Hour to Date**: [table:v_vr_pace]\n- **Cards per Hour Last 7 Days**: [table:v_vr_pace]\n- **Avg Daily Hours Last 7 Days**: [table:v_vr_pace]\n- **Days Left**: [table:v_vr_pace]\n- **Projected Valid Cards**: [table:v_vr_pace]\n- **Cards per Hour Needed**: [table:v_vr_pace]\n\n### Election Day Projections\nTo project forward, we need to consider the remaining days until the election. The election is on November 3, 2026, and the current date is October 18, 2026, giving us 15 days left.\n\n- **Door Canvassing**: If the current pace continues, the projected total doors canvassed by election day is [table:v_office_pace]. This is [table:v_office_pace] of the goal.\n- **Voter Registration**: The projected valid cards collected by election day is [table:v_vr_pace]. This is [table:v_vr_pace] of the goal.\n\nThese projections are based on the current pace and do not account for any changes in the program's performance. If the pace remains consistent, we are on track to meet our goals by election day.",
+      "refused": false,
+      "latency_ms": 196343,
+      "model": "ollama/qwen2.5:7b",
+      "eval": {
+        "before": {
+          "tool_choice": 1.0,
+          "retrieval": 1.0,
+          "facts": 0.0,
+          "citation": 1.0,
+          "refusal": 1.0,
+          "pass": 0.0
+        },
+        "after": null
+      }
+    },
+    {
+      "id": "q02",
+      "question": "Which offices will miss their goal, and by how much?",
+      "category": "pace",
+      "keywords": [
+        "miss",
+        "goal",
+        "offices",
+        "shortfall",
+        "behind",
+        "how much"
+      ],
+      "tool_calls": [
+        {
+          "name": "query_program_data",
+          "args": {
+            "sql": "SELECT office, goal_total - doors_to_date AS shortfall FROM v_office_pace WHERE goal_total > doors_to_date AND goal_total - doors_to_date > 0 AND goal_total - doors_to_date > overtime_threshold_hours * 4;"
+          },
+          "result": "error: column \"overtime_threshold_hours\" does not exist"
+        },
+        {
+          "name": "search_documents",
+          "args": {
+            "query": "definition of overtime threshold"
+          },
+          "result": "4 passages: payroll-rules#overtime, counting-doors#why-the-client-s-numbers-differ-from-ours, payroll-rules#cost-per-door, qc-rules#gaps"
+        }
+      ],
+      "sources": [
+        {
+          "type": "passage",
+          "doc": "payroll-rules#overtime",
+          "text": "The overtime threshold is 40 paid hours in a payroll week, Monday through Sunday, counting every shift the person worked. Hours over 40 are paid at 1.5 times the hourly rate. Any shift that takes a person over 40 hours needs the field director's approval and stays pending until it is approved."
+        },
+        {
+          "type": "passage",
+          "doc": "counting-doors#why-the-client-s-numbers-differ-from-ours",
+          "text": "The client daily report counts attempts, pulled at the end of each day before any QC rollback. Our dashboard counts doors with rollbacks removed. The gap on any day is the repeat attempts at the same door plus any attempts that were later rolled back. A normal day shows a gap of a few percent from repeat attempts. A larger gap almost always means a rollback."
+        }
+      ],
+      "answer": "I can't confirm that from the program data or documents.\n\nThe documents do not provide specific thresholds or goals for each office, nor do they list the exact number of doors each office needs to knock. Without this information, I cannot determine which offices will miss their goal or by how much. The documents do explain that the client's daily report counts attempts differently from our dashboard, which could affect the gap calculation, but the exact goal totals are not provided.",
+      "refused": true,
+      "latency_ms": 45846,
+      "model": "ollama/qwen2.5:7b",
+      "eval": {
+        "before": {
+          "tool_choice": 1.0,
+          "retrieval": 1.0,
+          "facts": 0.0,
+          "citation": 0.0,
+          "refusal": 0.0,
+          "pass": 0.0
+        },
+        "after": null
+      }
+    }
+  ]
+}

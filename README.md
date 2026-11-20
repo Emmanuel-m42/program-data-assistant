@@ -15,6 +15,8 @@ flowchart LR
     Q[Question] --> API[FastAPI POST /ask]
     API --> A[Agent loop]
     A <--> M[Model provider<br/>Ollama qwen2.5:7b or Anthropic]
+    A --> T0[get_view]
+    T0 --> R
     A --> T1[query_program_data]
     A --> T2[search_documents]
     T1 --> G[SQL guard<br/>one SELECT, allowed tables only]
@@ -26,7 +28,7 @@ flowchart LR
 
 - **Data**: Postgres tables for offices, canvassers, shifts, knocks, goals, QC flags, the client's daily report, pay rates, candidate office sites, registration cards and QC calls. Metric views (`v_office_pace`, `v_vr_pace`, `v_contact_rates`, `v_weekly_report` and others) hold the program's definitions so the model doesn't have to rebuild them in SQL.
 - **Documents**: six short markdown files (`corpus/`) on how doors are counted, QC rules, the program plan, payroll rules, client reporting and the registration drive. Each is split on its headings, embedded with `BAAI/bge-small-en-v1.5` (local, via fastembed) and stored in pgvector.
-- **Tools**: `query_program_data(sql)` and `search_documents(query)`. SQL goes through a guard (sqlglot parse: exactly one SELECT, only program tables and views, no writes, locks or system functions) and then runs as a Postgres role that is read-only with a statement timeout. Results are capped at 200 rows. When a query names a column that doesn't exist, the tool returns the table's real columns so the model can fix it.
+- **Tools**: `get_view(view, office, week_start)` returns a metric view, `query_program_data(sql)` runs read-only SQL, `search_documents(query)` searches the documents. SQL goes through a guard (sqlglot parse: exactly one SELECT, only program tables and views, no writes, locks or system functions) and then runs as a Postgres role that is read-only with a statement timeout. Results are capped at 200 rows. When a query names a column that doesn't exist, the tool returns the table's real columns so the model can fix it.
 - **Answers** cite `[table:...]` and `[doc:...]`. The API returns the tool calls, the rows and passages used, and a `refused` flag.
 - **Models**: a provider interface with two implementations. The default is a local open model through Ollama (`qwen2.5:7b`), which is what every result below comes from. The Anthropic provider is written but was not run here (no key on the build machine).
 
@@ -71,7 +73,32 @@ Settings: `PDA_OLLAMA_MODEL`, `OLLAMA_HOST`, `PDA_OLLAMA_THREADS`, `PDA_ANTHROPI
 
 ## Results
 
-RESULTS_PLACEHOLDER
+Both runs use `qwen2.5:7b` through Ollama, CPU only (8 shared cores, 5 threads), temperature 0, scored by the same scorer. Full per-case tables are in `evals/reports/baseline.md` and `evals/reports/improved.md`.
+
+| metric | baseline | improved |
+| --- | --- | --- |
+| tool_choice | 0.76 | 0.76 |
+| retrieval (recall@4) | 0.98 | 0.98 |
+| facts | 0.26 | 0.48 |
+| citation | 0.40 | 0.60 |
+| refusal | 0.61 | 0.86 |
+| pass (all applicable metrics) | 7 of 28 | 8 of 28 |
+| average latency | 86 s | 124 s |
+
+What changed between the runs:
+
+- Helper views for common questions (contact rate, cost per door, weekly client report, staff status, QC flags with names, shifts to fix, registration results, QC call outcomes) and a `get_view` tool that returns a whole view, so the model reads values instead of writing SQL.
+- A schema guide with column meanings, an answer template (answer first, then numbers with citations), and three short examples that are not eval questions.
+- Guardrails: real column names sent back on SQL errors with one retry, a note when a query returns 0 rows, a repeated-query check, and a grounding check. If an answer contains numbers that appear in no tool result, the model gets one rewrite; if they're still unsupported, the answer is withheld as a refusal.
+
+What the scores show:
+
+- Most of the gain is fewer wrong refusals and right numbers when the model picks the right view (pace, shortfall by office, contact rates, registration pace, overtime, the weekly client report).
+- The baseline's worst habit was answering with citations and no numbers, or making numbers up after an empty query. The improved run reads real rows.
+- The main remaining failure is in the tool arguments: the model often passes `office: 'All offices'` or a week to views where that filter removes the rows it needs. It then answers from one summary row, or from no rows (staff status, precinct coverage, cost per door by office, site options).
+- It also stopped searching the documents for some document-only questions (payroll deadline, locked buildings) and refused instead. And it miscounted QC call outcomes by grouping a view that already has an 'All offices' row.
+- The first improved attempt, without `get_view` or the grounding check, still made up numbers after an empty result. It was stopped after a few cases and is not reported as a run.
+- Latency went up partly because of longer prompts and partly because the shared machine was short on memory during the second run (the model server was killed once and the run resumed).
 
 ## Tests
 
@@ -80,7 +107,7 @@ RESULTS_PLACEHOLDER
 ## Limits
 
 - The data is synthetic and built so each question has a clear answer. Real program data is messier: late clock-outs, turf changes, reassigned canvassers.
-- A 7B model on CPU is slow (about a minute per question here) and still makes mistakes the evals catch; see the per-case reports.
+- A 7B model on CPU is slow (one to two minutes per question here, sometimes ten) and still makes mistakes the evals catch; see the per-case reports. A larger hosted model through the Anthropic provider is the obvious next comparison but was not run.
 - The metric views do much of the work. That is a deliberate choice (definitions live in SQL, where they can be tested), but it means new kinds of questions need new views or the model has to write harder SQL.
 - Fact checks look for numbers and names in the answer text. They can't tell a right number used to reach a wrong conclusion, so the per-case answers are worth reading alongside the scores.
 - Refusal detection looks for the fixed refusal sentence the prompt asks for.
