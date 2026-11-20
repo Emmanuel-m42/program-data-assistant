@@ -52,7 +52,8 @@ class OllamaProvider:
         self.host = (host or os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434")).rstrip("/")
         if not self.host.startswith("http"):
             self.host = "http://" + self.host
-        self.num_ctx = num_ctx
+        # Ollama drops the oldest messages when a conversation outgrows the context, which can drop the question.
+        self.num_ctx = int(os.environ.get("PDA_OLLAMA_CTX", num_ctx))
         # Fewer threads than cores keeps generation steady on a shared machine.
         self.num_thread = int(os.environ.get("PDA_OLLAMA_THREADS", "5"))
         # Thinking models (qwen3 and later) get think=false: answers come back without a reasoning block.
