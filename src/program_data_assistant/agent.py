@@ -158,14 +158,33 @@ def source_ids(results: list[ToolResult]) -> list[str]:
     return list(dict.fromkeys(ids))
 
 
-def render_lines(lines: list[dict], allowed: set[str]) -> str:
-    """Rebuild the answer from {text, source} pairs; citations come from the source ids, never from typed text."""
+def source_for_numbers(body: str, results: list[ToolResult]) -> str | None:
+    """The result whose content holds the figures in this line, if one holds them all."""
+    nums = [n for n in _numbers(body) if not (n <= 31 and n == int(n))]
+    if not nums:
+        return None
+    for r in results:
+        if not r.ok:
+            continue
+        have = _numbers(r.content)
+        if all(any(abs(n - v) <= max(0.051, 0.006 * abs(v)) for v in have) for n in nums):
+            return f"table:{r.tables[0]}" if r.tables else (f"doc:{r.passages[0]['chunk_id']}" if r.passages else None)
+    return None
+
+
+def render_lines(lines: list[dict], allowed: set[str], results: list[ToolResult] = ()) -> str:
+    """Rebuild the answer from {text, source} pairs; citations come from provenance, never from typed text.
+
+    A line the model left without a valid source gets the tool result that contains all its figures, if any.
+    """
     out = []
     for line in lines:
-        body = BRACKETS.sub("", str(line.get("text", ""))).rstrip()
+        body = re.sub(r"\s+([.,;:])", r"\1", BRACKETS.sub("", str(line.get("text", "")))).rstrip()
         if not body.strip():
             continue
         src = line.get("source")
+        if src not in allowed:
+            src = source_for_numbers(body, list(results))
         out.append(f"{body} [{src}]" if src in allowed else body)
     return "\n".join(out)
 
@@ -191,7 +210,7 @@ class Assistant:
             lines = json.loads(reply.content)["lines"]
         except (ValueError, KeyError, TypeError):
             return draft
-        rendered = render_lines(lines, set(ids))
+        rendered = render_lines(lines, set(ids), results)
         return rendered or draft
 
     def __init__(self, provider: Provider, toolbox: Toolbox | None = None, system: str | None = None):
