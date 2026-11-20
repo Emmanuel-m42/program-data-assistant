@@ -12,6 +12,7 @@ import json
 import os
 import re
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Protocol
 
 import httpx
@@ -171,12 +172,47 @@ class VertexProvider(AnthropicProvider):
     name = "vertex"
 
     def __init__(self, model: str | None = None, max_tokens: int = 1500, client=None):
+        # PDA_VERTEX_ACCESS_TOKEN_FILE: a file holding a short-lived access token that something else keeps
+        # fresh. It is read again whenever the file changes, and the token is never logged.
+        self.token_file = os.environ.get("PDA_VERTEX_ACCESS_TOKEN_FILE") if client is None else None
+        self._token_mtime: float | None = None
         if client is None:
-            from anthropic import AnthropicVertex
-
-            client = AnthropicVertex(project_id=os.environ.get("PDA_VERTEX_PROJECT"),
-                                     region=os.environ.get("PDA_VERTEX_REGION", "global"))
+            client = self._client_from_token_file() if self.token_file else self._make_client(None)
         super().__init__(model or os.environ.get("PDA_VERTEX_MODEL"), max_tokens, client)
+
+    @staticmethod
+    def _make_client(access_token: str | None):
+        from anthropic import AnthropicVertex
+
+        kwargs = {"access_token": access_token} if access_token else {}
+        return AnthropicVertex(project_id=os.environ.get("PDA_VERTEX_PROJECT"),
+                               region=os.environ.get("PDA_VERTEX_REGION", "global"), **kwargs)
+
+    def _client_from_token_file(self):
+        path = Path(self.token_file)
+        try:
+            mtime = path.stat().st_mtime
+            token = path.read_text().strip()
+        except OSError as e:
+            raise RuntimeError(f"PDA_VERTEX_ACCESS_TOKEN_FILE {path} can't be read ({type(e).__name__})") from None
+        if not token:
+            raise RuntimeError(f"PDA_VERTEX_ACCESS_TOKEN_FILE {path} is empty")
+        self._token_mtime = mtime
+        return self._make_client(token)
+
+    def _refresh_if_token_changed(self):
+        if not self.token_file:
+            return
+        try:
+            mtime = Path(self.token_file).stat().st_mtime
+        except OSError as e:
+            raise RuntimeError(f"PDA_VERTEX_ACCESS_TOKEN_FILE {self.token_file} can't be read ({type(e).__name__})") from None
+        if mtime != self._token_mtime:
+            self.client = self._client_from_token_file()
+
+    def chat(self, messages, tools, format=None):
+        self._refresh_if_token_changed()  # cheap: one stat per request
+        return super().chat(messages, tools, format)
 
 
 PROVIDERS = {"ollama": OllamaProvider, "anthropic": AnthropicProvider, "vertex": VertexProvider}

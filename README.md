@@ -71,10 +71,10 @@ With Docker instead of pgserver, `docker compose up -d` starts Postgres with pgv
 
 Claude instead of an open model: `uv sync --extra anthropic`, set `ANTHROPIC_API_KEY` and `PDA_PROVIDER=anthropic` (optionally `PDA_ANTHROPIC_MODEL`). The eval runner takes the same switch: `uv run evals --provider anthropic --label claude`. Not run against the real API here.
 
-Claude on Google Vertex AI: `uv sync --extra vertex`, `PDA_PROVIDER=vertex`, and set `PDA_VERTEX_PROJECT`, `PDA_VERTEX_REGION` and `PDA_VERTEX_MODEL` (the model ID as Vertex names it). It signs in with the machine's Google identity, so there is no key; on Cloud Run that is the API's service account (see `infra/`). Untested against Vertex here.
+Claude on Google Vertex AI: `uv sync --extra vertex`, `PDA_PROVIDER=vertex`, and set `PDA_VERTEX_PROJECT`, `PDA_VERTEX_REGION` and `PDA_VERTEX_MODEL` (the model ID as Vertex names it). It signs in with the machine's Google identity, so there is no key; on Cloud Run that is the API's service account (see `infra/`). Elsewhere, `PDA_VERTEX_ACCESS_TOKEN_FILE` can point at a file holding a short-lived access token that something else keeps fresh; the provider reads it again whenever the file changes and never logs it. Untested against Vertex here.
 
 Settings:
-- Model: `PDA_PROVIDER` (`ollama`, `anthropic` or `vertex`), `PDA_OLLAMA_MODEL`, `OLLAMA_HOST`, `PDA_OLLAMA_CTX`, `PDA_OLLAMA_THREADS`, `PDA_OLLAMA_THINK`, `PDA_ANTHROPIC_MODEL`, `ANTHROPIC_API_KEY`, `PDA_VERTEX_PROJECT`, `PDA_VERTEX_REGION`, `PDA_VERTEX_MODEL`.
+- Model: `PDA_PROVIDER` (`ollama`, `anthropic` or `vertex`), `PDA_OLLAMA_MODEL`, `OLLAMA_HOST`, `PDA_OLLAMA_CTX`, `PDA_OLLAMA_THREADS`, `PDA_OLLAMA_THINK`, `PDA_ANTHROPIC_MODEL`, `ANTHROPIC_API_KEY`, `PDA_VERTEX_PROJECT`, `PDA_VERTEX_REGION`, `PDA_VERTEX_MODEL`, `PDA_VERTEX_ACCESS_TOKEN_FILE`.
 - Database: `PDA_DATABASE_URL`, `PDA_READER_URL`, `PDA_PGDATA`.
 - API: `PDA_CORS_ORIGINS`.
 
