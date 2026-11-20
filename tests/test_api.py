@@ -106,6 +106,16 @@ def test_get_view_returns_a_whole_view_or_one_office():
     assert len(Toolbox().run("get_view", {"view": "v_office_pace"}).rows) == 4
 
 
+def test_get_view_all_offices_means_no_filter_and_week_is_ignored_where_absent():
+    tb = Toolbox()
+    assert len(tb.run("get_view", {"view": "v_office_pace", "office": "All offices"}).rows) == 4
+    assert len(tb.run("get_view", {"view": "v_precinct_coverage", "office": "all", "week_start": "2026-10-12"}).rows) == 40
+    assert len(tb.run("get_view", {"view": "v_site_options", "office": "Harbor"}).rows) == 4
+    assert {r[0] for r in tb.run("get_view", {"view": "v_contact_rates", "week_start": "2026-10-12"}).rows} == {
+        "All offices", "Eastgate", "Harbor", "Northside"}
+    assert [r[0] for r in tb.run("get_view", {"view": "v_cost_per_door", "office": "Eastgate"}).rows] == ["Eastgate"]
+
+
 def test_repeated_query_is_not_rerun():
     sql = "SELECT office FROM offices"
     c, provider = client([sql_call(sql), sql_call(sql), Reply("Three offices [table:offices].")])

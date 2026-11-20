@@ -33,6 +33,8 @@ VIEWS = {
     "v_daily_doors": "knock_date DESC, office",
 }
 WEEK_COLUMN = {"v_contact_rates", "v_weekly_report", "v_qc_weekly", "v_weekly_hours", "v_shifts_to_fix"}
+OFFICE_COLUMN = set(VIEWS) - {"v_site_options"}
+ALL_OFFICES = {"all", "all offices", "all_offices", "any", "*", "program", "total"}
 
 TOOL_SPECS = [
     {
@@ -46,8 +48,8 @@ TOOL_SPECS = [
             "type": "object",
             "properties": {
                 "view": {"type": "string", "enum": sorted(VIEWS)},
-                "office": {"type": "string", "description": "Optional: 'Northside', 'Eastgate', 'Harbor' or 'All offices'."},
-                "week_start": {"type": "string", "description": "Optional Monday date for weekly views; this week is 2026-10-12, last week 2026-10-05."},
+                "office": {"type": "string", "description": "Only when the question names one office: 'Northside', 'Eastgate' or 'Harbor'. Leave it out otherwise."},
+                "week_start": {"type": "string", "description": "Only when the question names one week, for weekly views. Leave it out to compare weeks. This week is 2026-10-12, last week 2026-10-05."},
             },
             "required": ["view"],
         },
@@ -178,18 +180,20 @@ class Toolbox:
                               "unknown view")
         where, params = [], []
         office = str(args.get("office") or "").strip()
-        if office and view not in ("v_site_options",):
+        if office.lower() in ALL_OFFICES:  # "all offices" means no filter, not only the total row
+            office = ""
+        if office and view in OFFICE_COLUMN:
             where.append("office = %s")
             params.append(office)
         week = str(args.get("week_start") or "").strip()
-        if week and view in WEEK_COLUMN:
+        if week and view in WEEK_COLUMN:  # ignored on views without a week column
             where.append("week_start = %s")
             params.append(week)
         # Built only from the fixed view names and order clauses above; values are bound parameters.
         sql = f"SELECT * FROM {view}" + (f" WHERE {' AND '.join(where)}" if where else "") + f" ORDER BY {VIEWS[view]}"
         res = self._run_select(sql, [view], args, "get_view", params)
         if res.ok and not res.rows and (office or week):
-            res.content += f"\n(No rows for that filter. Offices are Northside, Eastgate, Harbor and 'All offices'.)"
+            res.content += "\n(No rows for that filter. Offices are Northside, Eastgate and Harbor; leave office out for all.)"
         return res
 
     def column_hint(self, tables: list[str]) -> str:
