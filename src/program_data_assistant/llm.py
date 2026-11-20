@@ -10,10 +10,15 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from dataclasses import dataclass, field
 from typing import Protocol
 
 import httpx
+
+
+THINKING_MODELS = re.compile(r"^(qwen3|deepseek-r1|gpt-oss)", re.IGNORECASE)
+THINK_BLOCK = re.compile(r"<think>.*?</think>", re.DOTALL)
 
 
 @dataclass
@@ -49,6 +54,13 @@ class OllamaProvider:
         self.num_ctx = num_ctx
         # Fewer threads than cores keeps generation steady on a shared machine.
         self.num_thread = int(os.environ.get("PDA_OLLAMA_THREADS", "5"))
+        # Thinking models (qwen3 and later) get think=false: answers come back without a reasoning block.
+        # PDA_OLLAMA_THINK=true/false overrides; other models get no think field at all.
+        flag = os.environ.get("PDA_OLLAMA_THINK", "").lower()
+        if flag in ("true", "false"):
+            self.think = flag == "true"
+        else:
+            self.think = False if THINKING_MODELS.match(self.model) else None
         self.client = httpx.Client(timeout=timeout)
 
     def chat(self, messages, tools):
@@ -70,9 +82,12 @@ class OllamaProvider:
         }
         if tools:
             body["tools"] = [{"type": "function", "function": t} for t in tools]
+        if self.think is not None:
+            body["think"] = self.think
         r = self.client.post(f"{self.host}/api/chat", json=body)
         r.raise_for_status()
         msg = r.json()["message"]
+        msg["content"] = THINK_BLOCK.sub("", msg.get("content") or "").strip()  # in case thinking text leaks into content
         calls = []
         for i, c in enumerate(msg.get("tool_calls") or []):
             fn = c.get("function", {})

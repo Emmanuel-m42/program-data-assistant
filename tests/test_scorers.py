@@ -104,3 +104,24 @@ def test_ground_truth_sql_runs():
         truth = evals.compute_truth(conn, cases)
     assert truth[("q07", "rolled-back attempts Oct 12")] == 142
     assert all(v is not None for v in truth.values())
+
+
+def test_thinking_models_get_think_false_and_think_blocks_are_stripped(monkeypatch):
+    from program_data_assistant import llm
+
+    monkeypatch.delenv("PDA_OLLAMA_THINK", raising=False)
+    assert llm.OllamaProvider("qwen3.5:9b").think is False
+    assert llm.OllamaProvider("qwen2.5:7b").think is None
+    sent = {}
+
+    class Resp:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {"message": {"content": "<think>reasoning</think>\nEastgate.", "tool_calls": []}}
+
+    p = llm.OllamaProvider("qwen3.5:9b")
+    p.client.post = lambda url, json: sent.update(json) or Resp()
+    assert p.chat([{"role": "user", "content": "q"}], None).content == "Eastgate."
+    assert sent["think"] is False
