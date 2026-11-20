@@ -10,6 +10,7 @@
 #                          with tol (relative) or abs (absolute) tolerance; kind: percent also accepts a 0-1 fraction
 #                     any_of: list of strings, one of which must appear (case-insensitive)
 #   should_refuse   true when the data and documents cannot answer it
+#   split           dev (used while changing prompts and tools) or test (held out, only for reporting)
 #
 # Ground truth dates: data through 2026-10-18, this week 2026-10-12..18, last week 2026-10-05..11,
 # 16 knocking days left (Oct 19 to Nov 3), 12 registration days left (Oct 19 to Oct 30).
@@ -19,6 +20,7 @@ defaults:
 
 cases:
   - id: q01
+    split: dev
     question: Are we on pace to hit goal, and where do we land by election day if nothing changes?
     category: pace
     keywords: [pace, goal, election day, projection, on track, land, doors]
@@ -39,6 +41,7 @@ cases:
         any_of: [not on pace, not on track, behind, short of, miss, below goal, below the goal, under goal]
 
   - id: q02
+    split: test
     question: Which offices will miss their goal, and by how much?
     category: pace
     keywords: [miss, goal, offices, shortfall, behind, how much]
@@ -61,6 +64,7 @@ cases:
         any_of: [Harbor]
 
   - id: q03
+    split: dev
     question: How many more shifts a day does each office need to hit goal?
     category: staffing
     keywords: [shifts, per day, staffing, recruit, more shifts, hit goal]
@@ -85,6 +89,7 @@ cases:
         any_of: [Northside]
 
   - id: q04
+    split: test
     question: How many of our active canvassers are regulars, not one-day hires?
     category: staffing
     keywords: [active, canvassers, regulars, one-day hires, retention, staff]
@@ -101,6 +106,7 @@ cases:
         abs: 0
 
   - id: q05
+    split: dev
     question: Based on our pace and what's left, should we ask the client for more doors, or a second pass on the turf we have?
     category: door gaps
     keywords: [more doors, second pass, turf, client, run out, remaining]
@@ -119,6 +125,7 @@ cases:
         any_of: [more doors, more turf, new turf, additional doors, additional turf]
 
   - id: q06
+    split: test
     question: If we open a fourth office, where should it go to be closest to the doors we still need?
     category: office siting
     keywords: [fourth office, new office, location, site, closest, remaining doors]
@@ -129,6 +136,7 @@ cases:
         any_of: [Mill Street, S1, 215 Mill]
 
   - id: q07
+    split: dev
     question: Why does the client's daily report show more doors than our dashboard for Oct 12?
     category: client report
     keywords: [client report, dashboard, Oct 12, difference, gap, attempts, rollback]
@@ -150,6 +158,7 @@ cases:
         any_of: [rolled back, rollback, roll back, rolled-back]
 
   - id: q08
+    split: test
     question: Which precincts are untouched or only lightly touched, and is what's left dense enough to keep knocking efficiently?
     category: door gaps
     keywords: [precincts, untouched, lightly touched, dense, density, turf left]
@@ -165,6 +174,7 @@ cases:
         tol: 0.03
 
   - id: q09
+    split: dev
     question: Are contact rates up or down from last week, and in which offices?
     category: pace
     keywords: [contact rate, last week, up, down, offices, conversations]
@@ -215,6 +225,7 @@ cases:
         kind: percent
 
   - id: q10
+    split: test
     question: What are we paying per door by office, and which office is most expensive?
     category: payroll
     keywords: [cost per door, paying, pay, expensive, wages, office]
@@ -243,6 +254,7 @@ cases:
         any_of: [Eastgate]
 
   - id: q11
+    split: dev
     question: Which canvassers had flash knocking or householding flags this week, and is it one person or the whole office?
     category: QC
     keywords: [flash knocking, householding, flags, canvassers, this week, QC]
@@ -264,6 +276,7 @@ cases:
         abs: 0
 
   - id: q12
+    split: test
     question: Which shifts need a conversation today, and what's the evidence behind each flag?
     category: QC
     keywords: [conversation, today, open flags, evidence, shifts, QC]
@@ -281,6 +294,7 @@ cases:
         abs: 0
 
   - id: q13
+    split: dev
     question: Is QC getting better or worse week over week, and which office is improving?
     category: QC
     keywords: [QC, week over week, better, worse, improving, flags rate]
@@ -301,6 +315,7 @@ cases:
         abs: 0.2
 
   - id: q14
+    split: test
     question: Are we on pace for the registration goal, and what cards per hour do we need from here?
     category: VR rate
     keywords: [registration, goal, cards per hour, pace, needed, cards]
@@ -321,6 +336,7 @@ cases:
         any_of: [not on pace, not on track, behind, short, below, under, miss]
 
   - id: q15
+    split: dev
     question: Which offices are under that cards per hour?
     category: VR rate
     keywords: [offices, under, cards per hour, registration, below rate]
@@ -338,6 +354,7 @@ cases:
         abs: 0.05
 
   - id: q16
+    split: test
     question: Which offices or canvassers have the most duplicate registrations, and is it one person or across the board?
     category: QC
     keywords: [duplicate, registrations, cards, canvassers, one person, across the board]
@@ -354,6 +371,7 @@ cases:
         abs: 0
 
   - id: q17
+    split: dev
     question: What share of QC calls confirmed the registrant, couldn't reach them, or found wrong information?
     category: QC
     keywords: [QC calls, confirmed, unreachable, wrong information, share, registration]
@@ -374,6 +392,7 @@ cases:
         kind: percent
 
   - id: q18
+    split: test
     question: Who's over the weekly overtime threshold, and whose hours still need fixing or approval before payroll runs?
     category: payroll
     keywords: [overtime, 40 hours, payroll, approval, fix, hours, threshold]
@@ -394,6 +413,7 @@ cases:
         any_of: [Hugo Brennan]
 
   - id: q19
+    split: dev
     question: "Pull this week's numbers for the client report: doors, contacts, cards and hours by office."
     category: client report
     keywords: [client report, this week, doors, contacts, cards, hours, weekly]
@@ -416,6 +436,7 @@ cases:
   # ---------- extra cases: paraphrases, document-only questions, refusals ----------
 
   - id: x01
+    split: dev
     question: Which office is furthest behind its door goal?
     category: pace
     extra: paraphrase of q02
@@ -426,6 +447,7 @@ cases:
         any_of: [Eastgate]
 
   - id: x02
+    split: test
     question: Which office costs the most per door?
     category: payroll
     extra: paraphrase of q10
@@ -442,6 +464,7 @@ cases:
         tol: 0.03
 
   - id: x03
+    split: test
     question: How many registration QC calls came back with wrong information?
     category: QC
     extra: paraphrase of q17
@@ -453,6 +476,7 @@ cases:
         abs: 0
 
   - id: x04
+    split: dev
     question: What counts as flash knocking under our QC rules?
     category: QC
     extra: document only
@@ -465,6 +489,7 @@ cases:
         any_of: ["30 seconds", thirty seconds]
 
   - id: x05
+    split: test
     question: When does payroll run, and who has to approve overtime?
     category: payroll
     extra: document only
@@ -477,6 +502,7 @@ cases:
         any_of: [field director]
 
   - id: x06
+    split: test
     question: How should a canvasser record a locked apartment building?
     category: QC
     extra: document only
@@ -489,18 +515,21 @@ cases:
         any_of: [once, first unit, one time]
 
   - id: x07
+    split: dev
     question: What will turnout be in Harbor's precincts on election day?
     category: pace
     extra: refusal, no turnout data
     should_refuse: true
 
   - id: x08
+    split: test
     question: What is Dorian Pratt's phone number?
     category: QC
     extra: refusal, not in the data
     should_refuse: true
 
   - id: x09
+    split: dev
     question: How many doors did Riverbend Votes knock in the 2022 cycle?
     category: pace
     extra: refusal, no data before this program

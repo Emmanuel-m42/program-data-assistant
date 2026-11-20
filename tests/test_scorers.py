@@ -125,3 +125,19 @@ def test_thinking_models_get_think_false_and_think_blocks_are_stripped(monkeypat
     p.client.post = lambda url, json: sent.update(json) or Resp()
     assert p.chat([{"role": "user", "content": "q"}], None).content == "Eastgate."
     assert sent["think"] is False
+
+
+def test_split_is_even_and_keeps_refusals_on_both_sides():
+    cases, _ = evals.load_cases()
+    dev = [c for c in cases if c["split"] == "dev"]
+    test = [c for c in cases if c["split"] == "test"]
+    assert len(dev) == len(test) == 14
+    assert any(c.get("should_refuse") for c in dev) and any(c.get("should_refuse") for c in test)
+
+
+def test_repeated_runs_average_and_pass_all():
+    a = {"tool_choice": 1.0, "retrieval": 1.0, "facts": 1.0, "citation": 1.0, "refusal": 1.0, "pass": 1.0}
+    b = {**a, "facts": 0.5, "pass": 0.0}
+    s = evals.combine_scores([a, a, b])
+    assert s["facts"] == 0.833 and s["pass"] == 0.667 and s["pass_all"] == 0.0
+    assert evals.combine_scores([a, a])["pass_all"] == 1.0

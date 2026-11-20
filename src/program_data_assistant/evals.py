@@ -104,11 +104,11 @@ def score_case(case: dict, answer: dict, truth: dict, retrieved: list[str], defa
 
 def summarize(rows: list[dict]) -> dict:
     out = {"cases": len(rows)}
-    for m in METRICS + ["pass"]:
-        vals = [r["scores"][m] for r in rows if r["scores"][m] is not None]
+    for m in METRICS + ["pass", "pass_all"]:
+        vals = [r["scores"].get(m) for r in rows if r["scores"].get(m) is not None]
         out[m] = round(sum(vals) / len(vals), 3) if vals else None
         out[f"{m}_n"] = len(vals)
-    lat = [r["answer"]["latency_ms"] for r in rows]
+    lat = [a["latency_ms"] for r in rows for a in [r["answer"]] + [x["answer"] for x in r.get("repeats", [])]]
     out["avg_latency_ms"] = int(sum(lat) / len(lat)) if lat else 0
     return out
 
@@ -130,13 +130,15 @@ def markdown(report: dict) -> str:
     lines = [
         f"# Eval report: {report['label']}",
         "",
-        f"Model `{report['model']}`, commit `{report['commit']}`, {report['generated_at']}, {s['cases']} cases.",
+        f"Model `{report['model']}`, commit `{report['commit']}`, {report['generated_at']}, {s['cases']} cases "
+        f"(split {report.get('split', 'all')}, {report.get('repeat', 1)} run(s) per case; pass_all is pass^k).",
         "",
         "| metric | score | cases scored |",
         "| --- | --- | --- |",
     ]
-    for m in METRICS + ["pass"]:
-        lines.append(f"| {m} | {fmt(s[m])} | {s[f'{m}_n']} |")
+    for m in METRICS + ["pass", "pass_all"]:
+        if s.get(m) is not None:
+            lines.append(f"| {m} | {fmt(s[m])} | {s[f'{m}_n']} |")
     lines += ["", f"Average latency {s['avg_latency_ms'] / 1000:.1f} s per question.", "",
               "| case | category | tool choice | retrieval | facts | citation | refusal | pass | latency s |",
               "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
@@ -152,11 +154,23 @@ def markdown(report: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def combine_scores(runs: list[dict]) -> dict:
+    """Mean of each metric over repeated runs; pass_all is 1 only if every run passed (pass^k)."""
+    out = {}
+    for m in METRICS + ["pass"]:
+        vals = [r[m] for r in runs if r[m] is not None]
+        out[m] = round(sum(vals) / len(vals), 3) if vals else None
+    out["pass_all"] = 1.0 if all(r["pass"] == 1.0 for r in runs) else 0.0
+    return out
+
+
 def run(label: str, provider: str | None, model: str | None, only: list[str] | None, out_dir: Path,
-        resume: bool = False) -> dict:
+        resume: bool = False, split: str | None = None, repeat: int = 1) -> dict:
     cases, defaults = load_cases()
     if only:
         cases = [c for c in cases if c["id"] in only]
+    if split:
+        cases = [c for c in cases if c.get("split") == split]
     with db.connect_admin() as conn:
         truth = compute_truth(conn, cases)
         retrieved = {c["id"]: [h["chunk_id"] for h in retrieval.search(conn, c["question"])] for c in cases}
@@ -175,6 +189,8 @@ def run(label: str, provider: str | None, model: str | None, only: list[str] | N
             "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
             "model": assistant.provider.name + "/" + assistant.provider.model,
             "commit": git_commit(),
+            "split": split or "all",
+            "repeat": repeat,
             "summary": summarize(rows),
             "cases": rows,
         }
@@ -182,11 +198,17 @@ def run(label: str, provider: str | None, model: str | None, only: list[str] | N
     for c in cases:
         if c["id"] in done:
             continue
-        ans = assistant.ask(c["question"]).to_dict()
-        scored = score_case(c, ans, truth, retrieved[c["id"]], defaults)
-        rows.append({"id": c["id"], "question": c["question"], "category": c["category"], "keywords": c.get("keywords", []),
-                     "should_refuse": bool(c.get("should_refuse")), "retrieved": retrieved[c["id"]], **scored, "answer": ans})
-        sc = scored["scores"]
+        attempts = []
+        for _ in range(repeat):
+            ans = assistant.ask(c["question"]).to_dict()
+            attempts.append({**score_case(c, ans, truth, retrieved[c["id"]], defaults), "answer": ans})
+        first = attempts[0]
+        scores = combine_scores([a["scores"] for a in attempts])
+        rows.append({"id": c["id"], "question": c["question"], "category": c["category"], "split": c.get("split", ""),
+                     "keywords": c.get("keywords", []), "should_refuse": bool(c.get("should_refuse")),
+                     "retrieved": retrieved[c["id"]], "scores": scores, "facts": first["facts"], "answer": first["answer"],
+                     "repeats": attempts[1:]})
+        sc, ans = scores, first["answer"]
         print(f"{c['id']}  pass={sc['pass']:.0f}  facts={fmt(sc['facts'])}  tools={fmt(sc['tool_choice'])}  "
               f"cite={fmt(sc['citation'])}  refusal={sc['refusal']:.0f}  {ans['latency_ms'] / 1000:.0f}s", flush=True)
         partial.write_text(json.dumps(report_for(rows), indent=2, default=str))  # progress, in case a long run stops
@@ -207,7 +229,11 @@ def rescore(path: Path) -> dict:
         for r in report["cases"]:
             c = by_id[r["id"]]
             r["retrieved"] = [h["chunk_id"] for h in retrieval.search(conn, c["question"])]
-            r.update(score_case(c, r["answer"], truth, r["retrieved"], defaults))
+            first = score_case(c, r["answer"], truth, r["retrieved"], defaults)
+            for x in r.get("repeats", []):
+                x.update(score_case(c, x["answer"], truth, r["retrieved"], defaults))
+            r["facts"] = first["facts"]
+            r["scores"] = combine_scores([first["scores"]] + [x["scores"] for x in r.get("repeats", [])])
     report["summary"] = summarize(report["cases"])
     report["rescored_at"] = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
     path.write_text(json.dumps(report, indent=2, default=str))
@@ -223,16 +249,18 @@ def main() -> None:
     ap.add_argument("--only", nargs="*", help="case ids to run")
     ap.add_argument("--out", default=str(REPORTS))
     ap.add_argument("--resume", action="store_true", help="continue from <label>.partial.json")
+    ap.add_argument("--split", choices=["dev", "test"], help="run only the dev or the held-out test cases")
+    ap.add_argument("--repeat", type=int, default=1, help="runs per case; scores are means, pass_all is pass^k")
     ap.add_argument("--rescore", help="re-score a saved report with the current cases instead of running the model")
     args = ap.parse_args()
     if args.rescore:
         report = rescore(Path(args.rescore))
         s = report["summary"]
-        print("  ".join(f"{m}={fmt(s[m])}" for m in METRICS + ["pass"]))
+        print("  ".join(f"{m}={fmt(s[m])}" for m in METRICS + ["pass", "pass_all"]))
         return
-    report = run(args.label, args.provider, args.model, args.only, Path(args.out), args.resume)
+    report = run(args.label, args.provider, args.model, args.only, Path(args.out), args.resume, args.split, args.repeat)
     s = report["summary"]
-    print("\n" + "  ".join(f"{m}={fmt(s[m])}" for m in METRICS + ["pass"]))
+    print("\n" + "  ".join(f"{m}={fmt(s[m])}" for m in METRICS + ["pass", "pass_all"]))
     print(f"wrote {args.out}/{args.label}.json and .md")
 
 
