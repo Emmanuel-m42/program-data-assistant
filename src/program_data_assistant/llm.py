@@ -106,35 +106,51 @@ class OllamaProvider:
 
 
 class AnthropicProvider:
-    """Anthropic Messages API. Needs ANTHROPIC_API_KEY and `uv sync --extra anthropic`."""
+    """Claude through the Anthropic Messages API. Needs ANTHROPIC_API_KEY and `uv sync --extra anthropic`.
+
+    Pass `client` to use another client with the same interface (Bedrock below, or a fake in tests).
+    """
 
     name = "anthropic"
-
-    def __init__(self, model: str | None = None, max_tokens: int = 1500):
-        import anthropic
-
-        self.model = model or os.environ.get("PDA_ANTHROPIC_MODEL", "claude-sonnet-5-5")
-        self.max_tokens = max_tokens
-        self.client = anthropic.Anthropic()
-
     supports_format = False  # structured citations fall back to citations typed in the text
 
-    def chat(self, messages, tools, format=None):
+    def __init__(self, model: str | None = None, max_tokens: int = 1500, client=None):
+        self.model = model or os.environ.get("PDA_ANTHROPIC_MODEL", "claude-sonnet-5-5")
+        self.max_tokens = max_tokens
+        if client is None:
+            import anthropic
+
+            client = anthropic.Anthropic()
+        self.client = client
+
+    @staticmethod
+    def to_messages(messages: list[dict]) -> tuple[str, list[dict]]:
+        """Neutral messages to (system, Messages API turns). Tool results and nudges share one user turn."""
         system = "\n\n".join(m["content"] for m in messages if m["role"] == "system")
         out: list[dict] = []
+
+        def user_block(block):
+            if out and out[-1]["role"] == "user":
+                if isinstance(out[-1]["content"], str):
+                    out[-1]["content"] = [{"type": "text", "text": out[-1]["content"]}]
+                out[-1]["content"].append(block)
+            else:
+                out.append({"role": "user", "content": [block]})
+
         for m in messages:
             if m["role"] == "user":
-                out.append({"role": "user", "content": m["content"]})
+                user_block({"type": "text", "text": m["content"]})
             elif m["role"] == "assistant":
                 blocks = [{"type": "text", "text": m["content"]}] if m.get("content") else []
                 blocks += [{"type": "tool_use", "id": c["id"], "name": c["name"], "input": c["args"]} for c in m.get("tool_calls", [])]
-                out.append({"role": "assistant", "content": blocks})
+                if blocks:
+                    out.append({"role": "assistant", "content": blocks})
             elif m["role"] == "tool":
-                block = {"type": "tool_result", "tool_use_id": m["tool_call_id"], "content": m["content"]}
-                if out and out[-1]["role"] == "user" and isinstance(out[-1]["content"], list):
-                    out[-1]["content"].append(block)
-                else:
-                    out.append({"role": "user", "content": [block]})
+                user_block({"type": "tool_result", "tool_use_id": m["tool_call_id"], "content": m["content"]})
+        return system, out
+
+    def chat(self, messages, tools, format=None):
+        system, out = self.to_messages(messages)
         kwargs = {}
         if tools:
             kwargs["tools"] = [{"name": t["name"], "description": t["description"], "input_schema": t["parameters"]} for t in tools]
@@ -144,10 +160,12 @@ class AnthropicProvider:
         return Reply(text, calls)
 
 
+PROVIDERS = {"ollama": OllamaProvider, "anthropic": AnthropicProvider}
+
+
 def get_provider(name: str | None = None, model: str | None = None) -> Provider:
+    """PDA_PROVIDER picks the backend: ollama (open model, default) or anthropic (Claude)."""
     name = name or os.environ.get("PDA_PROVIDER", "ollama")
-    if name == "ollama":
-        return OllamaProvider(model)
-    if name == "anthropic":
-        return AnthropicProvider(model)
-    raise ValueError(f"unknown provider '{name}'")
+    if name not in PROVIDERS:
+        raise ValueError(f"unknown provider '{name}', choose one of {', '.join(PROVIDERS)}")
+    return PROVIDERS[name](model)
