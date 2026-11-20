@@ -63,8 +63,10 @@ With Docker instead of pgserver, `docker compose up -d` starts Postgres with pgv
 
 Claude instead of an open model: `uv sync --extra anthropic`, set `ANTHROPIC_API_KEY` and `PDA_PROVIDER=anthropic` (optionally `PDA_ANTHROPIC_MODEL`). The eval runner takes the same switch: `uv run evals --provider anthropic --label claude`. Not run against the real API here.
 
+Claude on Google Vertex AI: `uv sync --extra vertex`, `PDA_PROVIDER=vertex`, and set `PDA_VERTEX_PROJECT`, `PDA_VERTEX_REGION` and `PDA_VERTEX_MODEL` (the model ID as Vertex names it). It signs in with the machine's Google identity, so there is no key; on Cloud Run that is the API's service account (see `infra/`). Untested against Vertex here.
+
 Settings:
-- Model: `PDA_PROVIDER` (`ollama` or `anthropic`), `PDA_OLLAMA_MODEL`, `OLLAMA_HOST`, `PDA_OLLAMA_CTX`, `PDA_OLLAMA_THREADS`, `PDA_OLLAMA_THINK`, `PDA_ANTHROPIC_MODEL`, `ANTHROPIC_API_KEY`.
+- Model: `PDA_PROVIDER` (`ollama`, `anthropic` or `vertex`), `PDA_OLLAMA_MODEL`, `OLLAMA_HOST`, `PDA_OLLAMA_CTX`, `PDA_OLLAMA_THREADS`, `PDA_OLLAMA_THINK`, `PDA_ANTHROPIC_MODEL`, `ANTHROPIC_API_KEY`, `PDA_VERTEX_PROJECT`, `PDA_VERTEX_REGION`, `PDA_VERTEX_MODEL`.
 - Database: `PDA_DATABASE_URL`, `PDA_READER_URL`, `PDA_PGDATA`.
 - API: `PDA_CORS_ORIGINS`.
 
@@ -80,10 +82,14 @@ Settings:
 | `web/` | SvelteKit and TypeScript front end |
 | `docs/api.md` | the API contract |
 | `tests/` | pytest suite, through FastAPI's TestClient and the eval runner |
+| `Dockerfile`, `web/Dockerfile` | API image (also runs the load job) and web image |
+| `infra/` | Terraform for Google Cloud |
 
 ## Deployment
 
-Terraform for Google Cloud (Cloud Run, Cloud SQL Postgres with pgvector, Secret Manager, Artifact Registry) and the Dockerfiles are on the `change-agent-infra` branch; this section is filled in when that branch merges. Nothing has been deployed.
+`infra/` has Terraform for Google Cloud: the API and the web app on Cloud Run, Postgres 16 with pgvector on Cloud SQL, database URLs in Secret Manager, images in Artifact Registry, one service account per workload, and a Cloud Run job that runs `pda-load`. The model is the self-hosted Ollama server over a private network, Claude on Vertex AI, or Claude through the Anthropic API. `infra/README.md` has the deploy order, rough costs (about $10 to $15 a month, mostly the database) and what was checked.
+
+Nothing has been deployed. The Terraform passes `validate`, `tflint` and `checkov` and plans against a made-up project; the Docker images have not been built, because the build machine has no Docker.
 
 ## Evals
 

@@ -1,0 +1,10 @@
+# Build context for web/Dockerfile is the repo root; send only the web app and the recorded runs.
+*
+!web/
+!demo/recorded_runs.json
+web/node_modules
+web/build
+web/.svelte-kit
+web/.env
+web/.env.*
+web/Dockerfile*

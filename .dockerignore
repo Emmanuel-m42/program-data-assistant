@@ -1,0 +1,17 @@
+# API image build context: only pyproject, the lock, src/ and the data the app reads.
+.git
+.venv
+.pgdata
+.run
+.env
+**/__pycache__
+**/*.pyc
+.pytest_cache
+docs
+evals/reports
+infra
+tests
+web
+docker-compose.yml
+Dockerfile
+.dockerignore
