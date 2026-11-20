@@ -1,0 +1,26 @@
+# Copy to terraform.tfvars (ignored by git) and fill in. No secrets go here.
+
+project_id = "riverbend-demo-123456"
+region     = "us-central1"
+
+# false for the first apply; true once images are pushed and the secrets have values.
+deploy_services = false
+api_image_tag   = "2026-11-20-a1b2c3d"
+web_image_tag   = "2026-11-20-a1b2c3d"
+
+# Self-hosted open model over a private network.
+model_provider = "ollama"
+ollama_host    = "http://10.20.0.5:11434"
+ollama_model   = "qwen3.5:9b"
+vpc_network    = "projects/riverbend-demo-123456/global/networks/model-vpn"
+vpc_subnetwork = "projects/riverbend-demo-123456/regions/us-central1/subnetworks/run-egress"
+
+# Or Claude on Vertex AI, signed in as the API's service account:
+# model_provider = "vertex"
+# vertex_region  = "global"
+# vertex_model   = "claude-sonnet-5-5"
+
+db_tier                = "db-f1-micro"
+db_deletion_protection = true
+
+# extra_cors_origins = ["https://assistant.riverbendvotes.example"]
