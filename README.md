@@ -82,10 +82,14 @@ Settings:
 | `web/` | SvelteKit and TypeScript front end |
 | `docs/api.md` | the API contract |
 | `tests/` | pytest suite, through FastAPI's TestClient and the eval runner |
+| `Dockerfile`, `web/Dockerfile` | API image (also runs the load job) and web image |
+| `infra/` | Terraform for Google Cloud |
 
 ## Deployment
 
-Terraform for Google Cloud (Cloud Run, Cloud SQL Postgres with pgvector, Secret Manager, Artifact Registry) and the Dockerfiles are on the `change-agent-infra` branch; this section is filled in when that branch merges. Nothing has been deployed.
+`infra/` has Terraform for Google Cloud: the API and the web app on Cloud Run, Postgres 16 with pgvector on Cloud SQL, database URLs in Secret Manager, images in Artifact Registry, one service account per workload, and a Cloud Run job that runs `pda-load`. The model is the self-hosted Ollama server over a private network, Claude on Vertex AI, or Claude through the Anthropic API. `infra/README.md` has the deploy order, rough costs (about $10 to $15 a month, mostly the database) and what was checked.
+
+Nothing has been deployed. The Terraform passes `validate`, `tflint` and `checkov` and plans against a made-up project; the Docker images have not been built, because the build machine has no Docker.
 
 ## Evals
 
