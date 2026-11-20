@@ -73,32 +73,41 @@ Settings: `PDA_OLLAMA_MODEL`, `OLLAMA_HOST`, `PDA_OLLAMA_THREADS`, `PDA_ANTHROPI
 
 ## Results
 
-Both runs use `qwen2.5:7b` through Ollama, CPU only (8 shared cores, 5 threads), temperature 0, scored by the same scorer. Full per-case tables are in `evals/reports/baseline.md` and `evals/reports/improved.md`.
+All runs use the same 28 cases and the same scorer, at temperature 0. The CPU runs are on the 8-core server (shared, no GPU); the GPU runs go to Ollama on an RTX 3080 laptop GPU (16 GB) over an SSH tunnel. Per-case tables for every run are in `evals/reports/`.
 
-| metric | baseline | improved |
-| --- | --- | --- |
-| tool_choice | 0.76 | 0.76 |
-| retrieval (recall@4) | 0.98 | 0.98 |
-| facts | 0.26 | 0.48 |
-| citation | 0.40 | 0.60 |
-| refusal | 0.61 | 0.86 |
-| pass (all applicable metrics) | 7 of 28 | 8 of 28 |
-| average latency | 86 s | 124 s |
+| run | model | hardware | code | tool choice | retrieval | facts | citation | refusal | pass | s per answer |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| target | | | | 90%+ | 95%+ | 80%+ | 90%+ | 90%+ | 20 of 28+ | under 15 |
+| baseline | qwen2.5:7b | server CPU | baseline prompt, free SQL | 76% | 98% | 26% | 40% | 61% | 7 of 28 | 86 |
+| improved | qwen2.5:7b | server CPU | views, get_view, guardrails | 76% | 98% | 48% | 60% | 86% | 8 of 28 | 124 |
+| improved-gpu-7b-a | qwen2.5:7b | RTX 3080 laptop | + 'All offices' fix | 76% | 98% | 61% | 56% | 89% | 11 of 28 | 4 |
+| improved-gpu-7b-b | qwen2.5:7b | RTX 3080 laptop | + citation check | 84% | 98% | 69% | 84% | 96% | 16 of 28 | 7 |
+| improved-gpu-7b | qwen2.5:7b | RTX 3080 laptop | + look-first nudge (final code) | 84% | 98% | 72% | 84% | 93% | 16 of 28 | 8 |
+| improved-gpu-14b | qwen2.5:14b | RTX 3080 laptop | final code | 84% | 98% | 68% | 64% | 96% | 13 of 28 | 57 |
+| improved-gpu-qwen35-9b | qwen3.5:9b | RTX 3080 laptop | final code, thinking off | 88% | 98% | 73% | 88% | 93% | 19 of 28 | 9 |
+| improved-gpu-qwen38-27b | qwen3.8:27b | RTX 3080 laptop, part on CPU | final code, thinking off | 96% | 98% | 93% | 100% | 100% | 25 of 28 | 52 |
 
-What changed between the runs:
+Where the best run (qwen3.8:27b) lands against the targets: tool choice 96%, retrieval 98%, facts 93%, citation 100%, refusal 100%, and 25 of 28 passing all meet them. Speed doesn't: 52 s per answer, because the 27B model doesn't fit in 16 GB of VRAM and part of it runs on the CPU. The fastest run that comes close is qwen3.5:9b at 9 s per answer and 19 of 28 passing, with facts at 73%. The qwen2.5 runs miss the facts and pass targets.
 
-- Helper views for common questions (contact rate, cost per door, weekly client report, staff status, QC flags with names, shifts to fix, registration results, QC call outcomes) and a `get_view` tool that returns a whole view, so the model reads values instead of writing SQL.
+The cases qwen3.8:27b still gets wrong:
+
+- q04 (regulars among active canvassers) counts registration canvassers too: 66, where the program plan's definition covers GOTV canvassers only (49 of 57).
+- q07 (the Oct 12 client report gap) explains the attempts and the rollback with correct per-office numbers, but never gives the program totals (1,484 reported against 1,281 on the dashboard).
+- q12 (shifts that need a conversation today) is right: it lists all four open flags with their evidence. It writes the count as "Four", and the number scorer only reads digits, so it's marked as a miss.
+
+What changed between the baseline and the final code:
+
+- Helper views for common questions (contact rate, cost per door, weekly client report, staff status, QC flags with names, shifts to fix, registration results, QC call outcomes) and a `get_view` tool that returns a whole view, so the model reads values instead of writing SQL. `office: 'All offices'` means no filter, and a week filter is ignored on views without a week column.
 - A schema guide with column meanings, an answer template (answer first, then numbers with citations), and three short examples that are not eval questions.
-- Guardrails: real column names sent back on SQL errors with one retry, a note when a query returns 0 rows, a repeated-query check, and a grounding check. If an answer contains numbers that appear in no tool result, the model gets one rewrite; if they're still unsupported, the answer is withheld as a refusal.
+- Guardrails:
+  - Real column names are sent back on SQL errors, with one retry.
+  - A 0-row result gets a note, and repeating the same query is blocked.
+  - A model that answers without calling any tool is told to look first.
+  - An answer whose citations aren't among the sources actually returned gets the list of valid ids and one rewrite.
+  - An answer with numbers that appear in no tool result gets one rewrite; if they're still unsupported, it's withheld as "I can't confirm".
+- For qwen3.x, Ollama's `think` flag is set to false, and any leaked `<think>` block is stripped from the answer.
 
-What the scores show:
-
-- Most of the gain is fewer wrong refusals and right numbers when the model picks the right view (pace, shortfall by office, contact rates, registration pace, overtime, the weekly client report).
-- The baseline's worst habit was answering with citations and no numbers, or making numbers up after an empty query. The improved run reads real rows.
-- The main remaining failure is in the tool arguments: the model often passes `office: 'All offices'` or a week to views where that filter removes the rows it needs. It then answers from one summary row, or from no rows (staff status, precinct coverage, cost per door by office, site options).
-- It also stopped searching the documents for some document-only questions (payroll deadline, locked buildings) and refused instead. And it miscounted QC call outcomes by grouping a view that already has an 'All offices' row.
-- The first improved attempt, without `get_view` or the grounding check, still made up numbers after an empty result. It was stopped after a few cases and is not reported as a run.
-- Latency went up partly because of longer prompts and partly because the shared machine was short on memory during the second run (the model server was killed once and the run resumed).
+Two earlier attempts at the improved code were stopped after a few cases because the model still made up numbers after empty results. A qwen2.5:14b attempt was also stopped: it answered without calling tools, and the grounding check withheld those answers. None of these are reported as runs. The demo (`demo/recorded_runs.json`) uses the qwen3.8:27b run, with the CPU baseline shown alongside.
 
 ## Tests
 

@@ -1,0 +1,4021 @@
+{
+  "label": "improved-gpu-14b",
+  "generated_at": "2026-11-20T02:23:43+00:00",
+  "model": "ollama/qwen2.5:14b",
+  "commit": "8f3bd66",
+  "summary": {
+    "cases": 28,
+    "tool_choice": 0.84,
+    "tool_choice_n": 25,
+    "retrieval": 0.98,
+    "retrieval_n": 25,
+    "facts": 0.683,
+    "facts_n": 25,
+    "citation": 0.64,
+    "citation_n": 25,
+    "refusal": 0.964,
+    "refusal_n": 28,
+    "pass": 0.464,
+    "pass_n": 28,
+    "avg_latency_ms": 57099
+  },
+  "cases": [
+    {
+      "id": "q01",
+      "question": "Are we on pace to hit goal, and where do we land by election day if nothing changes?",
+      "category": "pace",
+      "keywords": [
+        "pace",
+        "goal",
+        "election day",
+        "projection",
+        "on track",
+        "land",
+        "doors"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#pace-and-projection",
+        "program-plan#goals",
+        "program-plan#overview",
+        "registration-drive#cards-per-hour"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.667,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "projected doors, all offices",
+          "expected": 57329.28571428572,
+          "matched": false
+        },
+        {
+          "name": "projected shortfall, all offices",
+          "expected": 3302.714285714286,
+          "matched": true
+        },
+        {
+          "name": "says we are not on pace",
+          "expected": [
+            "not on pace",
+            "not on track",
+            "behind",
+            "short of",
+            "miss",
+            "below goal",
+            "below the goal",
+            "under goal"
+          ],
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Are we on pace to hit goal, and where do we land by election day if nothing changes?",
+        "answer": "We are on pace to hit the goal in Northside and Harbor but will miss it in Eastgate. If nothing changes, Northside will exceed its goal by 908 doors, Harbor will exceed its goal by 1,007 doors, and Eastgate will miss its goal by 3,204 doors.\n- Northside: On pace to hit goal, will exceed by 908 doors by election day [table:v_office_pace]\n- Harbor: On pace to hit goal, will exceed by 1,007 doors by election day [table:v_office_pace]\n- Eastgate: On pace to miss goal by 3,204 doors by election day [table:v_office_pace]\nThe numbers are the projected_vs_goal column from the v_office_pace view.",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_office_pace"
+            },
+            "ok": true,
+            "result": "4 rows from v_office_pace"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_office_pace",
+            "columns": [
+              "office",
+              "goal_total",
+              "goal_to_date",
+              "doors_to_date",
+              "pct_of_goal_to_date",
+              "avg_daily_doors_last_7d",
+              "knocking_days_left",
+              "projected_total",
+              "projected_vs_goal",
+              "projected_pct_of_goal",
+              "avg_shifts_per_day_last_7d",
+              "doors_per_shift_last_7d",
+              "shifts_per_day_needed",
+              "extra_shifts_per_day_needed"
+            ],
+            "rows": [
+              [
+                "All offices",
+                60632,
+                32431,
+                33503,
+                103.3,
+                1489.1,
+                16,
+                57329,
+                -3303,
+                94.6,
+                29.3,
+                50.8,
+                33.3,
+                4.1
+              ],
+              [
+                "Eastgate",
+                17800,
+                9521,
+                8505,
+                89.3,
+                380.7,
+                16,
+                14596,
+                -3204,
+                82,
+                8.3,
+                45.9,
+                12.6,
+                4.4
+              ],
+              [
+                "Harbor",
+                20157,
+                10782,
+                11351,
+                105.3,
+                487.4,
+                16,
+                19150,
+                -1007,
+                95,
+                9.9,
+                49.4,
+                11.1,
+                1.3
+              ],
+              [
+                "Northside",
+                22675,
+                12128,
+                13647,
+                112.5,
+                621,
+                16,
+                23583,
+                908,
+                104,
+                11.1,
+                55.7,
+                10.1,
+                0
+              ]
+            ],
+            "row_count": 4,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_office_pace"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 193239,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 4
+      }
+    },
+    {
+      "id": "q02",
+      "question": "Which offices will miss their goal, and by how much?",
+      "category": "pace",
+      "keywords": [
+        "miss",
+        "goal",
+        "offices",
+        "shortfall",
+        "behind",
+        "how much"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#goals",
+        "program-plan#pace-and-projection",
+        "program-plan#opening-another-office",
+        "program-plan#more-doors-or-a-second-pass"
+      ],
+      "scores": {
+        "tool_choice": 0.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 0.0,
+        "refusal": 0.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Eastgate shortfall",
+          "expected": 3203.5714285714284,
+          "matched": false
+        },
+        {
+          "name": "Harbor shortfall",
+          "expected": 1007.1428571428571,
+          "matched": false
+        },
+        {
+          "name": "names Eastgate",
+          "expected": [
+            "Eastgate"
+          ],
+          "matched": false
+        },
+        {
+          "name": "names Harbor",
+          "expected": [
+            "Harbor"
+          ],
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Which offices will miss their goal, and by how much?",
+        "answer": "I can't confirm that from the program data or documents. My draft answer used numbers that aren't in the query results, so I'm not giving it.",
+        "refused": true,
+        "tool_calls": [],
+        "sources": [],
+        "citations": [],
+        "citations_valid": false,
+        "ungrounded_numbers": [
+          1200.0,
+          120.0,
+          1000.0,
+          100.0
+        ],
+        "withheld_draft": "\u0e04\u0e13\u0e30\u0e01\u0e23\u0e23\u0e21\u0e01\u0e32\u0e23\u0e17\u0e33\u0e07\u0e32\u0e19\u0e02\u0e2d\u0e07\u0e09\u0e31\u0e19\u0e44\u0e21\u0e48\u0e2a\u0e32\u0e21\u0e32\u0e23\u0e16\u0e15\u0e2d\u0e1a\u0e04\u0e33\u0e16\u0e32\u0e21\u0e42\u0e14\u0e22\u0e44\u0e21\u0e48\u0e43\u0e0a\u0e49\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u0e44\u0e14\u0e49 \u0e14\u0e31\u0e07\u0e19\u0e31\u0e49\u0e19\u0e09\u0e31\u0e19\u0e08\u0e30\u0e40\u0e23\u0e35\u0e22\u0e01\u0e43\u0e0a\u0e49\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d get_view \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e02\u0e2d\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e17\u0e35\u0e48\u0e08\u0e33\u0e40\u0e1b\u0e47\u0e19\n\n forCell {\"view\": \"v_office_pace\"}\n\n\u0e14\u0e49\u0e27\u0e22\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e08\u0e32\u0e01 get_view {\"view\": \"v_office_pace\"}, \u0e09\u0e31\u0e19\u0e2a\u0e32\u0e21\u0e32\u0e23\u0e16\u0e15\u0e2d\u0e1a\u0e04\u0e33\u0e16\u0e32\u0e21\u0e44\u0e14\u0e49\u0e14\u0e31\u0e07\u0e19\u0e35\u0e49:\n\nNorthside \u0e41\u0e25\u0e30 Eastgate \u0e08\u0e30\u0e44\u0e21\u0e48\u0e2a\u0e32\u0e21\u0e32\u0e23\u0e16\u0e1a\u0e23\u0e23\u0e25\u0e38\u0e40\u0e1b\u0e49\u0e32\u0e2b\u0e21\u0e32\u0e22\u0e01\u0e32\u0e23\u0e40\u0e04\u0e32\u0e30\u0e1b\u0e23\u0e30\u0e15\u0e39\u0e44\u0e14\u0e49.\n- Northside: \u0e40\u0e1b\u0e49\u0e32\u0e2b\u0e21\u0e32\u0e22\u0e04\u0e37\u0e2d 1,200 \u0e1b\u0e23\u0e30\u0e15\u0e39, \u0e08\u0e30\u0e1e\u0e25\u0e32\u0e14\u0e40\u0e1b\u0e49\u0e32\u0e2b\u0e21\u0e32\u0e22 120 \u0e1b\u0e23\u0e30\u0e15\u0e39 [table:v_office_pace]\n- Eastgate: \u0e40\u0e1b\u0e49\u0e32\u0e2b\u0e21\u0e32\u0e22\u0e04\u0e37\u0e2d 1,000 \u0e1b\u0e23\u0e30\u0e15\u0e39, \u0e08\u0e30\u0e1e\u0e25\u0e32\u0e14\u0e40\u0e1b\u0e49\u0e32\u0e2b\u0e21\u0e32\u0e22 100 \u0e1b\u0e23\u0e30\u0e15\u0e39 [table:v_office_pace]\n\n\u0e15\u0e32\u0e23\u0e32\u0e07 v_office_pace \u0e41\u0e2a\u0e14\u0e07\u0e04\u0e2d\u0e25\u0e31\u0e21\u0e19\u0e4c goal_total \u0e41\u0e25\u0e30 projected_vs_goal \u0e0b\u0e36\u0e48\u0e07\u0e1a\u0e2d\u0e01\u0e16\u0e36\u0e07\u0e40\u0e1b\u0e49\u0e32\u0e2b\u0e21\u0e32\u0e22\u0e41\u0e25\u0e30\u0e08\u0e33\u0e19\u0e27\u0e19\u0e1b\u0e23\u0e30\u0e15\u0e39\u0e17\u0e35\u0e48\u0e02\u0e32\u0e14\u0e2b\u0e32\u0e22\u0e44\u0e1b\u0e02\u0e2d\u0e07\u0e41\u0e15\u0e48\u0e25\u0e30\u0e2a\u0e33\u0e19\u0e31\u0e01\u0e07\u0e32\u0e19.",
+        "latency_ms": 79397,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 3
+      }
+    },
+    {
+      "id": "q03",
+      "question": "How many more shifts a day does each office need to hit goal?",
+      "category": "staffing",
+      "keywords": [
+        "shifts",
+        "per day",
+        "staffing",
+        "recruit",
+        "more shifts",
+        "hit goal"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#shifts-needed",
+        "program-plan#goals",
+        "program-plan#pace-and-projection",
+        "client-reporting#weekly-report-format"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [
+        {
+          "name": "Eastgate extra shifts per day",
+          "expected": 4.357578397212544,
+          "matched": true
+        },
+        {
+          "name": "Harbor extra shifts per day",
+          "expected": 1.2729494640763692,
+          "matched": true
+        },
+        {
+          "name": "Northside needs none",
+          "expected": [
+            "Northside"
+          ],
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "How many more shifts a day does each office need to hit goal?",
+        "answer": "Each office needs extra shifts per day as follows:\n- Northside: 0 shifts [table:v_office_pace]\n- Eastgate: 4.4 shifts [table:v_office_pace]\n- Harbor: 1.3 shifts [table:v_office_pace]\n\nThe number of extra shifts needed is the difference between the shifts per day needed and the average daily shifts over the last 7 days.\n- Formula: extra_shifts_per_day_needed = shifts_per_day_needed - avg_shifts_per_day_last_7d [table:v_office_pace]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_office_pace"
+            },
+            "ok": true,
+            "result": "4 rows from v_office_pace"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_office_pace",
+            "columns": [
+              "office",
+              "goal_total",
+              "goal_to_date",
+              "doors_to_date",
+              "pct_of_goal_to_date",
+              "avg_daily_doors_last_7d",
+              "knocking_days_left",
+              "projected_total",
+              "projected_vs_goal",
+              "projected_pct_of_goal",
+              "avg_shifts_per_day_last_7d",
+              "doors_per_shift_last_7d",
+              "shifts_per_day_needed",
+              "extra_shifts_per_day_needed"
+            ],
+            "rows": [
+              [
+                "All offices",
+                60632,
+                32431,
+                33503,
+                103.3,
+                1489.1,
+                16,
+                57329,
+                -3303,
+                94.6,
+                29.3,
+                50.8,
+                33.3,
+                4.1
+              ],
+              [
+                "Eastgate",
+                17800,
+                9521,
+                8505,
+                89.3,
+                380.7,
+                16,
+                14596,
+                -3204,
+                82,
+                8.3,
+                45.9,
+                12.6,
+                4.4
+              ],
+              [
+                "Harbor",
+                20157,
+                10782,
+                11351,
+                105.3,
+                487.4,
+                16,
+                19150,
+                -1007,
+                95,
+                9.9,
+                49.4,
+                11.1,
+                1.3
+              ],
+              [
+                "Northside",
+                22675,
+                12128,
+                13647,
+                112.5,
+                621,
+                16,
+                23583,
+                908,
+                104,
+                11.1,
+                55.7,
+                10.1,
+                0
+              ]
+            ],
+            "row_count": 4,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_office_pace"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 101674,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 4
+      }
+    },
+    {
+      "id": "q04",
+      "question": "How many of our active canvassers are regulars, not one-day hires?",
+      "category": "staffing",
+      "keywords": [
+        "active",
+        "canvassers",
+        "regulars",
+        "one-day hires",
+        "retention",
+        "staff"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#staff-definitions",
+        "payroll-rules#pay-rates",
+        "qc-rules#gaps",
+        "qc-rules#apartments-and-units"
+      ],
+      "scores": {
+        "tool_choice": 0.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 0.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "active regulars",
+          "expected": 49.0,
+          "matched": false
+        },
+        {
+          "name": "active canvassers",
+          "expected": 57.0,
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "How many of our active canvassers are regulars, not one-day hires?",
+        "answer": "Of the active canvassers, 12 are regulars and 3 are occasional staff, none are one-day hires.\n- Regulars: 12 [table:v_canvasser_status]\n- Occasionals: 3 [table:v_canvasser_status]\n- One-day hires: 0 [table:v_canvasser_status]\nThe method counts active canvassers by staff type. [doc:canvasser-status]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_canvasser_status"
+            },
+            "ok": true,
+            "result": "104 rows from v_canvasser_status"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_canvasser_status",
+            "columns": [
+              "canvasser_id",
+              "full_name",
+              "office",
+              "program",
+              "role",
+              "days_worked",
+              "first_shift",
+              "last_shift",
+              "active",
+              "staff_type"
+            ],
+            "rows": [
+              [
+                "C106",
+                "Emmett Delgado",
+                "Northside",
+                "vr",
+                "registration canvasser",
+                28,
+                "2026-09-21",
+                "2026-10-18",
+                true,
+                "regular"
+              ],
+              [
+                "C047",
+                "Tara Okafor",
+                "Eastgate",
+                "gotv",
+                "field lead",
+                26,
+                "2026-09-21",
+                "2026-10-18",
+                true,
+                "regular"
+              ],
+              [
+                "C116",
+                "Rafael Jessup",
+                "Eastgate",
+                "vr",
+                "registration canvasser",
+                25,
+                "2026-09-21",
+                "2026-10-18",
+                true,
+                "regular"
+              ],
+              [
+                "C105",
+                "Zoe Castellano",
+                "Northside",
+                "vr",
+                "registration canvasser",
+                24,
+                "2026-09-21",
+                "2026-10-18",
+                true,
+                "regular"
+              ],
+              [
+                "C101",
+                "Jade Abbott",
+                "Harbor",
+                "gotv",
+                "canvasser",
+                23,
+                "2026-09-22",
+                "2026-10-18",
+                true,
+                "regular"
+              ],
+              [
+                "C082",
+                "Milo Marsh",
+                "Harbor",
+                "gotv",
+                "canvasser",
+                23,
+                "2026-09-22",
+                "2026-10-18",
+                true,
+                "regular"
+              ],
+              [
+                "C125",
+                "Bianca Castellano",
+                "Harbor",
+                "vr",
+                "registration canvasser",
+                22,
+                "2026-09-21",
+                "2026-10-18",
+                true,
+                "regular"
+              ],
+              [
+                "C006",
+                "Ellis Warren",
+                "Northside",
+                "gotv",
+                "field lead",
+                22,
+                "2026-09-24",
+                "2026-10-17",
+                true,
+                "regular"
+              ]
+            ],
+            "row_count": 104,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_canvasser_status"
+          },
+          {
+            "type": "doc",
+            "id": "canvasser-status"
+          }
+        ],
+        "citations_valid": false,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 232515,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 4
+      }
+    },
+    {
+      "id": "q05",
+      "question": "Based on our pace and what's left, should we ask the client for more doors, or a second pass on the turf we have?",
+      "category": "door gaps",
+      "keywords": [
+        "more doors",
+        "second pass",
+        "turf",
+        "client",
+        "run out",
+        "remaining"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#more-doors-or-a-second-pass",
+        "program-plan#opening-another-office",
+        "program-plan#pace-and-projection",
+        "counting-doors#attempts"
+      ],
+      "scores": {
+        "tool_choice": 0.0,
+        "retrieval": 1.0,
+        "facts": 0.333,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "untouched doors left in turf",
+          "expected": 10393.0,
+          "matched": false
+        },
+        {
+          "name": "doors we can knock in the days left",
+          "expected": 23826.285714285714,
+          "matched": false
+        },
+        {
+          "name": "recommends more doors",
+          "expected": [
+            "more doors",
+            "more turf",
+            "new turf",
+            "additional doors",
+            "additional turf"
+          ],
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Based on our pace and what's left, should we ask the client for more doors, or a second pass on the turf we have?",
+        "answer": "The program is on track to meet its door goal without needing more doors or a second pass.\n- Projected total doors: 57,329 [table:v_office_pace]\n- Goal total doors: 60,632 [table:v_office_pace]\n- Doors remaining: 12,345 [table:v_office_pace]\n- Knocking days left: 16 [table:v_office_pace]\n- Extra shifts needed per day: 4.1 [table:v_office_pace]\nNo action is needed based on the current pace and remaining doors.",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_office_pace"
+            },
+            "ok": true,
+            "result": "4 rows from v_office_pace"
+          },
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_weekly_report",
+              "week_start": "2026-10-12"
+            },
+            "ok": true,
+            "result": "4 rows from v_weekly_report"
+          },
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_weekly_report",
+              "week_start": "2026-10-05"
+            },
+            "ok": true,
+            "result": "4 rows from v_weekly_report"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_office_pace",
+            "columns": [
+              "office",
+              "goal_total",
+              "goal_to_date",
+              "doors_to_date",
+              "pct_of_goal_to_date",
+              "avg_daily_doors_last_7d",
+              "knocking_days_left",
+              "projected_total",
+              "projected_vs_goal",
+              "projected_pct_of_goal",
+              "avg_shifts_per_day_last_7d",
+              "doors_per_shift_last_7d",
+              "shifts_per_day_needed",
+              "extra_shifts_per_day_needed"
+            ],
+            "rows": [
+              [
+                "All offices",
+                60632,
+                32431,
+                33503,
+                103.3,
+                1489.1,
+                16,
+                57329,
+                -3303,
+                94.6,
+                29.3,
+                50.8,
+                33.3,
+                4.1
+              ],
+              [
+                "Eastgate",
+                17800,
+                9521,
+                8505,
+                89.3,
+                380.7,
+                16,
+                14596,
+                -3204,
+                82,
+                8.3,
+                45.9,
+                12.6,
+                4.4
+              ],
+              [
+                "Harbor",
+                20157,
+                10782,
+                11351,
+                105.3,
+                487.4,
+                16,
+                19150,
+                -1007,
+                95,
+                9.9,
+                49.4,
+                11.1,
+                1.3
+              ],
+              [
+                "Northside",
+                22675,
+                12128,
+                13647,
+                112.5,
+                621,
+                16,
+                23583,
+                908,
+                104,
+                11.1,
+                55.7,
+                10.1,
+                0
+              ]
+            ],
+            "row_count": 4,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_office_pace"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 125374,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 4
+      }
+    },
+    {
+      "id": "q06",
+      "question": "If we open a fourth office, where should it go to be closest to the doors we still need?",
+      "category": "office siting",
+      "keywords": [
+        "fourth office",
+        "new office",
+        "location",
+        "site",
+        "closest",
+        "remaining doors"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#opening-another-office",
+        "program-plan#goals",
+        "program-plan#pace-and-projection",
+        "program-plan#more-doors-or-a-second-pass"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 0.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "picks the Mill Street site",
+          "expected": [
+            "Mill Street",
+            "S1",
+            "215 Mill"
+          ],
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "If we open a fourth office, where should it go to be closest to the doors we still need?",
+        "answer": "The best site is 47 Canal Row, which is closest to the untouched doors.\n- Site: 47 Canal Row [table:v_site_options]\n- Average distance to untouched doors: 2.47 km [table:v_site_options]\n\nThe site is chosen based on its proximity to untouched doors, as measured by the 'avg_km_to_untouched_doors' column.\n- Method: Pick the site with the lowest 'avg_km_to_untouched_doors' [doc:site-selection#proximity]\n\nThe other candidate sites are 215 Mill St (6.62 km), 9 Westview Plaza (10.18 km), and 1630 Depot Rd (11.48 km).\n- Site: 215 Mill St, distance: 6.62 km [table:v_site_options]\n- Site: 9 Westview Plaza, distance: 10.18 km [table:v_site_options]\n- Site: 1630 Depot Rd, distance: 11.48 km [table:v_site_options]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_site_options"
+            },
+            "ok": true,
+            "result": "4 rows from v_site_options"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_site_options",
+            "columns": [
+              "site_id",
+              "name",
+              "address",
+              "monthly_rent",
+              "avg_km_to_untouched_doors",
+              "untouched_doors_within_3km",
+              "km_to_nearest_office"
+            ],
+            "rows": [
+              [
+                "S1",
+                "Mill Street storefront",
+                "215 Mill St",
+                2400,
+                6.62,
+                7118,
+                8.01
+              ],
+              [
+                "S4",
+                "Canal Row office",
+                "47 Canal Row",
+                2700,
+                8.31,
+                37,
+                2.47
+              ],
+              [
+                "S2",
+                "Westview Plaza suite",
+                "9 Westview Plaza",
+                3100,
+                10.18,
+                0,
+                6.98
+              ],
+              [
+                "S3",
+                "Depot Road warehouse",
+                "1630 Depot Rd",
+                1900,
+                11.48,
+                0,
+                5.21
+              ]
+            ],
+            "row_count": 4,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_site_options"
+          },
+          {
+            "type": "doc",
+            "id": "site-selection#proximity"
+          }
+        ],
+        "citations_valid": false,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 198126,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 5
+      }
+    },
+    {
+      "id": "q07",
+      "question": "Why does the client's daily report show more doors than our dashboard for Oct 12?",
+      "category": "client report",
+      "keywords": [
+        "client report",
+        "dashboard",
+        "Oct 12",
+        "difference",
+        "gap",
+        "attempts",
+        "rollback"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "client-reporting#daily-report",
+        "client-reporting#weekly-report-format",
+        "counting-doors#why-the-client-s-numbers-differ-from-ours",
+        "program-plan#pace-and-projection"
+      ],
+      "scores": {
+        "tool_choice": 0.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 0.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "client reported doors Oct 12",
+          "expected": 1484.0,
+          "matched": false
+        },
+        {
+          "name": "dashboard doors Oct 12",
+          "expected": 1281.0,
+          "matched": false
+        },
+        {
+          "name": "rolled-back attempts Oct 12",
+          "expected": 142.0,
+          "matched": false
+        },
+        {
+          "name": "explains rollback",
+          "expected": [
+            "rolled back",
+            "rollback",
+            "roll back",
+            "rolled-back"
+          ],
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Why does the client's daily report show more doors than our dashboard for Oct 12?",
+        "answer": "The client's daily report shows 558 doors for Oct 12, while our dashboard shows 498 doors.\n- Client report doors: 558 [table:client_daily_report]\n- Dashboard doors: 498 [table:v_daily_doors]\n- The dashboard counts only contacts, not all attempts [doc:client-reporting#doors-reported]\n- The client report includes all attempts, even if no one was home or the door was inaccessible [doc:client-reporting#doors-reported]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT doors_reported, contacts_reported FROM client_daily_report WHERE report_date = '2026-10-12' UNION SELECT doors, contacts FROM v_daily_doors WHERE knock_date = '2026-10-12' AND office = 'All offices'"
+            },
+            "ok": true,
+            "result": "3 rows from client_daily_report, v_daily_doors"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "client_daily_report, v_daily_doors",
+            "columns": [
+              "doors_reported",
+              "contacts_reported"
+            ],
+            "rows": [
+              [
+                558,
+                175
+              ],
+              [
+                498,
+                110
+              ],
+              [
+                428,
+                118
+              ]
+            ],
+            "row_count": 3,
+            "sql": "SELECT doors_reported, contacts_reported FROM client_daily_report WHERE report_date = '2026-10-12' UNION SELECT doors, contacts FROM v_daily_doors WHERE knock_date = '2026-10-12' AND office = 'All offices'"
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "client_daily_report"
+          },
+          {
+            "type": "table",
+            "id": "v_daily_doors"
+          },
+          {
+            "type": "doc",
+            "id": "client-reporting#doors-reported"
+          }
+        ],
+        "citations_valid": false,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 95778,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 4
+      }
+    },
+    {
+      "id": "q08",
+      "question": "Which precincts are untouched or only lightly touched, and is what's left dense enough to keep knocking efficiently?",
+      "category": "door gaps",
+      "keywords": [
+        "precincts",
+        "untouched",
+        "lightly touched",
+        "dense",
+        "density",
+        "turf left"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#opening-another-office",
+        "counting-doors#contacts-and-contact-rate",
+        "qc-rules#flash-knocking",
+        "counting-doors#rollbacks"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 0.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "names the dense untouched cluster",
+          "expected": [
+            "P37",
+            "P38",
+            "P39",
+            "P40",
+            "Precinct 37",
+            "Precinct 38",
+            "Precinct 39",
+            "Precinct 40"
+          ],
+          "matched": false
+        },
+        {
+          "name": "untouched doors in dense untouched precincts",
+          "expected": 7118.0,
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Which precincts are untouched or only lightly touched, and is what's left dense enough to keep knocking efficiently?",
+        "answer": "Untouched or lightly touched precincts are Eastgate 24, Eastgate 23, Harbor 39, Harbor 37, and Harbor 40.\n- Eastgate 24: 0% touched, 6.59 km to office [table:v_precinct_coverage]\n- Eastgate 23: 77.3% touched, 5.98 km to office [table:v_precinct_coverage]\n- Harbor 39: 0% touched, 7.87 km to office [table:v_precinct_coverage]\n- Harbor 37: 0% touched, 8.25 km to office [table:v_precinct_coverage]\n- Harbor 40: 0% touched, 9.49 km to office [table:v_precinct_coverage]\n\nThe remaining doors are dense enough to knock efficiently:\n- Harbor 39: 4,094 doors per sq mi [table:v_precinct_coverage]\n- Harbor 37: 4,039 doors per sq mi [table:v_precinct_coverage]\n- Harbor 40: 3,676 doors per sq mi [table:v_precinct_coverage]\n- Eastgate 24: 281 doors per sq mi [table:v_precinct_coverage]\n- Eastgate 23: 504 doors per sq mi [table:v_precinct_coverage]\n\nThe coverage level and density are determined by the percentage of doors touched and the number of doors per square mile. [doc:precinct-coverage]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_precinct_coverage"
+            },
+            "ok": true,
+            "result": "40 rows from v_precinct_coverage"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_precinct_coverage",
+            "columns": [
+              "precinct_id",
+              "name",
+              "office",
+              "target_doors",
+              "doors_touched",
+              "doors_untouched",
+              "pct_touched",
+              "not_home_doors",
+              "doors_per_sq_mi",
+              "area_sq_mi",
+              "km_to_office",
+              "coverage",
+              "lat",
+              "lon"
+            ],
+            "rows": [
+              [
+                "P39",
+                "Precinct 39",
+                "Harbor",
+                1788,
+                0,
+                1788,
+                0,
+                0,
+                4094,
+                0.437,
+                7.87,
+                "untouched",
+                40.225,
+                -86.691
+              ],
+              [
+                "P37",
+                "Precinct 37",
+                "Harbor",
+                1601,
+                0,
+                1601,
+                0,
+                0,
+                4039,
+                0.396,
+                8.25,
+                "untouched",
+                40.236,
+                -86.703
+              ],
+              [
+                "P40",
+                "Precinct 40",
+                "Harbor",
+                1882,
+                0,
+                1882,
+                0,
+                0,
+                3676,
+                0.512,
+                9.49,
+                "untouched",
+                40.24,
+                -86.72
+              ],
+              [
+                "P38",
+                "Precinct 38",
+                "Harbor",
+                1847,
+                0,
+                1847,
+                0,
+                0,
+                3304,
+                0.559,
+                6.55,
+                "untouched",
+                40.248,
+                -86.687
+              ],
+              [
+                "P11",
+                "Precinct 11",
+                "Northside",
+                890,
+                0,
+                890,
+                0,
+                0,
+                530,
+                1.679,
+                6.92,
+                "untouched",
+                40.34817,
+                -86.51648
+              ],
+              [
+                "P36",
+                "Precinct 36",
+                "Harbor",
+                766,
+                0,
+                766,
+                0,
+                0,
+                398,
+                1.925,
+                6.62,
+                "untouched",
+                40.21797,
+                -86.55951
+              ],
+              [
+                "P24",
+                "Precinct 24",
+                "Eastgate",
+                817,
+                0,
+                817,
+                0,
+                0,
+                281,
+                2.907,
+                6.59,
+                "untouched",
+                40.31087,
+                -86.45137
+              ],
+              [
+                "P23",
+                "Precinct 23",
+                "Eastgate",
+                735,
+                566,
+                169,
+                77,
+                384,
+                504,
+                1.458,
+                5.98,
+                "partial",
+                40.30275,
+                -86.45748
+              ]
+            ],
+            "row_count": 40,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_precinct_coverage"
+          },
+          {
+            "type": "doc",
+            "id": "precinct-coverage"
+          }
+        ],
+        "citations_valid": false,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 118379,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 4
+      }
+    },
+    {
+      "id": "q09",
+      "question": "Are contact rates up or down from last week, and in which offices?",
+      "category": "pace",
+      "keywords": [
+        "contact rate",
+        "last week",
+        "up",
+        "down",
+        "offices",
+        "conversations"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "client-reporting#weekly-report-format",
+        "counting-doors#contacts-and-contact-rate",
+        "client-reporting#daily-report",
+        "qc-rules#qc-rate"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 0.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Northside this week",
+          "expected": 30.06671267540833,
+          "matched": true
+        },
+        {
+          "name": "Northside last week",
+          "expected": 26.37772675086108,
+          "matched": true
+        },
+        {
+          "name": "Eastgate this week",
+          "expected": 24.9906191369606,
+          "matched": true
+        },
+        {
+          "name": "Eastgate last week",
+          "expected": 28.77254729432468,
+          "matched": true
+        },
+        {
+          "name": "Harbor this week",
+          "expected": 27.286049237983587,
+          "matched": true
+        },
+        {
+          "name": "Harbor last week",
+          "expected": 26.110753380553767,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Are contact rates up or down from last week, and in which offices?",
+        "answer": "Contact rates are up in Eastgate and Harbor but down in Northside.\n- Eastgate: 25% this week vs 29% last week [table:v_contact_rates]\n- Harbor: 27% this week vs 26% last week [table:v_contact_rates]\n- Northside: 30% this week vs 26% last week [table:v_contact_rates]\n\nThe contact rate is the number of contacts divided by the number of doors knocked [doc:contact-rate].\nThis week's rates are for 2026-10-12 to 2026-10-18, last week's for 2026-10-05 to 2026-10-11.",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_contact_rates"
+            },
+            "ok": true,
+            "result": "16 rows from v_contact_rates"
+          },
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_contact_rates",
+              "week_start": "2026-10-05"
+            },
+            "ok": true,
+            "result": "4 rows from v_contact_rates"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_contact_rates",
+            "columns": [
+              "office",
+              "week_start",
+              "doors",
+              "contacts",
+              "contact_rate_pct"
+            ],
+            "rows": [
+              [
+                "All offices",
+                "2026-10-12",
+                10424,
+                2904,
+                27.9
+              ],
+              [
+                "Eastgate",
+                "2026-10-12",
+                2665,
+                666,
+                25
+              ],
+              [
+                "Harbor",
+                "2026-10-12",
+                3412,
+                931,
+                27.3
+              ],
+              [
+                "Northside",
+                "2026-10-12",
+                4347,
+                1307,
+                30.1
+              ],
+              [
+                "All offices",
+                "2026-10-05",
+                8863,
+                2384,
+                26.9
+              ],
+              [
+                "Eastgate",
+                "2026-10-05",
+                2273,
+                654,
+                28.8
+              ],
+              [
+                "Harbor",
+                "2026-10-05",
+                3106,
+                811,
+                26.1
+              ],
+              [
+                "Northside",
+                "2026-10-05",
+                3484,
+                919,
+                26.4
+              ]
+            ],
+            "row_count": 16,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_contact_rates"
+          },
+          {
+            "type": "doc",
+            "id": "contact-rate"
+          }
+        ],
+        "citations_valid": false,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 29892,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 5
+      }
+    },
+    {
+      "id": "q10",
+      "question": "What are we paying per door by office, and which office is most expensive?",
+      "category": "payroll",
+      "keywords": [
+        "cost per door",
+        "paying",
+        "pay",
+        "expensive",
+        "wages",
+        "office"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "payroll-rules#cost-per-door",
+        "program-plan#opening-another-office",
+        "counting-doors#doors",
+        "program-plan#goals"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [
+        {
+          "name": "Northside cost per door",
+          "expected": 1.667654429544955,
+          "matched": true
+        },
+        {
+          "name": "Eastgate cost per door",
+          "expected": 2.073392122281011,
+          "matched": true
+        },
+        {
+          "name": "Harbor cost per door",
+          "expected": 1.778074178486477,
+          "matched": true
+        },
+        {
+          "name": "Eastgate is most expensive",
+          "expected": [
+            "Eastgate"
+          ],
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "What are we paying per door by office, and which office is most expensive?",
+        "answer": "The cost per door is $2.07 in Eastgate, $1.78 in Harbor, and $1.67 in Northside. Northside is the most cost-effective.\n- Eastgate: $2.07 per door [table:v_cost_per_door]\n- Harbor: $1.78 per door [table:v_cost_per_door]\n- Northside: $1.67 per door [table:v_cost_per_door]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_cost_per_door"
+            },
+            "ok": true,
+            "result": "4 rows from v_cost_per_door"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_cost_per_door",
+            "columns": [
+              "office",
+              "paid_hours",
+              "wages",
+              "doors",
+              "cost_per_door"
+            ],
+            "rows": [
+              [
+                "Eastgate",
+                853.89,
+                17634.2,
+                8505,
+                2.07
+              ],
+              [
+                "All offices",
+                2949.11,
+                60575.6,
+                33503,
+                1.81
+              ],
+              [
+                "Harbor",
+                998.45,
+                20182.92,
+                11351,
+                1.78
+              ],
+              [
+                "Northside",
+                1096.77,
+                22758.48,
+                13647,
+                1.67
+              ]
+            ],
+            "row_count": 4,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_cost_per_door"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 24323,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 4
+      }
+    },
+    {
+      "id": "q11",
+      "question": "Which canvassers had flash knocking or householding flags this week, and is it one person or the whole office?",
+      "category": "QC",
+      "keywords": [
+        "flash knocking",
+        "householding",
+        "flags",
+        "canvassers",
+        "this week",
+        "QC"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "qc-rules#what-happens-after-a-flag",
+        "qc-rules#apartments-and-units",
+        "qc-rules#householding",
+        "client-reporting#daily-report"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 0.5,
+        "facts": 0.4,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Dorian Pratt",
+          "expected": [
+            "Dorian Pratt"
+          ],
+          "matched": true
+        },
+        {
+          "name": "Jalen Ortiz",
+          "expected": [
+            "Jalen Ortiz"
+          ],
+          "matched": false
+        },
+        {
+          "name": "Tomas Reyes",
+          "expected": [
+            "Tomas Reyes"
+          ],
+          "matched": false
+        },
+        {
+          "name": "Priya Nandakumar",
+          "expected": [
+            "Priya Nandakumar"
+          ],
+          "matched": true
+        },
+        {
+          "name": "Dorian's householding flags this week",
+          "expected": 3.0,
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Which canvassers had flash knocking or householding flags this week, and is it one person or the whole office?",
+        "answer": "The following canvassers had flash knocking or householding flags this week:\n- Dorian Pratt (Eastgate) [table:v_qc_flags_detail]\n- Priya Nandakumar (Harbor) [table:v_qc_flags_detail]\n\nThis is two people and two offices (Eastgate and Harbor).\n\nTool call:",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_qc_flags_detail",
+              "week_start": "2026-10-12"
+            },
+            "ok": true,
+            "result": "36 rows from v_qc_flags_detail"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_qc_flags_detail",
+            "columns": [
+              "flag_id",
+              "flag_date",
+              "office",
+              "canvasser_id",
+              "full_name",
+              "shift_id",
+              "flag_type",
+              "status",
+              "evidence",
+              "evidence_start",
+              "evidence_end",
+              "knock_count",
+              "knocks_rolled_back"
+            ],
+            "rows": [
+              [
+                "QC035",
+                "2026-10-18",
+                "Eastgate",
+                "C001",
+                "Dorian Pratt",
+                "G00962",
+                "householding",
+                "open",
+                "6 canvassed results at P23-0218 (units 1A, 1B, 1C, 1D, 2A, 2B) between 15:43:34 and 15:46:02, all answered 'supporter'",
+                "2026-10-18 15:43:34",
+                "2026-10-18 15:46:02",
+                6,
+                false
+              ],
+              [
+                "QC036",
+                "2026-10-18",
+                "Harbor",
+                "C004",
+                "Priya Nandakumar",
+                "G00972",
+                "flash_knocking",
+                "open",
+                "13 consecutive knocks between 17:02:53 and 17:05:21, median 12 s apart",
+                "2026-10-18 17:02:53",
+                "2026-10-18 17:05:21",
+                13,
+                false
+              ],
+              [
+                "QC033",
+                "2026-10-17",
+                "Eastgate",
+                "C005",
+                "Andre Whitfield",
+                "G00918",
+                "gap",
+                "open",
+                "no knocks for 89 minutes, last knock 12:23:14, next knock 13:52:32, while clocked in",
+                "2026-10-17 12:23:14",
+                "2026-10-17 13:52:32",
+                0,
+                false
+              ],
+              [
+                "QC034",
+                "2026-10-17",
+                "Eastgate",
+                "C001",
+                "Dorian Pratt",
+                "G00917",
+                "householding",
+                "open",
+                "6 canvassed results at P23-0431 (units 1A, 1B, 1C, 1D, 2A, 2B) between 17:58:56 and 18:01:18, all answered 'supporter'",
+                "2026-10-17 17:58:56",
+                "2026-10-17 18:01:18",
+                6,
+                false
+              ],
+              [
+                "QC032",
+                "2026-10-14",
+                "Northside",
+                "C003",
+                "Tomas Reyes",
+                "G00790",
+                "householding",
+                "reviewed",
+                "6 canvassed results at P09-0157 (units 1A, 1B, 1C, 1D, 2A, 2B) between 17:44:22 and 17:46:33, all answered 'undecided'",
+                "2026-10-14 17:44:22",
+                "2026-10-14 17:46:33",
+                6,
+                false
+              ],
+              [
+                "QC031",
+                "2026-10-13",
+                "Eastgate",
+                "C001",
+                "Dorian Pratt",
+                "G00764",
+                "householding",
+                "reviewed",
+                "6 canvassed results at P21-0166 (units 1A, 1B, 1C, 1D, 2A, 2B) between 11:45:33 and 11:47:47, all answered 'supporter'",
+                "2026-10-13 11:45:33",
+                "2026-10-13 11:47:47",
+                6,
+                false
+              ],
+              [
+                "QC030",
+                "2026-10-12",
+                "Eastgate",
+                "C002",
+                "Jalen Ortiz",
+                "G00725",
+                "flash_knocking",
+                "reviewed",
+                "142 knocks recorded between 16:28:20 and 17:05:03, median 15 s apart; whole shift rolled back",
+                "2026-10-12 16:28:20",
+                "2026-10-12 17:05:03",
+                142,
+                true
+              ],
+              [
+                "QC029",
+                "2026-10-09",
+                "Harbor",
+                "C101",
+                "Jade Abbott",
+                "G00611",
+                "flash_knocking",
+                "reviewed",
+                "13 consecutive knocks between 11:19:07 and 11:21:08, median 10 s apart",
+                "2026-10-09 11:19:07",
+                "2026-10-09 11:21:08",
+                13,
+                true
+              ]
+            ],
+            "row_count": 36,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_qc_flags_detail"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 12844,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "q12",
+      "question": "Which shifts need a conversation today, and what's the evidence behind each flag?",
+      "category": "QC",
+      "keywords": [
+        "conversation",
+        "today",
+        "open flags",
+        "evidence",
+        "shifts",
+        "QC"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "qc-rules#what-happens-after-a-flag",
+        "counting-doors#rollbacks",
+        "program-plan#shifts-needed",
+        "qc-rules#qc-rate"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Dorian Pratt (open householding)",
+          "expected": [
+            "Dorian Pratt"
+          ],
+          "matched": false
+        },
+        {
+          "name": "Andre Whitfield (open gap)",
+          "expected": [
+            "Andre Whitfield"
+          ],
+          "matched": false
+        },
+        {
+          "name": "Priya Nandakumar (open flash knocking)",
+          "expected": [
+            "Priya Nandakumar"
+          ],
+          "matched": false
+        },
+        {
+          "name": "open flag count",
+          "expected": 4.0,
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Which shifts need a conversation today, and what's the evidence behind each flag?",
+        "answer": "The following shifts need a conversation today:\n- Shift ID: G00962, Flag ID: QC035, Evidence: 6 canvassed results at P23-0218 (units 1A, 1B, 1C, 1D, 2A, 2B) between 15:43:34 and 15:45:50, all answered 'undecided', while clocked in, Flag Type: householding [table:v_qc_flags_detail].\n- Shift ID: G00970, Flag ID: QC036, Evidence: no knocks for 83 minutes, last knock 15:45:50, next knock 17:08:53, while clocked in, Flag Type: gap [table:v_qc_flags_detail].\n- Shift ID: G00971, Flag ID: QC037, Evidence: no knocks for 83 minutes, last knock 15:45:50, next knock 17:08:53, while clocked in, Flag Type: gap [table:v_qc_flags_detail].\n- Shift ID: G00972, Flag ID: QC038, Evidence: no knocks for 83 minutes, last knock 15:45:50, next knock 17:08:53, while clocked in, Flag Type: gap [table:v_qc_flags_detail].\n- Shift ID: G00973, Flag ID: QC039, Evidence: no knocks for 83 minutes, last knock 15:45:50, next knock 17:08:53, while clocked in, Flag Type: gap [table:v_qc_flags_detail].\n- Shift ID: G00974, Flag ID: QC040, Evidence: no knocks for 83 minutes, last knock 15:45:50, next knock 17:08:53, while clocked in, Flag Type: gap [table:v_qc_flags_detail].\n- Shift ID: G00975, Flag ID: QC041, Evidence: no knocks for 83 minutes, last knock 15:45:50, next knock 17:08:53, while clocked in, Flag Type: gap [table:v_qc_flags_detail].\n- Shift ID: G00976, Flag ID: QC042, Evidence: no knocks for 83 minutes, last knock 15:45:50, next knock 17:08:53, while clocked in, Flag Type: gap [table:v_qc_flags_detail].\n- Shift ID: G00977, Flag ID: QC043, Evidence: no knocks for 83 minutes, last knock 15:45:50, next knock 17:08:53, while clocked in, Flag Type: gap [table:v_qc_flags_detail].\n- Shift ID: G00978, Flag ID: QC044, Evidence: no knocks for 83 minutes, last knock 15:45:50, next knock 17:08:53, while clocked in, Flag Type: gap [table:v_qc_flags_detail].\n- Shift ID: G00979, Flag ID: QC045, Evidence: no knocks for 83 minutes, last knock 15:45:50, next knock 17:08:53, while clocked in, Flag Type: gap [table:v_qc_flags_detail].\n- Shift ID: G00980, Flag ID: QC046, Evidence: no knocks for 83 minutes, last knock 15:45:50, next knock 17:08:53, while clocked in, Flag Type: gap [table:v_qc_flags_detail].\n- Shift ID: G00981, Flag ID: QC0",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_qc_flags_detail",
+              "week_start": "2026-10-18"
+            },
+            "ok": true,
+            "result": "36 rows from v_qc_flags_detail"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_qc_flags_detail",
+            "columns": [
+              "flag_id",
+              "flag_date",
+              "office",
+              "canvasser_id",
+              "full_name",
+              "shift_id",
+              "flag_type",
+              "status",
+              "evidence",
+              "evidence_start",
+              "evidence_end",
+              "knock_count",
+              "knocks_rolled_back"
+            ],
+            "rows": [
+              [
+                "QC035",
+                "2026-10-18",
+                "Eastgate",
+                "C001",
+                "Dorian Pratt",
+                "G00962",
+                "householding",
+                "open",
+                "6 canvassed results at P23-0218 (units 1A, 1B, 1C, 1D, 2A, 2B) between 15:43:34 and 15:46:02, all answered 'supporter'",
+                "2026-10-18 15:43:34",
+                "2026-10-18 15:46:02",
+                6,
+                false
+              ],
+              [
+                "QC036",
+                "2026-10-18",
+                "Harbor",
+                "C004",
+                "Priya Nandakumar",
+                "G00972",
+                "flash_knocking",
+                "open",
+                "13 consecutive knocks between 17:02:53 and 17:05:21, median 12 s apart",
+                "2026-10-18 17:02:53",
+                "2026-10-18 17:05:21",
+                13,
+                false
+              ],
+              [
+                "QC033",
+                "2026-10-17",
+                "Eastgate",
+                "C005",
+                "Andre Whitfield",
+                "G00918",
+                "gap",
+                "open",
+                "no knocks for 89 minutes, last knock 12:23:14, next knock 13:52:32, while clocked in",
+                "2026-10-17 12:23:14",
+                "2026-10-17 13:52:32",
+                0,
+                false
+              ],
+              [
+                "QC034",
+                "2026-10-17",
+                "Eastgate",
+                "C001",
+                "Dorian Pratt",
+                "G00917",
+                "householding",
+                "open",
+                "6 canvassed results at P23-0431 (units 1A, 1B, 1C, 1D, 2A, 2B) between 17:58:56 and 18:01:18, all answered 'supporter'",
+                "2026-10-17 17:58:56",
+                "2026-10-17 18:01:18",
+                6,
+                false
+              ],
+              [
+                "QC032",
+                "2026-10-14",
+                "Northside",
+                "C003",
+                "Tomas Reyes",
+                "G00790",
+                "householding",
+                "reviewed",
+                "6 canvassed results at P09-0157 (units 1A, 1B, 1C, 1D, 2A, 2B) between 17:44:22 and 17:46:33, all answered 'undecided'",
+                "2026-10-14 17:44:22",
+                "2026-10-14 17:46:33",
+                6,
+                false
+              ],
+              [
+                "QC031",
+                "2026-10-13",
+                "Eastgate",
+                "C001",
+                "Dorian Pratt",
+                "G00764",
+                "householding",
+                "reviewed",
+                "6 canvassed results at P21-0166 (units 1A, 1B, 1C, 1D, 2A, 2B) between 11:45:33 and 11:47:47, all answered 'supporter'",
+                "2026-10-13 11:45:33",
+                "2026-10-13 11:47:47",
+                6,
+                false
+              ],
+              [
+                "QC030",
+                "2026-10-12",
+                "Eastgate",
+                "C002",
+                "Jalen Ortiz",
+                "G00725",
+                "flash_knocking",
+                "reviewed",
+                "142 knocks recorded between 16:28:20 and 17:05:03, median 15 s apart; whole shift rolled back",
+                "2026-10-12 16:28:20",
+                "2026-10-12 17:05:03",
+                142,
+                true
+              ],
+              [
+                "QC029",
+                "2026-10-09",
+                "Harbor",
+                "C101",
+                "Jade Abbott",
+                "G00611",
+                "flash_knocking",
+                "reviewed",
+                "13 consecutive knocks between 11:19:07 and 11:21:08, median 10 s apart",
+                "2026-10-09 11:19:07",
+                "2026-10-09 11:21:08",
+                13,
+                true
+              ]
+            ],
+            "row_count": 36,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_qc_flags_detail"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 107181,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 5
+      }
+    },
+    {
+      "id": "q13",
+      "question": "Is QC getting better or worse week over week, and which office is improving?",
+      "category": "QC",
+      "keywords": [
+        "QC",
+        "week over week",
+        "better",
+        "worse",
+        "improving",
+        "flags rate"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "qc-rules#qc-rate",
+        "client-reporting#weekly-report-format",
+        "client-reporting#daily-report",
+        "counting-doors#rollbacks"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 0.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Harbor is improving",
+          "expected": [
+            "Harbor"
+          ],
+          "matched": true
+        },
+        {
+          "name": "Harbor flags per 100 shifts this week",
+          "expected": 1.4492753623188406,
+          "matched": true
+        },
+        {
+          "name": "Harbor flags per 100 shifts last week",
+          "expected": 6.153846153846154,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Is QC getting better or worse week over week, and which office is improving?",
+        "answer": "QC is getting better week over week, with Harbor improving the most.\n- Harbor: 6.2 [table:v_qc_weekly] flags per 100 shifts last week vs 1.4 [table:v_qc_weekly] this week\n- Eastgate: 3.8 [table:v_qc_weekly] flags per 100 shifts last week vs 8.6 [table:v_qc_weekly] this week\n- Northside: 3.0 [table:v_qc_weekly] flags per 100 shifts last week vs 1.3 [table:v_qc_weekly] this week\n- The rate is flags per 100 shifts [doc:qc-rules#flags]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_qc_weekly",
+              "week_start": "2026-10-05"
+            },
+            "ok": true,
+            "result": "3 rows from v_qc_weekly"
+          },
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_qc_weekly",
+              "week_start": "2026-10-12"
+            },
+            "ok": true,
+            "result": "3 rows from v_qc_weekly"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_qc_weekly",
+            "columns": [
+              "office",
+              "week_start",
+              "shifts",
+              "flags",
+              "flash_knocking",
+              "householding",
+              "gaps",
+              "flags_per_100_shifts"
+            ],
+            "rows": [
+              [
+                "Eastgate",
+                "2026-10-05",
+                52,
+                2,
+                2,
+                0,
+                0,
+                3.8
+              ],
+              [
+                "Harbor",
+                "2026-10-05",
+                65,
+                4,
+                2,
+                1,
+                1,
+                6.2
+              ],
+              [
+                "Northside",
+                "2026-10-05",
+                67,
+                2,
+                1,
+                1,
+                0,
+                3
+              ]
+            ],
+            "row_count": 3,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_qc_weekly"
+          },
+          {
+            "type": "doc",
+            "id": "qc-rules#flags"
+          }
+        ],
+        "citations_valid": false,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 27499,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 5
+      }
+    },
+    {
+      "id": "q14",
+      "question": "Are we on pace for the registration goal, and what cards per hour do we need from here?",
+      "category": "VR rate",
+      "keywords": [
+        "registration",
+        "goal",
+        "cards per hour",
+        "pace",
+        "needed",
+        "cards"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "registration-drive#cards-per-hour",
+        "registration-drive#valid-cards-and-duplicates",
+        "program-plan#pace-and-projection",
+        "client-reporting#weekly-report-format"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.333,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "cards per hour needed",
+          "expected": 2.9580550918196993,
+          "matched": true
+        },
+        {
+          "name": "current cards per hour, last 7 days",
+          "expected": 2.8559503935129977,
+          "matched": false
+        },
+        {
+          "name": "says not on pace",
+          "expected": [
+            "not on pace",
+            "not on track",
+            "behind",
+            "short",
+            "below",
+            "under",
+            "miss"
+          ],
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Are we on pace for the registration goal, and what cards per hour do we need from here?",
+        "answer": "We are on pace to meet the registration goal. We need 2.96 valid cards per hour from here to hit the goal.\n- Projected valid cards: 5,311 [table:v_vr_pace]\n- Cards per hour needed: 2.96 [table:v_vr_pace]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_vr_pace"
+            },
+            "ok": true,
+            "result": "4 rows from v_vr_pace"
+          },
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_vr_pace"
+            },
+            "ok": true,
+            "result": "4 rows from v_vr_pace"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_vr_pace",
+            "columns": [
+              "office",
+              "card_goal",
+              "cards_collected",
+              "duplicate_cards",
+              "valid_cards",
+              "cards_remaining",
+              "hours_to_date",
+              "cards_per_hour_to_date",
+              "cards_per_hour_last_7d",
+              "avg_daily_hours_last_7d",
+              "days_left",
+              "projected_valid_cards",
+              "cards_per_hour_needed"
+            ],
+            "rows": [
+              [
+                "All offices",
+                5370,
+                3781,
+                112,
+                3669,
+                1701,
+                1305.41,
+                2.81,
+                2.86,
+                47.9,
+                12,
+                5311,
+                2.96
+              ],
+              [
+                "Eastgate",
+                1380,
+                963,
+                22,
+                941,
+                439,
+                385.81,
+                2.44,
+                2.41,
+                13.3,
+                12,
+                1325,
+                2.75
+              ],
+              [
+                "Harbor",
+                1820,
+                1312,
+                66,
+                1246,
+                574,
+                463.45,
+                2.69,
+                2.74,
+                18.4,
+                12,
+                1849,
+                2.61
+              ],
+              [
+                "Northside",
+                2170,
+                1506,
+                24,
+                1482,
+                688,
+                456.15,
+                3.25,
+                3.35,
+                16.3,
+                12,
+                2137,
+                3.52
+              ]
+            ],
+            "row_count": 4,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_vr_pace"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 20675,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 4
+      }
+    },
+    {
+      "id": "q15",
+      "question": "Which offices are under that cards per hour?",
+      "category": "VR rate",
+      "keywords": [
+        "offices",
+        "under",
+        "cards per hour",
+        "registration",
+        "below rate"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "registration-drive#cards-per-hour",
+        "client-reporting#weekly-report-format",
+        "payroll-rules#cost-per-door",
+        "registration-drive#valid-cards-and-duplicates"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.667,
+        "citation": 0.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Eastgate is under",
+          "expected": [
+            "Eastgate"
+          ],
+          "matched": true
+        },
+        {
+          "name": "Harbor is under",
+          "expected": [
+            "Harbor"
+          ],
+          "matched": true
+        },
+        {
+          "name": "Eastgate cards per hour, last 7 days",
+          "expected": 2.406790587729666,
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Which offices are under that cards per hour?",
+        "answer": "Harbor and Eastgate are under the program-wide cards per hour needed to meet their goals.\n- Harbor: 2.61 cards/hour [table:v_vr_pace]\n- Eastgate: 2.75 cards/hour [table:v_vr_pace]\n- Program-wide needed: 2.96 cards/hour [table:v_vr_pace]\nThe number is the program-wide rate needed to meet all offices' goals by the deadline [doc:vr-plan#pace].",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_vr_pace"
+            },
+            "ok": true,
+            "result": "4 rows from v_vr_pace"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_vr_pace",
+            "columns": [
+              "office",
+              "card_goal",
+              "cards_collected",
+              "duplicate_cards",
+              "valid_cards",
+              "cards_remaining",
+              "hours_to_date",
+              "cards_per_hour_to_date",
+              "cards_per_hour_last_7d",
+              "avg_daily_hours_last_7d",
+              "days_left",
+              "projected_valid_cards",
+              "cards_per_hour_needed"
+            ],
+            "rows": [
+              [
+                "All offices",
+                5370,
+                3781,
+                112,
+                3669,
+                1701,
+                1305.41,
+                2.81,
+                2.86,
+                47.9,
+                12,
+                5311,
+                2.96
+              ],
+              [
+                "Eastgate",
+                1380,
+                963,
+                22,
+                941,
+                439,
+                385.81,
+                2.44,
+                2.41,
+                13.3,
+                12,
+                1325,
+                2.75
+              ],
+              [
+                "Harbor",
+                1820,
+                1312,
+                66,
+                1246,
+                574,
+                463.45,
+                2.69,
+                2.74,
+                18.4,
+                12,
+                1849,
+                2.61
+              ],
+              [
+                "Northside",
+                2170,
+                1506,
+                24,
+                1482,
+                688,
+                456.15,
+                3.25,
+                3.35,
+                16.3,
+                12,
+                2137,
+                3.52
+              ]
+            ],
+            "row_count": 4,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_vr_pace"
+          },
+          {
+            "type": "doc",
+            "id": "vr-plan#pace"
+          }
+        ],
+        "citations_valid": false,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 24031,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 5
+      }
+    },
+    {
+      "id": "q16",
+      "question": "Which offices or canvassers have the most duplicate registrations, and is it one person or across the board?",
+      "category": "QC",
+      "keywords": [
+        "duplicate",
+        "registrations",
+        "cards",
+        "canvassers",
+        "one person",
+        "across the board"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "registration-drive#valid-cards-and-duplicates",
+        "qc-rules#apartments-and-units",
+        "payroll-rules#pay-rates",
+        "counting-doors#attempts"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 0.667,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Renata Cole",
+          "expected": [
+            "Renata Cole"
+          ],
+          "matched": true
+        },
+        {
+          "name": "Renata's duplicate cards",
+          "expected": 42.0,
+          "matched": true
+        },
+        {
+          "name": "Harbor duplicates",
+          "expected": 66.0,
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Which offices or canvassers have the most duplicate registrations, and is it one person or across the board?",
+        "answer": "The Harbor office has the most duplicate registrations with 27 duplicates, followed by Northside with 16 and Eastgate with 12.\n- Harbor: 27 duplicates [table:v_vr_canvassers]\n- Northside: 16 duplicates [table:v_vr_canvassers]\n- Eastgate: 12 duplicates [table:v_vr_canvassers]\n- The canvasser Renata Cole in Harbor has the most duplicates with 42.\n- Renata Cole: 42 duplicates [table:v_vr_canvassers]\n- The duplicates are spread across multiple canvassers in Harbor, not just one person.\n- The number of duplicates is calculated from the 'duplicate_cards' column in the v_vr_canvassers view.",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_vr_canvassers"
+            },
+            "ok": true,
+            "result": "28 rows from v_vr_canvassers"
+          },
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_vr_canvassers"
+            },
+            "ok": true,
+            "result": "28 rows from v_vr_canvassers"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_vr_canvassers",
+            "columns": [
+              "canvasser_id",
+              "full_name",
+              "office",
+              "cards_collected",
+              "duplicate_cards",
+              "duplicate_rate_pct",
+              "qc_calls",
+              "qc_confirmed",
+              "qc_unreachable",
+              "qc_wrong_info"
+            ],
+            "rows": [
+              [
+                "C009",
+                "Renata Cole",
+                "Harbor",
+                129,
+                42,
+                32.6,
+                33,
+                23,
+                8,
+                2
+              ],
+              [
+                "C106",
+                "Emmett Delgado",
+                "Northside",
+                374,
+                7,
+                1.9,
+                144,
+                101,
+                32,
+                11
+              ],
+              [
+                "C125",
+                "Bianca Castellano",
+                "Harbor",
+                256,
+                6,
+                2.3,
+                85,
+                57,
+                21,
+                7
+              ],
+              [
+                "C105",
+                "Zoe Castellano",
+                "Northside",
+                329,
+                6,
+                1.8,
+                119,
+                83,
+                24,
+                12
+              ],
+              [
+                "C116",
+                "Rafael Jessup",
+                "Eastgate",
+                265,
+                6,
+                2.3,
+                99,
+                66,
+                22,
+                11
+              ],
+              [
+                "C008",
+                "Marcus Bell",
+                "Harbor",
+                227,
+                5,
+                2.2,
+                78,
+                65,
+                9,
+                4
+              ],
+              [
+                "C122",
+                "Gideon Okafor",
+                "Harbor",
+                137,
+                5,
+                3.6,
+                48,
+                34,
+                10,
+                4
+              ],
+              [
+                "C112",
+                "Delia Hollis",
+                "Eastgate",
+                197,
+                5,
+                2.5,
+                60,
+                39,
+                12,
+                9
+              ]
+            ],
+            "row_count": 28,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_vr_canvassers"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 26203,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 3
+      }
+    },
+    {
+      "id": "q17",
+      "question": "What share of QC calls confirmed the registrant, couldn't reach them, or found wrong information?",
+      "category": "QC",
+      "keywords": [
+        "QC calls",
+        "confirmed",
+        "unreachable",
+        "wrong information",
+        "share",
+        "registration"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "registration-drive#qc-calls",
+        "counting-doors#rollbacks",
+        "counting-doors#why-the-client-s-numbers-differ-from-ours",
+        "qc-rules#qc-rate"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [
+        {
+          "name": "confirmed share",
+          "expected": 72.3159509202454,
+          "matched": true
+        },
+        {
+          "name": "unreachable share",
+          "expected": 20.322085889570552,
+          "matched": true
+        },
+        {
+          "name": "wrong information share",
+          "expected": 7.361963190184049,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "What share of QC calls confirmed the registrant, couldn't reach them, or found wrong information?",
+        "answer": "The share of QC calls that confirmed the registrant was 72.3%, couldn't reach them was 20.3%, and found wrong information was 7.4%.\n- Confirmed: 72.3% [table:v_qc_call_outcomes]\n- Unreachable: 20.3% [table:v_qc_call_outcomes]\n- Wrong info: 7.4% [table:v_qc_call_outcomes]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_qc_call_outcomes"
+            },
+            "ok": true,
+            "result": "12 rows from v_qc_call_outcomes"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_qc_call_outcomes",
+            "columns": [
+              "office",
+              "outcome",
+              "calls",
+              "share_pct"
+            ],
+            "rows": [
+              [
+                "All offices",
+                "confirmed",
+                943,
+                72.3
+              ],
+              [
+                "All offices",
+                "unreachable",
+                265,
+                20.3
+              ],
+              [
+                "All offices",
+                "wrong_info",
+                96,
+                7.4
+              ],
+              [
+                "Eastgate",
+                "confirmed",
+                229,
+                69.4
+              ],
+              [
+                "Eastgate",
+                "unreachable",
+                73,
+                22.1
+              ],
+              [
+                "Eastgate",
+                "wrong_info",
+                28,
+                8.5
+              ],
+              [
+                "Harbor",
+                "confirmed",
+                325,
+                74.4
+              ],
+              [
+                "Harbor",
+                "unreachable",
+                83,
+                19
+              ]
+            ],
+            "row_count": 12,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_qc_call_outcomes"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 21264,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 4
+      }
+    },
+    {
+      "id": "q18",
+      "question": "Who's over the weekly overtime threshold, and whose hours still need fixing or approval before payroll runs?",
+      "category": "payroll",
+      "keywords": [
+        "overtime",
+        "40 hours",
+        "payroll",
+        "approval",
+        "fix",
+        "hours",
+        "threshold"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "payroll-rules#overtime",
+        "payroll-rules#payroll-deadline",
+        "payroll-rules#shifts-that-need-fixing",
+        "registration-drive#cards-per-hour"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 0.0,
+        "refusal": 1.0,
+        "pass": 0.0
+      },
+      "facts": [
+        {
+          "name": "Ellis Warren over 40",
+          "expected": [
+            "Ellis Warren"
+          ],
+          "matched": true
+        },
+        {
+          "name": "Sofia Lindqvist over 40",
+          "expected": [
+            "Sofia Lindqvist"
+          ],
+          "matched": true
+        },
+        {
+          "name": "Marcus Bell over 40",
+          "expected": [
+            "Marcus Bell"
+          ],
+          "matched": true
+        },
+        {
+          "name": "Leon Mbeki needs fix",
+          "expected": [
+            "Leon Mbeki"
+          ],
+          "matched": true
+        },
+        {
+          "name": "Carmen Ruiz needs fix",
+          "expected": [
+            "Carmen Ruiz"
+          ],
+          "matched": true
+        },
+        {
+          "name": "Hugo Brennan needs fix",
+          "expected": [
+            "Hugo Brennan"
+          ],
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Who's over the weekly overtime threshold, and whose hours still need fixing or approval before payroll runs?",
+        "answer": "The following canvassers are over the weekly overtime threshold:\n- Ellis Warren, Northside: 44.96 hours [table:v_weekly_hours]\n- Sofia Lindqvist, Eastgate: 42.55 hours [table:v_weekly_hours]\n- Marcus Bell, Harbor: 41.86 hours [table:v_weekly_hours]\n\nThe following shifts still need fixing or approval before payroll runs:\n- Ellis Warren, Northside, Oct 17: 7.5 hours, pending approval [table:v_shifts_to_fix]\n- Sofia Lindqvist, Eastgate, Oct 17: 8.55 hours, pending approval [table:v_shifts_to_fix]\n- Marcus Bell, Harbor, Oct 17: 6.93 hours, pending approval [table:v_shifts_to_fix]\n- Carmen Ruiz, Northside, Oct 17: missing clock out, needs fix [table:v_shifts_to_fix]\n- Leon Mbeki, Harbor, Oct 16: missing clock out, needs fix [table:v_shifts_to_fix]\n- Hugo Brennan, Eastgate, Oct 15: clocked in under Harbor, worked Eastgate turf, needs fix [table:v_shifts_to_fix]\n\nCanvassers over the overtime threshold have worked more than 40 hours in a week. [doc:payroll-rules#overtime]\nShifts that need fixing or approval are not yet ready for payroll. [doc:payroll-rules#shift-approval]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_weekly_hours",
+              "week_start": "2026-10-12"
+            },
+            "ok": true,
+            "result": "77 rows from v_weekly_hours"
+          },
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_shifts_to_fix",
+              "week_start": "2026-10-12"
+            },
+            "ok": true,
+            "result": "6 rows from v_shifts_to_fix"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_weekly_hours",
+            "columns": [
+              "canvasser_id",
+              "full_name",
+              "office",
+              "program",
+              "week_start",
+              "shifts",
+              "paid_hours",
+              "shifts_pending",
+              "shifts_needs_fix",
+              "over_threshold"
+            ],
+            "rows": [
+              [
+                "C006",
+                "Ellis Warren",
+                "Northside",
+                "gotv",
+                "2026-10-12",
+                6,
+                44.96,
+                1,
+                0,
+                true
+              ],
+              [
+                "C007",
+                "Sofia Lindqvist",
+                "Eastgate",
+                "gotv",
+                "2026-10-12",
+                5,
+                42.55,
+                1,
+                0,
+                true
+              ],
+              [
+                "C008",
+                "Marcus Bell",
+                "Harbor",
+                "vr",
+                "2026-10-12",
+                6,
+                41.86,
+                1,
+                0,
+                true
+              ],
+              [
+                "C086",
+                "Felix Dunmore",
+                "Harbor",
+                "gotv",
+                "2026-10-12",
+                7,
+                30.67,
+                0,
+                0,
+                false
+              ],
+              [
+                "C047",
+                "Tara Okafor",
+                "Eastgate",
+                "gotv",
+                "2026-10-12",
+                7,
+                30.48,
+                0,
+                0,
+                false
+              ],
+              [
+                "C111",
+                "Viktor Lattimore",
+                "Northside",
+                "vr",
+                "2026-10-12",
+                7,
+                30.35,
+                0,
+                0,
+                false
+              ],
+              [
+                "C082",
+                "Milo Marsh",
+                "Harbor",
+                "gotv",
+                "2026-10-12",
+                7,
+                29.97,
+                0,
+                0,
+                false
+              ],
+              [
+                "C109",
+                "Sage Underhill",
+                "Northside",
+                "vr",
+                "2026-10-12",
+                7,
+                28.86,
+                0,
+                0,
+                false
+              ]
+            ],
+            "row_count": 77,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_weekly_hours"
+          },
+          {
+            "type": "table",
+            "id": "v_shifts_to_fix"
+          },
+          {
+            "type": "doc",
+            "id": "payroll-rules#overtime"
+          },
+          {
+            "type": "doc",
+            "id": "payroll-rules#shift-approval"
+          }
+        ],
+        "citations_valid": false,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 50209,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 5
+      }
+    },
+    {
+      "id": "q19",
+      "question": "Pull this week's numbers for the client report: doors, contacts, cards and hours by office.",
+      "category": "client report",
+      "keywords": [
+        "client report",
+        "this week",
+        "doors",
+        "contacts",
+        "cards",
+        "hours",
+        "weekly"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "client-reporting#weekly-report-format",
+        "client-reporting#daily-report",
+        "program-plan#goals",
+        "counting-doors#why-the-client-s-numbers-differ-from-ours"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [
+        {
+          "name": "Northside doors",
+          "expected": 4347.0,
+          "matched": true
+        },
+        {
+          "name": "Eastgate doors",
+          "expected": 2665.0,
+          "matched": true
+        },
+        {
+          "name": "Harbor doors",
+          "expected": 3412.0,
+          "matched": true
+        },
+        {
+          "name": "Northside contacts",
+          "expected": 1307.0,
+          "matched": true
+        },
+        {
+          "name": "Eastgate contacts",
+          "expected": 666.0,
+          "matched": true
+        },
+        {
+          "name": "Harbor contacts",
+          "expected": 931.0,
+          "matched": true
+        },
+        {
+          "name": "Northside cards",
+          "expected": 382.0,
+          "matched": true
+        },
+        {
+          "name": "Eastgate cards",
+          "expected": 224.0,
+          "matched": true
+        },
+        {
+          "name": "Harbor cards",
+          "expected": 352.0,
+          "matched": true
+        },
+        {
+          "name": "Northside hours",
+          "expected": 463.64,
+          "matched": true
+        },
+        {
+          "name": "Eastgate hours",
+          "expected": 362.67,
+          "matched": true
+        },
+        {
+          "name": "Harbor hours",
+          "expected": 417.64,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Pull this week's numbers for the client report: doors, contacts, cards and hours by office.",
+        "answer": "This week's client report numbers by office:\n- All offices: 10,424 doors, 2,904 contacts, 958 cards, 1,243.95 hours [table:v_weekly_report]\n- Eastgate: 2,665 doors, 666 contacts, 224 cards, 362.67 hours [table:v_weekly_report]\n- Harbor: 3,412 doors, 931 contacts, 352 cards, 417.64 hours [table:v_weekly_report]\n- Northside: 4,347 doors, 1,307 contacts, 382 cards, 463.64 hours [table:v_weekly_report]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_weekly_report",
+              "week_start": "2026-10-12"
+            },
+            "ok": true,
+            "result": "4 rows from v_weekly_report"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_weekly_report",
+            "columns": [
+              "office",
+              "week_start",
+              "doors",
+              "contacts",
+              "valid_cards",
+              "paid_hours",
+              "shifts_missing_clock_out"
+            ],
+            "rows": [
+              [
+                "All offices",
+                "2026-10-12",
+                10424,
+                2904,
+                958,
+                1243.95,
+                2
+              ],
+              [
+                "Eastgate",
+                "2026-10-12",
+                2665,
+                666,
+                224,
+                362.67,
+                0
+              ],
+              [
+                "Harbor",
+                "2026-10-12",
+                3412,
+                931,
+                352,
+                417.64,
+                1
+              ],
+              [
+                "Northside",
+                "2026-10-12",
+                4347,
+                1307,
+                382,
+                463.64,
+                1
+              ]
+            ],
+            "row_count": 4,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_weekly_report"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 10336,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "x01",
+      "question": "Which office is furthest behind its door goal?",
+      "category": "pace",
+      "keywords": [],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#goals",
+        "program-plan#opening-another-office",
+        "program-plan#pace-and-projection",
+        "program-plan#overview"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [
+        {
+          "name": "Eastgate",
+          "expected": [
+            "Eastgate"
+          ],
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Which office is furthest behind its door goal?",
+        "answer": "Northside is furthest behind its door goal.\n\n- Northside: 22,675 goal total, 13,647 doors to date, 112.5% of goal [table:v_office_pace]\n- Eastgate: 17,800 goal total, 8,505 doors to date, 89.3% of goal [table:v_office_pace]\n- Harbor: 20,157 goal total, 11,351 doors to date, 105.3% of goal [table:v_office_pace]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_office_pace"
+            },
+            "ok": true,
+            "result": "4 rows from v_office_pace"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_office_pace",
+            "columns": [
+              "office",
+              "goal_total",
+              "goal_to_date",
+              "doors_to_date",
+              "pct_of_goal_to_date",
+              "avg_daily_doors_last_7d",
+              "knocking_days_left",
+              "projected_total",
+              "projected_vs_goal",
+              "projected_pct_of_goal",
+              "avg_shifts_per_day_last_7d",
+              "doors_per_shift_last_7d",
+              "shifts_per_day_needed",
+              "extra_shifts_per_day_needed"
+            ],
+            "rows": [
+              [
+                "All offices",
+                60632,
+                32431,
+                33503,
+                103.3,
+                1489.1,
+                16,
+                57329,
+                -3303,
+                94.6,
+                29.3,
+                50.8,
+                33.3,
+                4.1
+              ],
+              [
+                "Eastgate",
+                17800,
+                9521,
+                8505,
+                89.3,
+                380.7,
+                16,
+                14596,
+                -3204,
+                82,
+                8.3,
+                45.9,
+                12.6,
+                4.4
+              ],
+              [
+                "Harbor",
+                20157,
+                10782,
+                11351,
+                105.3,
+                487.4,
+                16,
+                19150,
+                -1007,
+                95,
+                9.9,
+                49.4,
+                11.1,
+                1.3
+              ],
+              [
+                "Northside",
+                22675,
+                12128,
+                13647,
+                112.5,
+                621,
+                16,
+                23583,
+                908,
+                104,
+                11.1,
+                55.7,
+                10.1,
+                0
+              ]
+            ],
+            "row_count": 4,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_office_pace"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 16914,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 3
+      }
+    },
+    {
+      "id": "x02",
+      "question": "Which office costs the most per door?",
+      "category": "payroll",
+      "keywords": [],
+      "should_refuse": false,
+      "retrieved": [
+        "payroll-rules#cost-per-door",
+        "program-plan#opening-another-office",
+        "program-plan#goals",
+        "counting-doors#doors"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [
+        {
+          "name": "Eastgate",
+          "expected": [
+            "Eastgate"
+          ],
+          "matched": true
+        },
+        {
+          "name": "Eastgate cost per door",
+          "expected": 2.073392122281011,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Which office costs the most per door?",
+        "answer": "Harbor has the highest cost per door at $1.78.\n- Harbor: $1.78 [table:v_cost_per_door]\n- Eastgate: $2.07 [table:v_cost_per_door]\n- Northside: $1.67 [table:v_cost_per_door]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_cost_per_door"
+            },
+            "ok": true,
+            "result": "4 rows from v_cost_per_door"
+          },
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_cost_per_door"
+            },
+            "ok": true,
+            "result": "4 rows from v_cost_per_door"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_cost_per_door",
+            "columns": [
+              "office",
+              "paid_hours",
+              "wages",
+              "doors",
+              "cost_per_door"
+            ],
+            "rows": [
+              [
+                "Eastgate",
+                853.89,
+                17634.2,
+                8505,
+                2.07
+              ],
+              [
+                "All offices",
+                2949.11,
+                60575.6,
+                33503,
+                1.81
+              ],
+              [
+                "Harbor",
+                998.45,
+                20182.92,
+                11351,
+                1.78
+              ],
+              [
+                "Northside",
+                1096.77,
+                22758.48,
+                13647,
+                1.67
+              ]
+            ],
+            "row_count": 4,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_cost_per_door"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 19506,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 4
+      }
+    },
+    {
+      "id": "x03",
+      "question": "How many registration QC calls came back with wrong information?",
+      "category": "QC",
+      "keywords": [],
+      "should_refuse": false,
+      "retrieved": [
+        "registration-drive#qc-calls",
+        "counting-doors#rollbacks",
+        "qc-rules#qc-rate",
+        "counting-doors#why-the-client-s-numbers-differ-from-ours"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [
+        {
+          "name": "wrong information calls",
+          "expected": 96.0,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "How many registration QC calls came back with wrong information?",
+        "answer": "There were 96 registration QC calls that came back with wrong information across all offices.\n- Wrong info calls: 96 [table:v_qc_call_outcomes]\n- The outcome 'wrong_info' means the registrant's information was incorrect. [table:v_qc_call_outcomes]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_qc_call_outcomes"
+            },
+            "ok": true,
+            "result": "12 rows from v_qc_call_outcomes"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_qc_call_outcomes",
+            "columns": [
+              "office",
+              "outcome",
+              "calls",
+              "share_pct"
+            ],
+            "rows": [
+              [
+                "All offices",
+                "confirmed",
+                943,
+                72.3
+              ],
+              [
+                "All offices",
+                "unreachable",
+                265,
+                20.3
+              ],
+              [
+                "All offices",
+                "wrong_info",
+                96,
+                7.4
+              ],
+              [
+                "Eastgate",
+                "confirmed",
+                229,
+                69.4
+              ],
+              [
+                "Eastgate",
+                "unreachable",
+                73,
+                22.1
+              ],
+              [
+                "Eastgate",
+                "wrong_info",
+                28,
+                8.5
+              ],
+              [
+                "Harbor",
+                "confirmed",
+                325,
+                74.4
+              ],
+              [
+                "Harbor",
+                "unreachable",
+                83,
+                19
+              ]
+            ],
+            "row_count": 12,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_qc_call_outcomes"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 19262,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 4
+      }
+    },
+    {
+      "id": "x04",
+      "question": "What counts as flash knocking under our QC rules?",
+      "category": "QC",
+      "keywords": [],
+      "should_refuse": false,
+      "retrieved": [
+        "qc-rules#flash-knocking",
+        "counting-doors#rollbacks",
+        "qc-rules#what-happens-after-a-flag",
+        "registration-drive#qc-calls"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [
+        {
+          "name": "10 consecutive knocks",
+          "expected": [
+            "10 ",
+            "ten"
+          ],
+          "matched": true
+        },
+        {
+          "name": "under 30 seconds apart",
+          "expected": [
+            "30 seconds",
+            "thirty seconds"
+          ],
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "What counts as flash knocking under our QC rules?",
+        "answer": "A flash knock is when a canvasser records 10 or more consecutive knocks less than 30 seconds apart.\n- Threshold: 10 knocks in 30 seconds [doc:qc-rules#flash-knocking]\n- Confirmed flash knocking is rolled back: the knocks no longer count as doors or contacts [doc:counting-doors#rollbacks]\n- The canvasser explains it before any pay adjustment [doc:qc-rules#what-happens-after-a-flag]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "flash knocking definition"
+            },
+            "ok": true,
+            "result": "4 passages: qc-rules#flash-knocking, counting-doors#rollbacks, qc-rules#what-happens-after-a-flag, counting-doors#contacts-and-contact-rate"
+          }
+        ],
+        "sources": [
+          {
+            "type": "passage",
+            "doc": "qc-rules#flash-knocking",
+            "text": "Flash knocking is recording doors faster than a person can walk to them and knock. A shift is flagged when 10 or more consecutive knocks are recorded less than 30 seconds apart. Confirmed flash knocking is rolled back: the knocks in the window no longer count as doors or contacts. A whole shift recorded this way is rolled back in full."
+          },
+          {
+            "type": "passage",
+            "doc": "counting-doors#rollbacks",
+            "text": "When QC confirms flash knocking, the knocks in the flagged window are rolled back: they stay in the data with rolled_back = true but are removed from doors and contacts. Rollbacks happen after the day's client report has been pulled, so they never change a report that was already sent."
+          },
+          {
+            "type": "passage",
+            "doc": "qc-rules#what-happens-after-a-flag",
+            "text": "Every open flag needs a conversation between the field lead and the canvasser before the canvasser's next shift, using the timestamped evidence on the flag. After the conversation the flag is marked reviewed. Two or more householding or flash knocking flags in one week for the same canvasser go to the field director."
+          }
+        ],
+        "citations": [
+          {
+            "type": "doc",
+            "id": "qc-rules#flash-knocking"
+          },
+          {
+            "type": "doc",
+            "id": "counting-doors#rollbacks"
+          },
+          {
+            "type": "doc",
+            "id": "qc-rules#what-happens-after-a-flag"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 13440,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 3
+      }
+    },
+    {
+      "id": "x05",
+      "question": "When does payroll run, and who has to approve overtime?",
+      "category": "payroll",
+      "keywords": [],
+      "should_refuse": false,
+      "retrieved": [
+        "payroll-rules#payroll-deadline",
+        "payroll-rules#overtime",
+        "payroll-rules#shifts-that-need-fixing",
+        "payroll-rules#pay-rates"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [
+        {
+          "name": "Tuesday at noon",
+          "expected": [
+            "Tuesday"
+          ],
+          "matched": true
+        },
+        {
+          "name": "field director approves",
+          "expected": [
+            "field director"
+          ],
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "When does payroll run, and who has to approve overtime?",
+        "answer": "Payroll runs Tuesday at noon for the week that ended Sunday. Shifts must be approved by Monday at 5 PM; pending and needs_fix shifts roll to the next payroll.\n- Payroll run: Tuesday at noon [doc:payroll-rules#payroll-deadline]\n- Shift approval deadline: Monday at 5 PM [doc:payroll-rules#payroll-deadline]\n\nFor overtime, the threshold is 40 paid hours in a payroll week (Monday through Sunday). Hours over 40 are paid at 1.5 times the hourly rate and need the field director's approval.\n- Overtime threshold: 40 hours [doc:payroll-rules#overtime]\n- Overtime approval: field director [doc:payroll-rules#overtime]\n\nShifts marked needs_fix cannot be paid until a field lead corrects and approves them.\n- Needs_fix shifts: field lead approval [doc:payroll-rules#shifts-that-need-fixing]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "payroll run dates and overtime approval process"
+            },
+            "ok": true,
+            "result": "4 passages: payroll-rules#payroll-deadline, payroll-rules#overtime, payroll-rules#shifts-that-need-fixing, program-plan#pace-and-projection"
+          }
+        ],
+        "sources": [
+          {
+            "type": "passage",
+            "doc": "payroll-rules#payroll-deadline",
+            "text": "Payroll for the week that ended Sunday runs Tuesday at noon. Every shift must be approved by Monday at 5 PM; pending and needs_fix shifts left after that roll to the next payroll."
+          },
+          {
+            "type": "passage",
+            "doc": "payroll-rules#overtime",
+            "text": "The overtime threshold is 40 paid hours in a payroll week, Monday through Sunday, counting every shift the person worked. Hours over 40 are paid at 1.5 times the hourly rate. Any shift that takes a person over 40 hours needs the field director's approval and stays pending until it is approved."
+          },
+          {
+            "type": "passage",
+            "doc": "payroll-rules#shifts-that-need-fixing",
+            "text": "A shift marked needs_fix cannot be paid until a field lead corrects it. Common reasons are a missing clock out (no paid hours yet) and a shift clocked under the wrong office. Fix the record, then mark it approved."
+          }
+        ],
+        "citations": [
+          {
+            "type": "doc",
+            "id": "payroll-rules#payroll-deadline"
+          },
+          {
+            "type": "doc",
+            "id": "payroll-rules#overtime"
+          },
+          {
+            "type": "doc",
+            "id": "payroll-rules#shifts-that-need-fixing"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 13798,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 3
+      }
+    },
+    {
+      "id": "x06",
+      "question": "How should a canvasser record a locked apartment building?",
+      "category": "QC",
+      "keywords": [],
+      "should_refuse": false,
+      "retrieved": [
+        "qc-rules#apartments-and-units",
+        "qc-rules#householding",
+        "counting-doors#attempts",
+        "qc-rules#gaps"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [
+        {
+          "name": "inaccessible",
+          "expected": [
+            "inaccessible"
+          ],
+          "matched": true
+        },
+        {
+          "name": "once, not per unit",
+          "expected": [
+            "once",
+            "first unit",
+            "one time"
+          ],
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "How should a canvasser record a locked apartment building?",
+        "answer": "A canvasser should record each apartment unit in a locked building as a separate attempt, marking the first unit as \"inaccessible\" if entry is denied.\n- Record each unit separately [doc:qc-rules#apartments-and-units]\n- Mark the first unit as \"inaccessible\" if entry is denied [doc:qc-rules#apartments-and-units]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "locked apartment building knocking rules"
+            },
+            "ok": true,
+            "result": "4 passages: qc-rules#apartments-and-units, counting-doors#doors, qc-rules#flash-knocking, counting-doors#attempts"
+          },
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "locked apartment building knocking rules"
+            },
+            "ok": true,
+            "result": "4 passages: qc-rules#apartments-and-units, counting-doors#doors, qc-rules#flash-knocking, counting-doors#attempts"
+          }
+        ],
+        "sources": [
+          {
+            "type": "passage",
+            "doc": "qc-rules#apartments-and-units",
+            "text": "Every apartment unit is its own door and must be knocked on its own. If a building is locked and the canvasser cannot get in, record the building once as \"inaccessible\" on its first unit and move on; do not mark each unit. A canvasser who marks a whole building from the lobby is householding."
+          }
+        ],
+        "citations": [
+          {
+            "type": "doc",
+            "id": "qc-rules#apartments-and-units"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 9591,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 3
+      }
+    },
+    {
+      "id": "x07",
+      "question": "What will turnout be in Harbor's precincts on election day?",
+      "category": "pace",
+      "keywords": [],
+      "should_refuse": true,
+      "retrieved": [
+        "program-plan#overview",
+        "registration-drive#overview",
+        "program-plan#pace-and-projection",
+        "program-plan#more-doors-or-a-second-pass"
+      ],
+      "scores": {
+        "tool_choice": null,
+        "retrieval": null,
+        "facts": null,
+        "citation": null,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [],
+      "answer": {
+        "question": "What will turnout be in Harbor's precincts on election day?",
+        "answer": "I can't confirm that from the program data or documents.\n- The data does not include turnout or past election results.",
+        "refused": true,
+        "tool_calls": [],
+        "sources": [],
+        "citations": [],
+        "citations_valid": false,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 2559,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "x08",
+      "question": "What is Dorian Pratt's phone number?",
+      "category": "QC",
+      "keywords": [],
+      "should_refuse": true,
+      "retrieved": [
+        "registration-drive#qc-calls",
+        "registration-drive#overview",
+        "program-plan#more-doors-or-a-second-pass",
+        "program-plan#overview"
+      ],
+      "scores": {
+        "tool_choice": null,
+        "retrieval": null,
+        "facts": null,
+        "citation": null,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [],
+      "answer": {
+        "question": "What is Dorian Pratt's phone number?",
+        "answer": "I can't confirm that from the program data or documents. There is no staff contact information.",
+        "refused": true,
+        "tool_calls": [],
+        "sources": [],
+        "citations": [],
+        "citations_valid": false,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 1774,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 2
+      }
+    },
+    {
+      "id": "x09",
+      "question": "How many doors did Riverbend Votes knock in the 2022 cycle?",
+      "category": "pace",
+      "keywords": [],
+      "should_refuse": true,
+      "retrieved": [
+        "program-plan#overview",
+        "program-plan#more-doors-or-a-second-pass",
+        "registration-drive#overview",
+        "program-plan#pace-and-projection"
+      ],
+      "scores": {
+        "tool_choice": null,
+        "retrieval": null,
+        "facts": null,
+        "citation": null,
+        "refusal": 1.0,
+        "pass": 1.0
+      },
+      "facts": [],
+      "answer": {
+        "question": "How many doors did Riverbend Votes knock in the 2022 cycle?",
+        "answer": "I can't confirm that from the program data or documents.\n- The data only covers the 2026 cycle, not earlier years.",
+        "refused": true,
+        "tool_calls": [],
+        "sources": [],
+        "citations": [],
+        "citations_valid": false,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "latency_ms": 3013,
+        "model": "ollama/qwen2.5:14b",
+        "steps": 2
+      }
+    }
+  ]
+}
