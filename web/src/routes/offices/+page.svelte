@@ -154,6 +154,10 @@
 		margin: 0;
 		text-align: right;
 		font-variant-numeric: tabular-nums;
+		overflow-wrap: anywhere;
+	}
+	dl {
+		grid-template-columns: minmax(0, 1fr) minmax(0, auto);
 	}
 	.bad {
 		color: var(--bad);

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { evals, formatSeconds, pct } from '#lib/api.ts';
+	import { splitChanges } from '#lib/changes.ts';
 	import type { EvalsResponse, SplitBlock } from '#lib/types.ts';
 
 	let data = $state<EvalsResponse | null>(null);
@@ -16,6 +17,9 @@
 		['refusal', 'Refusal', 'declines exactly when the data can’t answer']
 	];
 
+	// The "Passed" row (case counts) followed by the five metrics, for the narrow-screen cards.
+	const CARD_ROWS: [keyof SplitBlock | null, string, string][] = [[null, 'Passed', ''], ...METRICS];
+
 	function passed(v: number | null | undefined): string {
 		if (v === null || v === undefined) return 'n/a';
 		return v >= 1 ? 'pass' : 'miss';
@@ -30,6 +34,7 @@
 	{@const sb = data.scoreboard}
 	{@const h = sb.after.heldout}
 	{@const t = sb.after.tuned}
+	{@const changes = splitChanges(sb.what_changed)}
 	<p class="lede">
 		28 test questions, each with facts checked against SQL on the raw tables, never against the model. Half of them
 		were set aside and not tuned against.
@@ -49,7 +54,7 @@
 	{/if}
 
 	<h2>Scores by half</h2>
-	<div class="scroll">
+	<div class="scroll scores-wrap">
 		<table class="scores">
 			<thead>
 				<tr>
@@ -80,22 +85,58 @@
 			</tbody>
 		</table>
 	</div>
+	<div class="cards">
+		{#each CARD_ROWS as [key, label, help] (label)}
+			<div class="metric panel">
+				<p class="mlabel">{label}{#if help}<span class="help">{help}</span>{/if}</p>
+				<dl>
+					<dt>Held out, now</dt>
+					<dd>{key === null ? `${h.pass} of ${h.cases}` : pct(h[key] as number | null)}</dd>
+					<dt>Tuned, now</dt>
+					<dd>{key === null ? `${t.pass} of ${t.cases}` : pct(t[key] as number | null)}</dd>
+					{#if sb.before.heldout}
+						<dt>Held out, baseline</dt>
+						<dd>{key === null ? `${sb.before.heldout.pass} of ${sb.before.heldout.cases}` : pct(sb.before.heldout[key] as number | null)}</dd>
+					{/if}
+					{#if sb.before.tuned}
+						<dt>Tuned, baseline</dt>
+						<dd>{key === null ? `${sb.before.tuned.pass} of ${sb.before.tuned.cases}` : pct(sb.before.tuned[key] as number | null)}</dd>
+					{/if}
+				</dl>
+			</div>
+		{/each}
+	</div>
 	{#if sb.before.split_note}
-		<p class="small">Baseline: {sb.before.label}, {sb.before.cases} questions, one run. {sb.before.split_note}</p>
+		<p class="small">Baseline: {sb.before.cases} questions, one run. {sb.before.split_note}</p>
 	{/if}
 
 	<h2>Speed</h2>
-	<p>
+	<ul class="plain">
 		{#if sb.shown_answers_avg_latency_ms}
-			The answers shown in this demo took {formatSeconds(sb.shown_answers_avg_latency_ms)} each on average.
+			<li>
+				The answers shown in this demo took {formatSeconds(sb.shown_answers_avg_latency_ms)} each on average (one run per
+				question).
+			</li>
 		{/if}
-		Across every eval answer in all runs: {formatSeconds(h.avg_latency_ms)} (held out) and {formatSeconds(t.avg_latency_ms)}
-		(tuned). The baseline took {formatSeconds(sb.before.avg_latency_ms)}.
-	</p>
-	{#if sb.latency_note}<p class="small">{sb.latency_note}</p>{/if}
+		<li>
+			Averaged over every eval answer in all {h.runs_per_case} runs, including the quick document and refusal questions:
+			{formatSeconds(h.avg_latency_ms)} on the held-out half and {formatSeconds(t.avg_latency_ms)} on the tuned half.
+		</li>
+		<li>The first baseline took {formatSeconds(sb.before.avg_latency_ms)} per answer.</li>
+	</ul>
 
 	<h2>What changed from the baseline</h2>
-	<p class="changed">{sb.what_changed}</p>
+	{#if changes.text}
+		<p class="changed">{changes.text}</p>
+	{:else}
+		<dl class="beforeafter">
+			<dt>Before</dt><dd>{changes.before}</dd>
+			<dt>Now</dt><dd>{changes.after}</dd>
+		</dl>
+		<ul class="changes">
+			{#each changes.items as item, i (i)}<li>{item}</li>{/each}
+		</ul>
+	{/if}
 
 	<h2>Demo questions</h2>
 	<div class="scroll">
@@ -171,6 +212,65 @@
 	}
 	.changed {
 		font-size: 0.9rem;
+	}
+	/* Scores: a table on wide screens, one card per metric on narrow ones. */
+	.cards {
+		display: none;
+		gap: 0.5rem;
+	}
+	@media (max-width: 40rem) {
+		.scores-wrap {
+			display: none;
+		}
+		.cards {
+			display: grid;
+		}
+	}
+	.metric {
+		padding: 0.6rem 0.75rem;
+	}
+	.mlabel {
+		margin: 0 0 0.35rem;
+		font-weight: 600;
+	}
+	.metric dl {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		gap: 0.15rem 0.75rem;
+		margin: 0;
+		font-size: 0.88rem;
+	}
+	.metric dt {
+		color: var(--ink-soft);
+	}
+	.metric dd {
+		margin: 0;
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+	}
+	.plain {
+		padding-left: 1.1rem;
+	}
+	.plain li,
+	.changes li {
+		margin-bottom: 0.3rem;
+	}
+	.changes {
+		padding-left: 1.1rem;
+		font-size: 0.92rem;
+	}
+	.beforeafter {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 0.3rem 0.75rem;
+		margin: 0 0 0.6rem;
+		font-size: 0.92rem;
+	}
+	.beforeafter dt {
+		font-weight: 600;
+	}
+	.beforeafter dd {
+		margin: 0;
 	}
 	.id {
 		font: 0.75rem var(--mono);
