@@ -20,6 +20,10 @@ RETRY_NUDGE = ("Your last query failed because of the SQL, not because the data 
 NUMBER = re.compile(r"(?<![\w.])-?\$?((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)")
 BRACKETS = re.compile(r"\[[^\]]*\]")
 DATES = re.compile(r"\b\d{4}-\d{2}-\d{2}\b|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.? \d{1,2}\b")
+LOOK_NUDGE = ("Before saying you can't confirm it, check: search the documents for the rule or definition, and query "
+              "the data or a view if the question is about numbers. Then answer, or refuse if neither has it.")
+CITE_NUDGE = ("Rewrite the same answer with citations. Put one after each number or rule, using exactly these ids: {ids}. "
+              "Keep the numbers as they are.")
 WITHHELD = ("I can't confirm that from the program data or documents. My draft answer used numbers that aren't in "
             "the query results, so I'm not giving it.")
 GROUNDING_NUDGE = ("These numbers in your answer do not appear in any tool result: {numbers}. Rewrite the answer using "
@@ -126,6 +130,14 @@ def ungrounded_numbers(answer: str, question: str, results: list[ToolResult]) ->
     return out
 
 
+def valid_citation_ids(results: list[ToolResult]) -> str:
+    ids = []
+    for r in results:
+        if r.ok:
+            ids += [f"[table:{t}]" for t in r.tables] + [f"[doc:{p['chunk_id']}]" for p in r.passages]
+    return ", ".join(dict.fromkeys(ids))
+
+
 def citations_valid(results: list[ToolResult], citations: list[dict]) -> bool:
     if not citations:
         return False
@@ -147,7 +159,7 @@ class Assistant:
         calls_log: list[dict] = []
         reply = Reply("")
         steps = 0
-        nudged = revised = False
+        nudged = revised = looked = cite_fixed = False
         self.toolbox.reset()
         for steps in range(1, MAX_STEPS + 1):
             reply = self.provider.chat(messages, TOOL_SPECS)
@@ -167,6 +179,19 @@ class Assistant:
                     shown = ", ".join(f"{n:g}" for n in missing[:8])
                     messages.append({"role": "assistant", "content": reply.content})
                     messages.append({"role": "user", "content": GROUNDING_NUDGE.format(numbers=shown)})
+                    continue
+                # Refusing without having looked at anything: look first.
+                if REFUSAL.search(reply.content or "") and not results and not looked and steps < MAX_STEPS:
+                    looked = True
+                    messages.append({"role": "assistant", "content": reply.content})
+                    messages.append({"role": "user", "content": LOOK_NUDGE})
+                    continue
+                # Citation check: an answer must cite sources this conversation actually returned.
+                if (not REFUSAL.search(reply.content or "") and results and not cite_fixed and steps < MAX_STEPS
+                        and not citations_valid(results, parse_citations(reply.content or ""))):
+                    cite_fixed = True
+                    messages.append({"role": "assistant", "content": reply.content})
+                    messages.append({"role": "user", "content": CITE_NUDGE.format(ids=valid_citation_ids(results))})
                     continue
                 break
             messages.append({"role": "assistant", "content": "" if not reply.tool_calls else reply.content,

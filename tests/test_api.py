@@ -1,7 +1,7 @@
 from conftest import ScriptedProvider, search_call, sql_call
 from fastapi.testclient import TestClient
 
-from program_data_assistant.agent import RETRY_NUDGE, Assistant
+from program_data_assistant.agent import LOOK_NUDGE, RETRY_NUDGE, Assistant
 from program_data_assistant.api import create_app
 from program_data_assistant.llm import Reply, ToolCall
 from program_data_assistant.tools import Toolbox
@@ -61,10 +61,23 @@ def test_bad_column_gets_the_real_columns_and_a_retry():
     assert [t["ok"] for t in body["tool_calls"]] == [False, True]
 
 
-def test_refusal_flag():
-    c, _ = client([Reply("I can't confirm that from the program data or documents. There is no turnout data.")])
+def test_refusal_flag_after_looking_first():
+    refusal = Reply("I can't confirm that from the program data or documents. There is no turnout data.")
+    c, provider = client([refusal, search_call("turnout projection"), refusal])
     body = c.post("/ask", json={"question": "What will turnout be?"}).json()
-    assert body["refused"] is True and body["tool_calls"] == []
+    assert provider.seen[1]["content"] == LOOK_NUDGE
+    assert body["refused"] is True and [t["name"] for t in body["tool_calls"]] == ["search_documents"]
+
+
+def test_missing_citations_get_one_rewrite_with_the_valid_ids():
+    c, provider = client([
+        sql_call("SELECT office, cost_per_door FROM v_cost_per_door"),
+        Reply("Eastgate is most expensive at $2.07 per door."),
+        Reply("Eastgate is most expensive at $2.07 per door [table:v_cost_per_door]."),
+    ])
+    body = c.post("/ask", json={"question": "Which office costs the most per door?"}).json()
+    assert "[table:v_cost_per_door]" in provider.seen[2]["content"]
+    assert body["answer"].endswith("[table:v_cost_per_door].")
 
 
 def test_step_limit_forces_an_answer():
