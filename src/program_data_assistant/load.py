@@ -7,7 +7,11 @@ from __future__ import annotations
 
 import argparse
 import csv
+import os
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
+
+from psycopg import sql
 
 from . import db, retrieval
 
@@ -51,9 +55,24 @@ def load_docs(conn, corpus_dir: Path) -> int:
     return len(chunks)
 
 
+def set_reader_password(conn, reader_url: str | None) -> bool:
+    """Give the read-only role the password in PDA_READER_URL, if it has one.
+
+    Local pgserver trusts local connections, so its URL has no password and nothing changes. A hosted
+    Postgres such as Cloud SQL needs one, and this keeps the reader URL the single place it is set.
+    """
+    password = urlsplit(reader_url).password if reader_url else None
+    if not password:
+        return False
+    conn.execute(sql.SQL("ALTER ROLE {} WITH PASSWORD {}").format(
+        sql.Identifier(db.READER_ROLE), sql.Literal(unquote(password))))
+    return True
+
+
 def load_all(data_dir: Path = DATA_DIR, corpus_dir: Path = CORPUS_DIR) -> dict:
     with db.connect_admin() as conn:
         conn.execute((SQL_DIR / "schema.sql").read_text())
+        set_reader_password(conn, os.environ.get("PDA_READER_URL"))
         counts = load_tables(conn, data_dir)
         counts["docs.chunks"] = load_docs(conn, corpus_dir)
     return counts
