@@ -20,8 +20,9 @@ RETRY_NUDGE = ("Your last query failed because of the SQL, not because the data 
 NUMBER = re.compile(r"(?<![\w.])-?\$?((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)")
 BRACKETS = re.compile(r"\[[^\]]*\]")
 DATES = re.compile(r"\b\d{4}-\d{2}-\d{2}\b|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.? \d{1,2}\b")
-LOOK_NUDGE = ("Before saying you can't confirm it, check: search the documents for the rule or definition, and query "
-              "the data or a view if the question is about numbers. Then answer, or refuse if neither has it.")
+LOOK_NUDGE = ("You haven't used a tool yet, and answers must come from the tools. Call get_view or query_program_data "
+              "for numbers and search_documents for rules or definitions now. Then answer, or say you can't confirm it "
+              "if neither has it.")
 CITE_NUDGE = ("Rewrite the same answer with citations. Put one after each number or rule, using exactly these ids: {ids}. "
               "Keep the numbers as they are.")
 WITHHELD = ("I can't confirm that from the program data or documents. My draft answer used numbers that aren't in "
@@ -180,8 +181,8 @@ class Assistant:
                     messages.append({"role": "assistant", "content": reply.content})
                     messages.append({"role": "user", "content": GROUNDING_NUDGE.format(numbers=shown)})
                     continue
-                # Refusing without having looked at anything: look first.
-                if REFUSAL.search(reply.content or "") and not results and not looked and steps < MAX_STEPS:
+                # Answering (or refusing) without having looked at anything: look first.
+                if not results and not looked and steps < MAX_STEPS:
                     looked = True
                     messages.append({"role": "assistant", "content": reply.content})
                     messages.append({"role": "user", "content": LOOK_NUDGE})
