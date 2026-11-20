@@ -11,7 +11,7 @@ web_image_tag   = "2026-11-20-a1b2c3d"
 # Self-hosted open model over a private network.
 model_provider = "ollama"
 ollama_host    = "http://10.20.0.5:11434"
-ollama_model   = "qwen3.5:9b"
+ollama_model   = "qwen3.8:27b"
 vpc_network    = "projects/riverbend-demo-123456/global/networks/model-vpn"
 vpc_subnetwork = "projects/riverbend-demo-123456/regions/us-central1/subnetworks/run-egress"
 

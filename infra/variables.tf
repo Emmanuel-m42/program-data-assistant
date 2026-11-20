@@ -63,9 +63,9 @@ variable "ollama_host" {
 }
 
 variable "ollama_model" {
-  description = "Model name on the Ollama server."
+  description = "Model name on the Ollama server. qwen3.8:27b took about 16.5 GB of GPU memory at a 16k context."
   type        = string
-  default     = "qwen3.5:9b"
+  default     = "qwen3.8:27b"
 }
 
 variable "ollama_num_ctx" {
