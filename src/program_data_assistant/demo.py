@@ -24,7 +24,44 @@ SOURCE_ROWS = 8
 def metric_scores(case: dict | None) -> dict | None:
     if case is None:
         return None
-    return {m: case["scores"][m] for m in METRICS + ["pass"]}
+    out = {m: case["scores"][m] for m in METRICS + ["pass"]}
+    if "pass_all" in case["scores"]:
+        out["pass_all"] = case["scores"]["pass_all"]  # passed on every repeated run
+    return out
+
+
+def merge_reports(reports: list[dict]) -> dict:
+    """One report from several split runs (for example dev and held-out test) of the same code and model."""
+    if len(reports) == 1:
+        return reports[0]
+    cases = [c for r in reports for c in r["cases"]]
+    return {
+        "label": " + ".join(r["label"] for r in reports),
+        "model": reports[0]["model"],
+        "commit": " + ".join(dict.fromkeys(r.get("commit", "") for r in reports)),
+        "parts": reports,
+        "cases": cases,
+    }
+
+
+def split_block(cases: list[dict], repeat: int = 1) -> dict:
+    """Scores for one half: pass and pass_all_runs are case counts, the other metrics are means."""
+    out = {"cases": len(cases), "runs_per_case": repeat,
+           "pass": int(round(sum(c["scores"]["pass"] for c in cases))),
+           "pass_all_runs": int(sum(c["scores"].get("pass_all", c["scores"]["pass"]) for c in cases))}
+    for m in METRICS:
+        vals = [c["scores"][m] for c in cases if c["scores"][m] is not None]
+        out[m] = round(sum(vals) / len(vals), 3) if vals else None
+    lat = [a["latency_ms"] for c in cases for a in [c["answer"]] + [x["answer"] for x in c.get("repeats", [])]]
+    out["avg_latency_ms"] = int(sum(lat) / len(lat)) if lat else 0
+    return out
+
+
+def by_split(report: dict, splits: dict[str, str]) -> dict:
+    repeat = max([p.get("repeat", 1) for p in report.get("parts", [report])])
+    cases = report["cases"]
+    return {"heldout": split_block([c for c in cases if splits.get(c["id"]) == "test"], repeat),
+            "tuned": split_block([c for c in cases if splits.get(c["id"]) == "dev"], repeat)}
 
 
 def clean_source(s: dict) -> dict:
@@ -68,16 +105,38 @@ def totals(report: dict | None) -> dict | None:
             **{m: s[m] for m in METRICS + ["pass"]}, "avg_latency_ms": s["avg_latency_ms"]}
 
 
-def build(before: dict | None, after: dict | None, what_changed: str, ids: list[str]) -> dict:
+def build(before: dict | None, after: dict | None, what_changed: str, ids: list[str], split_note: str = "") -> dict:
     by_b = {c["id"]: c for c in (before or {}).get("cases", [])}
     by_a = {c["id"]: c for c in (after or {}).get("cases", [])}
     recorded_from = by_a or by_b
     questions = [question_entry(recorded_from[i], by_b.get(i), by_a.get(i)) for i in ids if i in recorded_from]
+    scoreboard = {"before": totals(before), "after": totals(after) if after and "parts" not in after else None,
+                  "what_changed": what_changed}
+    if after and "parts" in after:
+        from .evals import load_cases
+
+        splits = {c["id"]: c.get("split") for c in load_cases()[0]}
+        a = by_split(after, splits)
+        # No single total that mixes in the tuned half: the held-out half is the headline.
+        scoreboard["after"] = {"label": after["label"], "model": after["model"], "commit": after["commit"], **a}
+        if before:
+            scoreboard["before"] = {**totals(before), **by_split(before, splits),
+                                    "split_note": "The baseline ran once on all 28 before the split existed; "
+                                                  "its halves are the same answers grouped by today's split."}
+        h = a["heldout"]
+        scoreboard["headline"] = (f"Held-out half: {h['pass']} of {h['cases']} passed, the same {h['pass_all_runs']} "
+                                  f"on each of {h['runs_per_case']} runs.")
+        scoreboard["split_note"] = split_note
+    shown = [q["latency_ms"] for q in questions]
+    scoreboard["shown_answers_avg_latency_ms"] = int(sum(shown) / len(shown)) if shown else 0
+    scoreboard["latency_note"] = ("shown_answers_avg_latency_ms averages the answers shown on the page (one run per "
+                                  "demo question). Each half's avg_latency_ms averages every eval answer in that half "
+                                  "across all runs, including fast document and refusal questions.")
     return {
         "program": PROGRAM,
         "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "model": (after or before)["model"],
-        "scoreboard": {"before": totals(before), "after": totals(after), "what_changed": what_changed},
+        "scoreboard": scoreboard,
         "questions": questions,
     }
 
@@ -85,15 +144,16 @@ def build(before: dict | None, after: dict | None, what_changed: str, ids: list[
 def main() -> None:
     ap = argparse.ArgumentParser(description="Export recorded demo runs for the website.")
     ap.add_argument("--before", required=True)
-    ap.add_argument("--after")
+    ap.add_argument("--after", action="append", help="repeat to merge split runs, e.g. dev and held-out test")
     ap.add_argument("--what-changed", default="")
+    ap.add_argument("--split-note", default="", help="how and when the dev/test split was made")
     ap.add_argument("--limit", type=int, help="only the first N demo questions (for a shape sample)")
     ap.add_argument("--out", default="demo/recorded_runs.json")
     args = ap.parse_args()
     before = json.loads(Path(args.before).read_text())
-    after = json.loads(Path(args.after).read_text()) if args.after else None
+    after = merge_reports([json.loads(Path(p).read_text()) for p in args.after]) if args.after else None
     ids = DEMO_IDS[: args.limit] if args.limit else DEMO_IDS
-    data = build(before, after, args.what_changed, ids)
+    data = build(before, after, args.what_changed, ids, args.split_note)
     text = json.dumps(data, indent=2, ensure_ascii=False, default=str)
     if "\u00b7" in text:
         raise SystemExit("refusing to write a middle dot")
