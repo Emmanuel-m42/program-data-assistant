@@ -25,6 +25,9 @@ anthropic = [
 vertex = [
     "anthropic[vertex]>=2.11.0",
 ]
+van = [
+    "ngpvan-mcp",
+]
 
 [build-system]
 requires = ["uv_build>=0.12.14,<0.13.0"]
@@ -45,3 +48,6 @@ pda-offices = "program_data_assistant.overview:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.uv.sources]
+ngpvan-mcp = { git = "https://github.com/Emmanuel-m42/ngpvan-mcp", rev = "0f9ac30df93eb0c620462e5dc7953015bfd9cecd" }
