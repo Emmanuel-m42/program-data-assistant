@@ -105,6 +105,25 @@ def totals(report: dict | None) -> dict | None:
             **{m: s[m] for m in METRICS + ["pass"]}, "avg_latency_ms": s["avg_latency_ms"]}
 
 
+def comparison_row(spec: str) -> dict:
+    """'model|code|report.json,report.json' -> per-group results from those reports; no reports means still running."""
+    from .evals import GROUPS, groups, load_cases
+
+    model, code, paths = (spec.split("|") + ["", ""])[:3]
+    reports = [json.loads(Path(p).read_text()) for p in paths.split(",") if p.strip()]
+    row = {"model": model, "code": code, "groups": {}}
+    if not reports:
+        row["status"] = "running"
+        return row
+    splits = {c["id"]: c.get("split", "") for c in load_cases()[0]}
+    repeat = max(r.get("repeat", 1) for r in reports)
+    for g in groups([c for r in reports for c in r["cases"]], splits):
+        row["groups"][g["split"]] = {"label": GROUPS[g["split"]], "cases": g["cases"], "pass": g["pass"],
+                                     "pass_all_runs": g["pass_all"], "runs_per_case": repeat,
+                                     **{m: g[m] for m in METRICS}, "avg_latency_ms": g["avg_latency_ms"]}
+    return row
+
+
 def build(before: dict | None, after: dict | None, what_changed: str, ids: list[str], split_note: str = "",
           notes: dict[str, str] | None = None) -> dict:
     by_b = {c["id"]: c for c in (before or {}).get("cases", [])}
@@ -154,6 +173,11 @@ def main() -> None:
     ap.add_argument("--limit", type=int, help="only the first N demo questions (for a shape sample)")
     ap.add_argument("--note", action="append", default=[], metavar="ID=TEXT",
                     help="a one-line note on a question's score, e.g. why it missed; repeat per question")
+    ap.add_argument("--compare", action="append", default=[], metavar="MODEL|CODE|REPORT[,REPORT]",
+                    help="a row of the model comparison; leave the reports out for a run still going; repeat per row")
+    ap.add_argument("--headline", help="the How it's tested headline (default: the shown run's held-out half)")
+    ap.add_argument("--headline-note", default="", help="one line under the headline: which model and mode")
+    ap.add_argument("--comparison-note", default="", help="a short note under the comparison table")
     ap.add_argument("--out", default="demo/recorded_runs.json")
     args = ap.parse_args()
     before = json.loads(Path(args.before).read_text())
@@ -161,6 +185,14 @@ def main() -> None:
     ids = DEMO_IDS[: args.limit] if args.limit else DEMO_IDS
     notes = dict(n.split("=", 1) for n in args.note)
     data = build(before, after, args.what_changed, ids, args.split_note, notes)
+    if args.compare:
+        data["scoreboard"]["comparison"] = [comparison_row(s) for s in args.compare]
+        data["scoreboard"]["comparison_note"] = args.comparison_note
+    if args.headline:
+        data["scoreboard"]["headline"] = args.headline
+        data["scoreboard"]["headline_note"] = args.headline_note
+        data["scoreboard"]["shown_run_note"] = (f"The answers shown in this demo are the recorded answers of "
+                                                f"{data['model'].removeprefix('ollama/')}, the run in the table below.")
     text = json.dumps(data, indent=2, ensure_ascii=False, default=str)
     if "\u00b7" in text:
         raise SystemExit("refusing to write a middle dot")
