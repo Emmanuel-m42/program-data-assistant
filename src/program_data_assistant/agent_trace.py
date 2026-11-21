@@ -153,7 +153,9 @@ def run(label: str, traces: list[str], answers: list[str], out_dir: Path, split:
             scored = evals.score_case(c, a, truth, retrieved[c["id"]], defaults)
             if a.get("error"):
                 problems.append(f"{c['id']} run {n + 1}: {a['error']}")
-                scored["scores"] = {m: (0.0 if v is not None else None) for m, v in scored["scores"].items()}
+                # Retrieval scores the retriever on the question, not the answer, so it stands.
+                scored["scores"] = {m: (0.0 if v is not None and m != "retrieval" else v)
+                                    for m, v in scored["scores"].items()}
             attempts.append({**scored, "answer": a})
         scores = evals.combine_scores([x["scores"] for x in attempts])
         first = attempts[0]
