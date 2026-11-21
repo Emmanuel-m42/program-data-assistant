@@ -186,6 +186,10 @@ def combine_scores(runs: list[dict]) -> dict:
     return out
 
 
+class GuardStop(RuntimeError):
+    """The --guard-cmd check failed; the partial report keeps every finished case."""
+
+
 def start_van(mode: str | None):
     """VAN tools for an eval run: 'demo' launches ngpvan-mcp --demo; None leaves them off."""
     if not mode:
@@ -199,7 +203,7 @@ def start_van(mode: str | None):
 
 def run(label: str, provider: str | None, model: str | None, only: list[str] | None, out_dir: Path,
         resume: bool = False, split: str | None = None, repeat: int = 1, cases_path: Path = CASES,
-        van_mode: str | None = None) -> dict:
+        van_mode: str | None = None, guard_cmd: str | None = None) -> dict:
     cases, defaults = load_cases(cases_path)
     if only:
         cases = [c for c in cases if c["id"] in only]
@@ -209,13 +213,13 @@ def run(label: str, provider: str | None, model: str | None, only: list[str] | N
         raise ValueError(f"{cases_path.name} has VAN cases; run it with --van demo")
     van = start_van(van_mode)
     try:
-        return _run(label, provider, model, out_dir, resume, split, repeat, cases_path, cases, defaults, van)
+        return _run(label, provider, model, out_dir, resume, split, repeat, cases_path, cases, defaults, van, guard_cmd)
     finally:
         if van is not None:
             van.close()
 
 
-def _run(label, provider, model, out_dir, resume, split, repeat, cases_path, cases, defaults, van) -> dict:
+def _run(label, provider, model, out_dir, resume, split, repeat, cases_path, cases, defaults, van, guard_cmd=None) -> dict:
     with db.connect_admin() as conn:
         truth = compute_truth(conn, cases, van)
         retrieved = {c["id"]: [h["chunk_id"] for h in retrieval.search(conn, c["question"])] for c in cases}
@@ -246,6 +250,12 @@ def _run(label, provider, model, out_dir, resume, split, repeat, cases_path, cas
     for c in cases:
         if c["id"] in done:
             continue
+        if guard_cmd:  # e.g. a memory check on a shared model host; non-zero exit stops the run, progress kept
+            check = subprocess.run(guard_cmd, shell=True, capture_output=True, text=True)
+            if check.returncode != 0:
+                reason = (check.stdout + check.stderr).strip()[-300:]
+                print(f"stopped before {c['id']}: guard said no ({reason})", flush=True)
+                raise GuardStop(reason)
         attempts = []
         for _ in range(repeat):
             ans = assistant.ask(c["question"]).to_dict()
@@ -308,6 +318,7 @@ def main() -> None:
     ap.add_argument("--rescore", help="re-score a saved report with the current cases instead of running the model")
     ap.add_argument("--cases", default=str(CASES), help="cases file (evals/cases_mcp_van.yaml for the VAN cases)")
     ap.add_argument("--van", choices=["demo"], help="offer the VAN tools from ngpvan-mcp --demo (the MCP version)")
+    ap.add_argument("--guard-cmd", help="shell command run before each case; a non-zero exit stops the run (partial kept)")
     args = ap.parse_args()
     if args.rescore:
         report = rescore(Path(args.rescore))
@@ -317,7 +328,7 @@ def main() -> None:
     if args.van and not args.label.startswith("mcp-van"):
         ap.error("runs with the VAN tools are scored separately: use a label starting with mcp-van")
     report = run(args.label, args.provider, args.model, args.only, Path(args.out), args.resume, args.split, args.repeat,
-                 Path(args.cases).resolve(), args.van)
+                 Path(args.cases).resolve(), args.van, args.guard_cmd)
     s = report["summary"]
     print("\n" + "  ".join(f"{m}={fmt(s[m])}" for m in METRICS + ["pass", "pass_all"]))
     print(f"wrote {args.out}/{args.label}.json and .md")

@@ -80,6 +80,21 @@ def test_original_cases_rerun_with_the_van_tools_present(monkeypatch, tmp_path):
     assert report["cases"][0]["scores"]["pass"] == 1.0
 
 
+def test_guard_command_stops_the_run_and_keeps_finished_cases(monkeypatch, tmp_path):
+    monkeypatch.setattr(evals, "get_provider", lambda name=None, model=None: Script([
+        Reply("", [ToolCall("c1", "van_list_activist_codes", {})]),
+        Reply("VAN has Volunteer, Phone Banker, Canvasser, Event Host and Renter [van:list_activist_codes]."),
+    ]))
+    flag = tmp_path / "ok-once"
+    flag.write_text("")
+    guard = f"test -f {flag} && rm {flag}"  # passes before the first case, fails before the second
+    with pytest.raises(evals.GuardStop):
+        evals.run("mcp-van-guard", None, None, ["v03", "v07"], tmp_path, cases_path=VAN_CASES, van_mode="demo",
+                  guard_cmd=guard)
+    partial = json.loads((tmp_path / "mcp-van-guard.partial.json").read_text())
+    assert [c["id"] for c in partial["cases"]] == ["v03"]
+
+
 def test_list_facts_need_every_item():
     fact = {"name": "codes"}
     assert evals.fact_matches(fact, ["Volunteer", "Canvasser"], "Volunteer and canvasser codes", {})
