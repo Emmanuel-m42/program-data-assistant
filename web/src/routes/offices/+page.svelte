@@ -30,6 +30,8 @@
 	}
 </script>
 
+<svelte:head><title>Offices: Program data assistant</title></svelte:head>
+
 <h1>Offices</h1>
 <p class="lede">
 	Straight from the program's metric views, no model involved.{#if data}{' '}Data through {data.as_of}.{/if}

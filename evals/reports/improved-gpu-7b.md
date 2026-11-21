@@ -1,6 +1,6 @@
 # Eval report: improved-gpu-7b
 
-Model `ollama/qwen2.5:7b`, commit `8f3bd66`, 2026-11-20T01:56:45+00:00, 28 cases.
+Model `ollama/qwen2.5:7b`, commit `8f3bd66`, 2026-11-20T01:56:45+00:00, 28 cases (split all, 1 run(s) per case; pass_all is pass^k).
 
 | metric | score | cases scored |
 | --- | --- | --- |
@@ -10,6 +10,7 @@ Model `ollama/qwen2.5:7b`, commit `8f3bd66`, 2026-11-20T01:56:45+00:00, 28 cases
 | citation | 0.84 | 25 |
 | refusal | 0.93 | 28 |
 | pass | 0.57 | 28 |
+| pass_all | 0.57 | 28 |
 
 Average latency 7.9 s per question.
 
@@ -27,7 +28,7 @@ Average latency 7.9 s per question.
 | q10 | payroll | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 4 |
 | q11 | QC | 1.00 | 0.50 | 0.60 | 0.00 | 1.00 | 0.00 | 17 |
 | q12 | QC | 1.00 | 1.00 | 0.50 | 0.00 | 1.00 | 0.00 | 12 |
-| q13 | QC | 1.00 | 1.00 | 0.67 | 1.00 | 1.00 | 0.00 | 4 |
+| q13 | QC | 1.00 | 1.00 | 0.50 | 1.00 | 1.00 | 0.00 | 4 |
 | q14 | VR rate | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 10 |
 | q15 | VR rate | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 10 |
 | q16 | QC | 1.00 | 1.00 | 0.67 | 1.00 | 1.00 | 0.00 | 4 |
@@ -53,7 +54,7 @@ Average latency 7.9 s per question.
 - q08: untouched doors in dense untouched precincts
 - q11: Tomas Reyes, Dorian's householding flags this week
 - q12: Andre Whitfield (open gap), open flag count
-- q13: Harbor flags per 100 shifts this week
+- q13: Harbor flags per 100 shifts this week, program flags per 100 shifts this week, program flags per 100 shifts last week
 - q16: Harbor duplicates
 - x03: wrong information calls
 - x05: Tuesday at noon, field director approves

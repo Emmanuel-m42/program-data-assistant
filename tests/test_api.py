@@ -181,8 +181,10 @@ def test_offices_endpoint_reads_the_views():
 def test_evals_and_recorded_endpoints_serve_the_demo_file():
     c, _ = client([])
     ev = c.get("/evals").json()
-    assert ev["scoreboard"]["after"]["heldout"]["pass"] == 11 and ev["scoreboard"]["after"]["tuned"]["pass"] == 13
+    assert ev["scoreboard"]["after"]["heldout"]["pass"] == 11 and ev["scoreboard"]["after"]["tuned"]["pass"] == 12
     assert len(ev["questions"]) == 19 and "answer" not in ev["questions"][0]
+    q13 = next(q for q in ev["questions"] if q["id"] == "q13")
+    assert q13["eval"]["after"]["pass"] == 0 and "program-wide direction" in q13["eval"]["note"]
     rec = c.get("/recorded").json()
     assert len(rec["questions"]) == 19 and "baseline" in rec["questions"][0]
 

@@ -1,15 +1,16 @@
 # Eval report: baseline
 
-Model `ollama/qwen2.5:7b`, commit `c9cd063`, 2026-11-19T21:09:49+00:00, 28 cases.
+Model `ollama/qwen2.5:7b`, commit `c9cd063`, 2026-11-19T21:09:49+00:00, 28 cases (split all, 1 run(s) per case; pass_all is pass^k).
 
 | metric | score | cases scored |
 | --- | --- | --- |
 | tool_choice | 0.76 | 25 |
 | retrieval | 0.98 | 25 |
-| facts | 0.26 | 25 |
+| facts | 0.24 | 25 |
 | citation | 0.40 | 25 |
 | refusal | 0.61 | 28 |
-| pass | 0.25 | 28 |
+| pass | 0.21 | 28 |
+| pass_all | 0.21 | 28 |
 
 Average latency 86.1 s per question.
 
@@ -27,7 +28,7 @@ Average latency 86.1 s per question.
 | q10 | payroll | 1.00 | 1.00 | 0.00 | 0.00 | 0.00 | 0.00 | 84 |
 | q11 | QC | 1.00 | 0.50 | 0.20 | 1.00 | 1.00 | 0.00 | 113 |
 | q12 | QC | 1.00 | 1.00 | 0.00 | 0.00 | 0.00 | 0.00 | 146 |
-| q13 | QC | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 277 |
+| q13 | QC | 1.00 | 1.00 | 0.50 | 1.00 | 1.00 | 0.00 | 277 |
 | q14 | VR rate | 1.00 | 1.00 | 0.00 | 0.00 | 0.00 | 0.00 | 191 |
 | q15 | VR rate | 0.00 | 1.00 | 0.00 | 0.00 | 0.00 | 0.00 | 24 |
 | q16 | QC | 1.00 | 1.00 | 0.00 | 1.00 | 1.00 | 0.00 | 59 |
@@ -58,6 +59,7 @@ Average latency 86.1 s per question.
 - q10: Northside cost per door, Eastgate cost per door, Harbor cost per door, Eastgate is most expensive
 - q11: Dorian Pratt, Jalen Ortiz, Tomas Reyes, Priya Nandakumar
 - q12: Dorian Pratt (open householding), Andre Whitfield (open gap), Priya Nandakumar (open flash knocking), open flag count
+- q13: program-wide QC is getting better, program flags per 100 shifts this week, program flags per 100 shifts last week
 - q14: cards per hour needed, current cards per hour, last 7 days, says not on pace
 - q15: Eastgate is under, Harbor is under, Eastgate cards per hour, last 7 days
 - q16: Renata Cole, Renata's duplicate cards, Harbor duplicates

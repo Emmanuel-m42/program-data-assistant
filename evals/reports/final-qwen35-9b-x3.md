@@ -6,11 +6,11 @@ Model `ollama/qwen3.5:9b`, commit `cbb71d9`, 2026-11-20T03:55:40+00:00, 28 cases
 | --- | --- | --- |
 | tool_choice | 0.88 | 25 |
 | retrieval | 0.98 | 25 |
-| facts | 0.82 | 25 |
+| facts | 0.81 | 25 |
 | citation | 1.00 | 25 |
 | refusal | 1.00 | 28 |
-| pass | 0.75 | 28 |
-| pass_all | 0.75 | 28 |
+| pass | 0.71 | 28 |
+| pass_all | 0.71 | 28 |
 
 Average latency 7.7 s per question.
 
@@ -28,7 +28,7 @@ Average latency 7.7 s per question.
 | q10 | payroll | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 4 |
 | q11 | QC | 1.00 | 0.50 | 0.80 | 1.00 | 1.00 | 0.00 | 8 |
 | q12 | QC | 1.00 | 1.00 | 0.00 | 1.00 | 1.00 | 0.00 | 42 |
-| q13 | QC | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 6 |
+| q13 | QC | 1.00 | 1.00 | 0.67 | 1.00 | 1.00 | 0.00 | 6 |
 | q14 | VR rate | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 14 |
 | q15 | VR rate | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 5 |
 | q16 | QC | 1.00 | 1.00 | 0.67 | 1.00 | 1.00 | 0.00 | 8 |
@@ -53,4 +53,5 @@ Average latency 7.7 s per question.
 - q08: untouched doors in dense untouched precincts
 - q11: Dorian's householding flags this week
 - q12: Dorian Pratt (open householding), Andre Whitfield (open gap), Priya Nandakumar (open flash knocking), open flag count
+- q13: program flags per 100 shifts this week, program flags per 100 shifts last week
 - q16: Harbor duplicates

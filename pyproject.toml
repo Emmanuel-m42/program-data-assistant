@@ -3,6 +3,7 @@ name = "program-data-assistant"
 version = "0.1.0"
 description = "Answers field program questions from the program's own data and documents, with citations, refusals and evals."
 readme = "README.md"
+license = "Apache-2.0"
 authors = [
     { name = "Emmanuel-m42", email = "mammahemmanuel42@gmail.com" }
 ]

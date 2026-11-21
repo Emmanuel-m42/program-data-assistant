@@ -105,11 +105,15 @@ def totals(report: dict | None) -> dict | None:
             **{m: s[m] for m in METRICS + ["pass"]}, "avg_latency_ms": s["avg_latency_ms"]}
 
 
-def build(before: dict | None, after: dict | None, what_changed: str, ids: list[str], split_note: str = "") -> dict:
+def build(before: dict | None, after: dict | None, what_changed: str, ids: list[str], split_note: str = "",
+          notes: dict[str, str] | None = None) -> dict:
     by_b = {c["id"]: c for c in (before or {}).get("cases", [])}
     by_a = {c["id"]: c for c in (after or {}).get("cases", [])}
     recorded_from = by_a or by_b
     questions = [question_entry(recorded_from[i], by_b.get(i), by_a.get(i)) for i in ids if i in recorded_from]
+    for q in questions:
+        if notes and q["id"] in notes:
+            q["eval"]["note"] = notes[q["id"]]  # one line on why the shown answer was scored as it was
     scoreboard = {"before": totals(before), "after": totals(after) if after and "parts" not in after else None,
                   "what_changed": what_changed}
     if after and "parts" in after:
@@ -148,12 +152,15 @@ def main() -> None:
     ap.add_argument("--what-changed", default="")
     ap.add_argument("--split-note", default="", help="how and when the dev/test split was made")
     ap.add_argument("--limit", type=int, help="only the first N demo questions (for a shape sample)")
+    ap.add_argument("--note", action="append", default=[], metavar="ID=TEXT",
+                    help="a one-line note on a question's score, e.g. why it missed; repeat per question")
     ap.add_argument("--out", default="demo/recorded_runs.json")
     args = ap.parse_args()
     before = json.loads(Path(args.before).read_text())
     after = merge_reports([json.loads(Path(p).read_text()) for p in args.after]) if args.after else None
     ids = DEMO_IDS[: args.limit] if args.limit else DEMO_IDS
-    data = build(before, after, args.what_changed, ids, args.split_note)
+    notes = dict(n.split("=", 1) for n in args.note)
+    data = build(before, after, args.what_changed, ids, args.split_note, notes)
     text = json.dumps(data, indent=2, ensure_ascii=False, default=str)
     if "\u00b7" in text:
         raise SystemExit("refusing to write a middle dot")

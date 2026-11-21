@@ -26,6 +26,8 @@
 	}
 </script>
 
+<svelte:head><title>How it's tested: Program data assistant</title></svelte:head>
+
 <h1>How it's tested</h1>
 
 {#if error}
@@ -147,7 +149,11 @@
 			<tbody>
 				{#each data.questions as q (q.id)}
 					<tr>
-						<td><span class="id">{q.id}</span> {q.question}</td>
+						<td>
+							<span class="id">{q.id}</span>
+							{q.question}
+							{#if q.eval.note}<span class="qnote">{q.eval.note}</span>{/if}
+						</td>
 						<td class={passed(q.eval.before?.pass)}>{passed(q.eval.before?.pass)}</td>
 						<td class={passed(q.eval.after?.pass)}>{passed(q.eval.after?.pass)}</td>
 					</tr>
@@ -274,6 +280,12 @@
 	}
 	.id {
 		font: 0.75rem var(--mono);
+		color: var(--ink-soft);
+	}
+	.qnote {
+		display: block;
+		margin-top: 0.2rem;
+		font-size: 0.8rem;
 		color: var(--ink-soft);
 	}
 	td.pass {

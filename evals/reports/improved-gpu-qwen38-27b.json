@@ -17,6 +17,8 @@
     "refusal_n": 28,
     "pass": 0.893,
     "pass_n": 28,
+    "pass_all": 0.893,
+    "pass_all_n": 28,
     "avg_latency_ms": 52092
   },
   "cases": [
@@ -46,7 +48,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -217,7 +220,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -388,7 +392,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -552,7 +557,8 @@
         "facts": 0.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 0.0
+        "pass": 0.0,
+        "pass_all": 0.0
       },
       "facts": [
         {
@@ -645,7 +651,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -872,7 +879,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -994,7 +1002,8 @@
         "facts": 0.5,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 0.0
+        "pass": 0.0,
+        "pass_all": 0.0
       },
       "facts": [
         {
@@ -1189,7 +1198,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -1456,7 +1466,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -1616,7 +1627,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -1740,7 +1752,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -1975,7 +1988,8 @@
         "facts": 0.75,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 0.0
+        "pass": 0.0,
+        "pass_all": 0.0
       },
       "facts": [
         {
@@ -2203,7 +2217,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -2221,6 +2236,28 @@
         {
           "name": "Harbor flags per 100 shifts last week",
           "expected": 6.153846153846154,
+          "matched": true
+        },
+        {
+          "name": "program-wide QC is getting better",
+          "expected": [
+            "getting better",
+            "is better",
+            "got better",
+            "improving overall",
+            "improved overall",
+            "improving program-wide"
+          ],
+          "matched": true
+        },
+        {
+          "name": "program flags per 100 shifts this week",
+          "expected": 3.4146341463414633,
+          "matched": true
+        },
+        {
+          "name": "program flags per 100 shifts last week",
+          "expected": 4.3478260869565215,
           "matched": true
         }
       ],
@@ -2432,7 +2469,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -2596,7 +2634,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -2757,7 +2796,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -2961,7 +3001,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -3098,7 +3139,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -3402,7 +3444,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -3568,7 +3611,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -3715,7 +3759,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -3822,7 +3867,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -3941,7 +3987,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -4032,7 +4079,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -4121,7 +4169,8 @@
         "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -4194,7 +4243,8 @@
         "facts": null,
         "citation": null,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [],
       "answer": {
@@ -4312,7 +4362,8 @@
         "facts": null,
         "citation": null,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [],
       "answer": {
@@ -4402,7 +4453,8 @@
         "facts": null,
         "citation": null,
         "refusal": 1.0,
-        "pass": 1.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [],
       "answer": {
@@ -4476,5 +4528,6 @@
         "steps": 4
       }
     }
-  ]
+  ],
+  "rescored_at": "2026-11-21T01:29:35+00:00"
 }

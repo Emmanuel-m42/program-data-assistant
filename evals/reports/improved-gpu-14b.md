@@ -1,15 +1,16 @@
 # Eval report: improved-gpu-14b
 
-Model `ollama/qwen2.5:14b`, commit `8f3bd66`, 2026-11-20T02:23:43+00:00, 28 cases.
+Model `ollama/qwen2.5:14b`, commit `8f3bd66`, 2026-11-20T02:23:43+00:00, 28 cases (split all, 1 run(s) per case; pass_all is pass^k).
 
 | metric | score | cases scored |
 | --- | --- | --- |
 | tool_choice | 0.84 | 25 |
 | retrieval | 0.98 | 25 |
-| facts | 0.68 | 25 |
+| facts | 0.67 | 25 |
 | citation | 0.64 | 25 |
 | refusal | 0.96 | 28 |
 | pass | 0.46 | 28 |
+| pass_all | 0.46 | 28 |
 
 Average latency 57.1 s per question.
 
@@ -27,7 +28,7 @@ Average latency 57.1 s per question.
 | q10 | payroll | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 24 |
 | q11 | QC | 1.00 | 0.50 | 0.40 | 1.00 | 1.00 | 0.00 | 13 |
 | q12 | QC | 1.00 | 1.00 | 0.00 | 1.00 | 1.00 | 0.00 | 107 |
-| q13 | QC | 1.00 | 1.00 | 1.00 | 0.00 | 1.00 | 0.00 | 27 |
+| q13 | QC | 1.00 | 1.00 | 0.67 | 0.00 | 1.00 | 0.00 | 27 |
 | q14 | VR rate | 1.00 | 1.00 | 0.33 | 1.00 | 1.00 | 0.00 | 21 |
 | q15 | VR rate | 1.00 | 1.00 | 0.67 | 0.00 | 1.00 | 0.00 | 24 |
 | q16 | QC | 1.00 | 1.00 | 0.67 | 1.00 | 1.00 | 0.00 | 26 |
@@ -54,6 +55,7 @@ Average latency 57.1 s per question.
 - q08: names the dense untouched cluster, untouched doors in dense untouched precincts
 - q11: Jalen Ortiz, Tomas Reyes, Dorian's householding flags this week
 - q12: Dorian Pratt (open householding), Andre Whitfield (open gap), Priya Nandakumar (open flash knocking), open flag count
+- q13: program flags per 100 shifts this week, program flags per 100 shifts last week
 - q14: current cards per hour, last 7 days, says not on pace
 - q15: Eastgate cards per hour, last 7 days
 - q16: Harbor duplicates

@@ -6,11 +6,11 @@ Model `ollama/qwen3.5:9b`, commit `b2621ed`, 2026-11-20T03:29:57+00:00, 14 cases
 | --- | --- | --- |
 | tool_choice | 0.92 | 12 |
 | retrieval | 0.96 | 12 |
-| facts | 0.75 | 12 |
+| facts | 0.72 | 12 |
 | citation | 0.92 | 12 |
 | refusal | 0.93 | 14 |
-| pass | 0.71 | 14 |
-| pass_all | 0.71 | 14 |
+| pass | 0.64 | 14 |
+| pass_all | 0.64 | 14 |
 
 Average latency 6.5 s per question.
 
@@ -22,7 +22,7 @@ Average latency 6.5 s per question.
 | q07 | client report | 0.00 | 1.00 | 0.00 | 1.00 | 1.00 | 0.00 | 11 |
 | q09 | pace | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 6 |
 | q11 | QC | 1.00 | 0.50 | 0.00 | 0.00 | 0.00 | 0.00 | 6 |
-| q13 | QC | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 9 |
+| q13 | QC | 1.00 | 1.00 | 0.67 | 1.00 | 1.00 | 0.00 | 9 |
 | q15 | VR rate | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 4 |
 | q17 | QC | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 4 |
 | q19 | client report | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 5 |
@@ -37,3 +37,4 @@ Average latency 6.5 s per question.
 - q05: untouched doors left in turf, doors we can knock in the days left
 - q07: client reported doors Oct 12, dashboard doors Oct 12, rolled-back attempts Oct 12, explains rollback
 - q11: Dorian Pratt, Jalen Ortiz, Tomas Reyes, Priya Nandakumar, Dorian's householding flags this week
+- q13: program flags per 100 shifts this week, program flags per 100 shifts last week

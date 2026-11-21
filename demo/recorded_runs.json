@@ -1,6 +1,6 @@
 {
   "program": "Riverbend Votes (GOTV) and Riverbend Registers (voter registration), fictional programs",
-  "generated_at": "2026-11-20T08:09:45+00:00",
+  "generated_at": "2026-11-21T01:31:06+00:00",
   "model": "ollama/qwen3.8:27b",
   "scoreboard": {
     "before": {
@@ -9,10 +9,10 @@
       "cases": 28,
       "tool_choice": 0.76,
       "retrieval": 0.98,
-      "facts": 0.261,
+      "facts": 0.241,
       "citation": 0.4,
       "refusal": 0.607,
-      "pass": 0.25,
+      "pass": 0.214,
       "avg_latency_ms": 86099,
       "heldout": {
         "cases": 14,
@@ -29,11 +29,11 @@
       "tuned": {
         "cases": 14,
         "runs_per_case": 1,
-        "pass": 4,
-        "pass_all_runs": 4,
+        "pass": 3,
+        "pass_all_runs": 3,
         "tool_choice": 0.75,
         "retrieval": 0.958,
-        "facts": 0.336,
+        "facts": 0.295,
         "citation": 0.417,
         "refusal": 0.714,
         "avg_latency_ms": 101831
@@ -59,11 +59,11 @@
       "tuned": {
         "cases": 14,
         "runs_per_case": 3,
-        "pass": 13,
-        "pass_all_runs": 13,
+        "pass": 12,
+        "pass_all_runs": 12,
         "tool_choice": 1.0,
         "retrieval": 0.958,
-        "facts": 0.958,
+        "facts": 0.917,
         "citation": 1.0,
         "refusal": 1.0,
         "avg_latency_ms": 57277
@@ -231,7 +231,8 @@
           "facts": 0.0,
           "citation": 0.0,
           "refusal": 1.0,
-          "pass": 0.0
+          "pass": 0.0,
+          "pass_all": 0.0
         },
         "after": {
           "tool_choice": 1.0,
@@ -386,7 +387,8 @@
           "facts": 0.0,
           "citation": 0.0,
           "refusal": 0.0,
-          "pass": 0.0
+          "pass": 0.0,
+          "pass_all": 0.0
         },
         "after": {
           "tool_choice": 1.0,
@@ -560,7 +562,8 @@
           "facts": 0.667,
           "citation": 1.0,
           "refusal": 1.0,
-          "pass": 0.0
+          "pass": 0.0,
+          "pass_all": 0.0
         },
         "after": {
           "tool_choice": 1.0,
@@ -797,7 +800,8 @@
           "facts": 0.0,
           "citation": 0.0,
           "refusal": 0.0,
-          "pass": 0.0
+          "pass": 0.0,
+          "pass_all": 0.0
         },
         "after": {
           "tool_choice": 0.0,
@@ -807,7 +811,8 @@
           "refusal": 1.0,
           "pass": 0.0,
           "pass_all": 0.0
-        }
+        },
+        "note": "Counts registration canvassers too: 66 of 77, where the program plan's definition (GOTV canvassers only) gives 49 of 57."
       }
     },
     {
@@ -1068,7 +1073,8 @@
           "facts": 0.667,
           "citation": 0.0,
           "refusal": 1.0,
-          "pass": 0.0
+          "pass": 0.0,
+          "pass_all": 0.0
         },
         "after": {
           "tool_choice": 1.0,
@@ -1196,7 +1202,8 @@
           "facts": 0.0,
           "citation": 0.0,
           "refusal": 1.0,
-          "pass": 0.0
+          "pass": 0.0,
+          "pass_all": 0.0
         },
         "after": {
           "tool_choice": 1.0,
@@ -1365,7 +1372,8 @@
           "facts": 0.5,
           "citation": 1.0,
           "refusal": 1.0,
-          "pass": 0.0
+          "pass": 0.0,
+          "pass_all": 0.0
         },
         "after": {
           "tool_choice": 1.0,
@@ -1375,7 +1383,8 @@
           "refusal": 1.0,
           "pass": 0.0,
           "pass_all": 0.0
-        }
+        },
+        "note": "Explains the gap with the right per-office numbers, but never gives the program totals (1,484 reported against 1,281 on the dashboard)."
       }
     },
     {
@@ -1672,7 +1681,8 @@
           "facts": 0.5,
           "citation": 1.0,
           "refusal": 1.0,
-          "pass": 0.0
+          "pass": 0.0,
+          "pass_all": 0.0
         },
         "after": {
           "tool_choice": 1.0,
@@ -1682,7 +1692,8 @@
           "refusal": 1.0,
           "pass": 0.0,
           "pass_all": 0.0
-        }
+        },
+        "note": "Names the right dense untouched precincts, but never totals their untouched doors (7,118)."
       }
     },
     {
@@ -1803,7 +1814,8 @@
           "facts": 0.0,
           "citation": 0.0,
           "refusal": 0.0,
-          "pass": 0.0
+          "pass": 0.0,
+          "pass_all": 0.0
         },
         "after": {
           "tool_choice": 1.0,
@@ -1913,7 +1925,8 @@
           "facts": 0.0,
           "citation": 0.0,
           "refusal": 0.0,
-          "pass": 0.0
+          "pass": 0.0,
+          "pass_all": 0.0
         },
         "after": {
           "tool_choice": 1.0,
@@ -2138,7 +2151,8 @@
           "facts": 0.2,
           "citation": 1.0,
           "refusal": 1.0,
-          "pass": 0.0
+          "pass": 0.0,
+          "pass_all": 0.0
         },
         "after": {
           "tool_choice": 1.0,
@@ -2382,7 +2396,8 @@
           "facts": 0.0,
           "citation": 0.0,
           "refusal": 0.0,
-          "pass": 0.0
+          "pass": 0.0,
+          "pass_all": 0.0
         },
         "after": {
           "tool_choice": 1.0,
@@ -2392,7 +2407,8 @@
           "refusal": 1.0,
           "pass": 0.0,
           "pass_all": 0.0
-        }
+        },
+        "note": "The answer is right, but it writes the count as \"Four\" and the number scorer only reads digits."
       }
     },
     {
@@ -2621,20 +2637,22 @@
         "before": {
           "tool_choice": 1.0,
           "retrieval": 1.0,
-          "facts": 1.0,
+          "facts": 0.5,
           "citation": 1.0,
           "refusal": 1.0,
-          "pass": 1.0
+          "pass": 0.0,
+          "pass_all": 0.0
         },
         "after": {
           "tool_choice": 1.0,
           "retrieval": 1.0,
-          "facts": 1.0,
+          "facts": 0.5,
           "citation": 1.0,
           "refusal": 1.0,
-          "pass": 1.0,
-          "pass_all": 1.0
-        }
+          "pass": 0.0,
+          "pass_all": 0.0
+        },
+        "note": "Scored as a pass at first; the answer reads its own rows backwards (program-wide, flags per 100 shifts fell from 4.3 to 3.4). The case now checks the program-wide direction."
       }
     },
     {
@@ -2796,7 +2814,8 @@
           "facts": 0.0,
           "citation": 0.0,
           "refusal": 0.0,
-          "pass": 0.0
+          "pass": 0.0,
+          "pass_all": 0.0
         },
         "after": {
           "tool_choice": 1.0,
@@ -2930,7 +2949,8 @@
           "facts": 0.0,
           "citation": 0.0,
           "refusal": 0.0,
-          "pass": 0.0
+          "pass": 0.0,
+          "pass_all": 0.0
         },
         "after": {
           "tool_choice": 1.0,
@@ -3185,7 +3205,8 @@
           "facts": 0.0,
           "citation": 1.0,
           "refusal": 1.0,
-          "pass": 0.0
+          "pass": 0.0,
+          "pass_all": 0.0
         },
         "after": {
           "tool_choice": 1.0,
@@ -3318,7 +3339,8 @@
           "facts": 0.0,
           "citation": 0.0,
           "refusal": 0.0,
-          "pass": 0.0
+          "pass": 0.0,
+          "pass_all": 0.0
         },
         "after": {
           "tool_choice": 1.0,
@@ -3524,7 +3546,8 @@
           "facts": 0.0,
           "citation": 0.0,
           "refusal": 0.0,
-          "pass": 0.0
+          "pass": 0.0,
+          "pass_all": 0.0
         },
         "after": {
           "tool_choice": 1.0,
@@ -3639,7 +3662,8 @@
           "facts": 0.0,
           "citation": 0.0,
           "refusal": 0.0,
-          "pass": 0.0
+          "pass": 0.0,
+          "pass_all": 0.0
         },
         "after": {
           "tool_choice": 1.0,

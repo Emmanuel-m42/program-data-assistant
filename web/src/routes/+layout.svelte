@@ -18,7 +18,6 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
-	<title>Program data assistant</title>
 </svelte:head>
 
 <header class="top">
