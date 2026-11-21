@@ -85,6 +85,22 @@ def test_ask_through_the_api_with_tool_calls_and_usage(env):
     assert p.usage == {"prompt_tokens": 200, "completion_tokens": 40, "completion_tokens_details.reasoning_tokens": 10}
 
 
+def test_reasoning_goes_back_on_turns_without_tool_calls_too(env):
+    """An agent nudge adds an assistant turn with no tool call; its reasoning must still be sent back."""
+    http = FakeHttp([
+        completion(tool_calls=call("query_program_data", {"sql": "SELECT no_such FROM offices"}), reasoning="r1"),
+        completion("I can't confirm that from the program data or documents.", reasoning="r2"),
+        completion(tool_calls=call("get_view", {"view": "v_office_pace"}, id="call_2"), reasoning="r3"),
+        completion("Eastgate misses goal [table:v_office_pace].", reasoning="r4"),
+    ])
+    p = llm.OpenAICompatProvider(client=http)
+    Assistant(p).ask("Which office misses goal?")
+    after_nudge = http.bodies[2]["messages"]
+    assistant_turns = [m for m in after_nudge if m["role"] == "assistant"]
+    assert [m.get("reasoning_content") for m in assistant_turns] == ["r1", "r2"]
+    assert "tool_calls" not in assistant_turns[1]
+
+
 def test_reasoning_can_be_left_out(env, monkeypatch):
     monkeypatch.setenv("PDA_OPENAI_SEND_REASONING", "0")
     p = llm.OpenAICompatProvider(client=FakeHttp([]))

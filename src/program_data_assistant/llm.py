@@ -223,8 +223,9 @@ class OpenAICompatProvider:
     PDA_OPENAI_MODEL      model id, e.g. deepseek-v4-pro
     PDA_OPENAI_API_KEY_ENV  name of the environment variable that holds the key (default OPENAI_API_KEY);
                             the key itself is never read from a file in this repo, logged or stored
-    PDA_OPENAI_SEND_REASONING  "1" sends a thinking model's reasoning_content back on assistant turns that
-                            made tool calls (some APIs require it within a tool-calling turn); default "1"
+    PDA_OPENAI_SEND_REASONING  "1" sends a thinking model's reasoning_content back on every earlier assistant
+                            turn (DeepSeek requires it when tools are present); default "1"
+    Thinking models such as DeepSeek's ignore temperature in thinking mode; it's still sent for other APIs.
     Token usage from every response is added up in `usage`.
     """
 
@@ -255,8 +256,10 @@ class OpenAICompatProvider:
                     msg["tool_calls"] = [{"id": c["id"], "type": "function",
                                           "function": {"name": c["name"], "arguments": json.dumps(c["args"])}}
                                          for c in m["tool_calls"]]
-                    if self.send_reasoning and m.get("reasoning"):
-                        msg["reasoning_content"] = m["reasoning"]
+                # DeepSeek's thinking mode wants every earlier assistant turn's reasoning back when tools are present
+                # (api-docs.deepseek.com/guides/thinking_mode), including turns without tool calls.
+                if self.send_reasoning and m.get("reasoning"):
+                    msg["reasoning_content"] = m["reasoning"]
                 out.append(msg)
             elif m["role"] == "tool":
                 out.append({"role": "tool", "tool_call_id": m["tool_call_id"], "content": m["content"]})
