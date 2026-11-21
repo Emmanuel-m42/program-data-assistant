@@ -110,3 +110,33 @@ def test_eval_runner_records_usage(env, monkeypatch, tmp_path):
     report = evals.run("compat-mock", "openai_compat", None, ["x04"], tmp_path)
     assert report["model"] == "openai_compat/test-model" and report["cases"][0]["scores"]["pass"] == 1.0
     assert report["api_usage"]["prompt_tokens"] == 200 and report["api_calls"] == 2
+
+
+def test_thinking_switch_effort_and_output_cap_are_sent(env, monkeypatch):
+    monkeypatch.setenv("PDA_OPENAI_THINKING", "enabled")
+    monkeypatch.setenv("PDA_OPENAI_REASONING_EFFORT", "high")
+    monkeypatch.setenv("PDA_OPENAI_MAX_TOKENS", "8000")
+    http = FakeHttp([completion("ok")])
+    llm.OpenAICompatProvider(client=http).chat([{"role": "user", "content": "q"}], None)
+    body = http.bodies[0]
+    assert body["thinking"] == {"type": "enabled"} and body["reasoning_effort"] == "high" and body["max_tokens"] == 8000
+    monkeypatch.setenv("PDA_OPENAI_THINKING", "disabled")
+    monkeypatch.delenv("PDA_OPENAI_REASONING_EFFORT")
+    http = FakeHttp([completion("ok")])
+    llm.OpenAICompatProvider(client=http).chat([{"role": "user", "content": "q"}], None)
+    assert http.bodies[0]["thinking"] == {"type": "disabled"} and "reasoning_effort" not in http.bodies[0]
+
+
+def test_reasoning_goes_back_on_guardrail_rewrite_turns_too(env):
+    # DeepSeek's thinking mode with tools needs reasoning_content on every earlier assistant turn, including the
+    # answer the citation check sends back for a rewrite (no tool calls on that turn).
+    http = FakeHttp([
+        completion(tool_calls=call("get_view", {"view": "v_cost_per_door"}), reasoning="look first"),
+        completion("Eastgate costs the most per door at $2.07 [table:v_made_up].", reasoning="draft"),
+        completion("Eastgate costs the most per door at $2.07 [table:v_cost_per_door].", reasoning="fixed"),
+    ])
+    Assistant(llm.OpenAICompatProvider(client=http)).ask("Which office costs the most per door?")
+    rewrite = http.bodies[2]["messages"]
+    drafts = [m for m in rewrite if m["role"] == "assistant" and not m.get("tool_calls")]
+    assert drafts and drafts[-1]["reasoning_content"] == "draft"
+    assert [m for m in rewrite if m.get("tool_calls")][0]["reasoning_content"] == "look first"

@@ -223,8 +223,12 @@ class OpenAICompatProvider:
     PDA_OPENAI_MODEL      model id, e.g. deepseek-v4-pro
     PDA_OPENAI_API_KEY_ENV  name of the environment variable that holds the key (default OPENAI_API_KEY);
                             the key itself is never read from a file in this repo, logged or stored
-    PDA_OPENAI_SEND_REASONING  "1" sends a thinking model's reasoning_content back on assistant turns that
-                            made tool calls (some APIs require it within a tool-calling turn); default "1"
+    PDA_OPENAI_SEND_REASONING  "1" sends a thinking model's reasoning_content back on every earlier assistant
+                            turn (DeepSeek's thinking mode with tools requires it on all of them); default "1"
+    PDA_OPENAI_THINKING     "enabled" or "disabled" sends {"thinking": {"type": ...}} (DeepSeek's switch);
+                            unset leaves the API's default. Thinking mode ignores temperature.
+    PDA_OPENAI_REASONING_EFFORT  optional reasoning_effort, e.g. high
+    PDA_OPENAI_MAX_TOKENS   output cap per call (default 2000; reasoning counts toward it, so raise it for thinking)
     Token usage from every response is added up in `usage`.
     """
 
@@ -240,8 +244,10 @@ class OpenAICompatProvider:
         key = os.environ.get(key_env)
         if not key and client is None:
             raise ValueError(f"the API key environment variable {key_env} is not set")
-        self.max_tokens = max_tokens
+        self.max_tokens = int(os.environ.get("PDA_OPENAI_MAX_TOKENS", max_tokens))
         self.send_reasoning = os.environ.get("PDA_OPENAI_SEND_REASONING", "1") == "1"
+        self.thinking = os.environ.get("PDA_OPENAI_THINKING", "")
+        self.reasoning_effort = os.environ.get("PDA_OPENAI_REASONING_EFFORT", "")
         self.client = client or httpx.Client(timeout=timeout, headers={"Authorization": f"Bearer {key}"})
         self.usage: dict[str, int] = {}
         self.calls = 0
@@ -255,8 +261,8 @@ class OpenAICompatProvider:
                     msg["tool_calls"] = [{"id": c["id"], "type": "function",
                                           "function": {"name": c["name"], "arguments": json.dumps(c["args"])}}
                                          for c in m["tool_calls"]]
-                    if self.send_reasoning and m.get("reasoning"):
-                        msg["reasoning_content"] = m["reasoning"]
+                if self.send_reasoning and m.get("reasoning"):
+                    msg["reasoning_content"] = m["reasoning"]
                 out.append(msg)
             elif m["role"] == "tool":
                 out.append({"role": "tool", "tool_call_id": m["tool_call_id"], "content": m["content"]})
@@ -277,6 +283,10 @@ class OpenAICompatProvider:
     def chat(self, messages, tools, format=None):
         body = {"model": self.model, "messages": self.to_messages(messages), "temperature": 0,
                 "max_tokens": self.max_tokens}
+        if self.thinking in ("enabled", "disabled"):
+            body["thinking"] = {"type": self.thinking}
+        if self.reasoning_effort:
+            body["reasoning_effort"] = self.reasoning_effort
         if tools:
             body["tools"] = [{"type": "function", "function": t} for t in tools]
         r = self.client.post(f"{self.base_url}/chat/completions", json=body)

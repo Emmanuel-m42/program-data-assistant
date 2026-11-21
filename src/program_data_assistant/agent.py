@@ -258,7 +258,7 @@ class Assistant:
                 if (REFUSAL.search(reply.content or "") and results and not results[-1].ok and not nudged
                         and steps < MAX_STEPS):
                     nudged = True
-                    messages.append({"role": "assistant", "content": reply.content})
+                    messages.append({"role": "assistant", "content": reply.content, "reasoning": reply.reasoning})
                     messages.append({"role": "user", "content": RETRY_NUDGE})
                     continue
                 # Grounding check: every number in the answer must come from a tool result.
@@ -266,13 +266,13 @@ class Assistant:
                 if missing and not revised and steps < MAX_STEPS:
                     revised = True
                     shown = ", ".join(f"{n:g}" for n in missing[:8])
-                    messages.append({"role": "assistant", "content": reply.content})
+                    messages.append({"role": "assistant", "content": reply.content, "reasoning": reply.reasoning})
                     messages.append({"role": "user", "content": GROUNDING_NUDGE.format(numbers=shown)})
                     continue
                 # Answering (or refusing) without having looked at anything: look first.
                 if not results and not looked and steps < MAX_STEPS:
                     looked = True
-                    messages.append({"role": "assistant", "content": reply.content})
+                    messages.append({"role": "assistant", "content": reply.content, "reasoning": reply.reasoning})
                     messages.append({"role": "user", "content": LOOK_NUDGE})
                     continue
                 # Citation check: an answer must cite sources this conversation actually returned.
@@ -280,7 +280,7 @@ class Assistant:
                         and not REFUSAL.search(reply.content or "") and results and not cite_fixed and steps < MAX_STEPS
                         and not citations_valid(results, parse_citations(reply.content or ""))):
                     cite_fixed = True
-                    messages.append({"role": "assistant", "content": reply.content})
+                    messages.append({"role": "assistant", "content": reply.content, "reasoning": reply.reasoning})
                     messages.append({"role": "user", "content": CITE_NUDGE.format(ids=valid_citation_ids(results))})
                     continue
                 break
