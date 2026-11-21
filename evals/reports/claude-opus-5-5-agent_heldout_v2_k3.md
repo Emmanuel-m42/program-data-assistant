@@ -1,6 +1,6 @@
 # Eval report: claude-opus-5-5-agent_heldout_v2_k3
 
-Model: Claude Opus 5.5 as the agent through the tool CLI (OpenCode subagent; same tools and prompt, not the app's own agent loop). The app's in-loop guardrail rewrites (retry nudge, grounding, look-first and citation nudges) and its 7-step cap don't apply in this mode; the after-answer steps (dropping unknown citations, withholding a draft with unsupported numbers) do. Latency is not measured.
+Model: Claude Opus 5.5 as the agent through the tool CLI (same tools and prompt, not the app's own agent loop). The app's in-loop guardrail rewrites (retry nudge, grounding, look-first and citation nudges) and its 7-step cap don't apply in this mode; the after-answer steps (dropping unknown citations, withholding a draft with unsupported numbers) do. Latency is not measured.
 
 Model `agent-trace/claude-opus-5-5`, commit `e1081c2`, 2026-11-21T03:09:29+00:00, 15 cases (split heldout_v2, 3 run(s) per case; pass_all is pass^k).
 
