@@ -156,16 +156,24 @@ $$;
 
 -- ---------- metric views ----------
 
--- One row per office per knocking day. A door is one door_id knocked on one day (rollbacks excluded).
+-- One row per office per knocking day, plus an 'All offices' row per day. A door is one door_id knocked on one day
+-- (rollbacks excluded). Views built on this one filter out the 'All offices' rows.
 CREATE VIEW v_daily_doors AS
-SELECT knocked_at::date AS knock_date,
-       office,
-       count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS doors,
-       count(*) FILTER (WHERE NOT rolled_back AND result = 'canvassed') AS contacts,
-       count(*) AS attempts,
-       count(*) FILTER (WHERE rolled_back) AS rolled_back_attempts
-FROM knocks
-GROUP BY 1, 2;
+WITH o AS (
+    SELECT knocked_at::date AS knock_date,
+           office,
+           count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS doors,
+           count(*) FILTER (WHERE NOT rolled_back AND result = 'canvassed') AS contacts,
+           count(*) AS attempts,
+           count(*) FILTER (WHERE rolled_back) AS rolled_back_attempts
+    FROM knocks
+    GROUP BY 1, 2
+)
+SELECT * FROM o
+UNION ALL
+SELECT knock_date, 'All offices', sum(doors)::bigint, sum(contacts)::bigint, sum(attempts)::bigint,
+       sum(rolled_back_attempts)::bigint
+FROM o GROUP BY knock_date;
 
 -- Door pace and projection per office, plus an 'All offices' total row.
 CREATE VIEW v_office_pace AS
@@ -174,7 +182,7 @@ d AS (
     SELECT v.office,
            sum(v.doors) AS doors_to_date,
            sum(v.doors) FILTER (WHERE v.knock_date > s.as_of_date - 7) AS doors_last_7d
-    FROM v_daily_doors v, s GROUP BY v.office
+    FROM v_daily_doors v, s WHERE v.office <> 'All offices' GROUP BY v.office
 ),
 g AS (
     SELECT office, sum(door_goal) AS goal_total,
@@ -299,7 +307,7 @@ SELECT c.canvasser_id, c.full_name, c.office, c.program,
 FROM shifts sh JOIN canvassers c USING (canvasser_id)
 GROUP BY 1, 2, 3, 4, 5;
 
--- QC flags per office per week, with the rate per 100 GOTV shifts.
+-- QC flags per office per week, with the rate per 100 GOTV shifts, plus an 'All offices' row per week.
 CREATE VIEW v_qc_weekly AS
 WITH sh AS (
     SELECT office, date_trunc('week', shift_date)::date AS week_start, count(*) AS shifts
@@ -311,14 +319,23 @@ f AS (
            count(*) FILTER (WHERE flag_type = 'householding') AS householding,
            count(*) FILTER (WHERE flag_type = 'gap') AS gaps
     FROM qc_flags GROUP BY 1, 2
+),
+o AS (
+    SELECT sh.office, sh.week_start, sh.shifts,
+           coalesce(f.flags, 0) AS flags,
+           coalesce(f.flash_knocking, 0) AS flash_knocking,
+           coalesce(f.householding, 0) AS householding,
+           coalesce(f.gaps, 0) AS gaps
+    FROM sh LEFT JOIN f USING (office, week_start)
+),
+u AS (
+    SELECT * FROM o
+    UNION ALL
+    SELECT 'All offices', week_start, sum(shifts)::bigint, sum(flags)::bigint, sum(flash_knocking)::bigint,
+           sum(householding)::bigint, sum(gaps)::bigint
+    FROM o GROUP BY week_start
 )
-SELECT sh.office, sh.week_start, sh.shifts,
-       coalesce(f.flags, 0) AS flags,
-       coalesce(f.flash_knocking, 0) AS flash_knocking,
-       coalesce(f.householding, 0) AS householding,
-       coalesce(f.gaps, 0) AS gaps,
-       round(100.0 * coalesce(f.flags, 0) / sh.shifts, 1) AS flags_per_100_shifts
-FROM sh LEFT JOIN f USING (office, week_start);
+SELECT *, round(100.0 * flags / shifts, 1) AS flags_per_100_shifts FROM u;
 
 -- ---------- helper views for common questions ----------
 
@@ -326,7 +343,7 @@ FROM sh LEFT JOIN f USING (office, week_start);
 CREATE VIEW v_contact_rates AS
 WITH w AS (
     SELECT office, date_trunc('week', knock_date)::date AS week_start, sum(doors) AS doors, sum(contacts) AS contacts
-    FROM v_daily_doors GROUP BY 1, 2
+    FROM v_daily_doors WHERE office <> 'All offices' GROUP BY 1, 2
 ),
 u AS (
     SELECT * FROM w
@@ -342,7 +359,7 @@ WITH p AS (
     FROM shifts s JOIN canvassers c USING (canvasser_id) JOIN pay_rates r USING (role)
     WHERE s.program = 'gotv' GROUP BY s.office
 ),
-d AS (SELECT office, sum(doors) AS doors FROM v_daily_doors GROUP BY office),
+d AS (SELECT office, sum(doors) AS doors FROM v_daily_doors WHERE office <> 'All offices' GROUP BY office),
 u AS (
     SELECT p.office, p.paid_hours, p.wages, d.doors FROM p JOIN d USING (office)
     UNION ALL
@@ -354,7 +371,7 @@ SELECT office, paid_hours, round(wages, 2) AS wages, doors, round(wages / doors,
 CREATE VIEW v_weekly_report AS
 WITH d AS (
     SELECT office, date_trunc('week', knock_date)::date AS week_start, sum(doors) AS doors, sum(contacts) AS contacts
-    FROM v_daily_doors GROUP BY 1, 2
+    FROM v_daily_doors WHERE office <> 'All offices' GROUP BY 1, 2
 ),
 c AS (
     SELECT office, date_trunc('week', collected_at)::date AS week_start, count(*) FILTER (WHERE NOT is_duplicate) AS valid_cards
@@ -376,16 +393,59 @@ SELECT 'All offices', week_start, sum(doors), sum(contacts), sum(valid_cards), s
 FROM o GROUP BY week_start;
 
 -- One row per person with how much they have worked and whether they are active and regular.
+-- The staff definitions (program plan) are GOTV definitions: registration canvassers get staff_type 'registration'
+-- and are never counted as regulars or one-day hires.
 CREATE VIEW v_canvasser_status AS
 SELECT c.canvasser_id, c.full_name, c.office, c.program, c.role,
        count(DISTINCT s.shift_date) AS days_worked,
        min(s.shift_date) AS first_shift, max(s.shift_date) AS last_shift,
        max(s.shift_date) > (SELECT as_of_date FROM program_settings) - 7 AS active,
-       CASE WHEN count(DISTINCT s.shift_date) >= 5 THEN 'regular'
+       CASE WHEN c.program <> 'gotv' THEN 'registration'
+            WHEN count(DISTINCT s.shift_date) >= 5 THEN 'regular'
             WHEN count(DISTINCT s.shift_date) = 1 THEN 'one-day hire'
             ELSE 'occasional' END AS staff_type
 FROM canvassers c JOIN shifts s USING (canvasser_id)
 GROUP BY c.canvasser_id, c.full_name, c.office, c.program, c.role;
+
+-- GOTV staff counts per office plus 'All offices', by the program plan's definitions: regular = 5 or more days
+-- worked, one-day hire = exactly one day, active = a shift in the last 7 days. GOTV canvassers only.
+CREATE VIEW v_gotv_staff AS
+WITH o AS (
+    SELECT office,
+           count(*) AS gotv_canvassers,
+           count(*) FILTER (WHERE active) AS active_canvassers,
+           count(*) FILTER (WHERE active AND staff_type = 'regular') AS active_regulars,
+           count(*) FILTER (WHERE active AND staff_type = 'occasional') AS active_occasional,
+           count(*) FILTER (WHERE active AND staff_type = 'one-day hire') AS active_one_day_hires,
+           count(*) FILTER (WHERE staff_type = 'regular') AS regulars_all_time,
+           count(*) FILTER (WHERE staff_type = 'one-day hire') AS one_day_hires_all_time
+    FROM v_canvasser_status WHERE program = 'gotv' GROUP BY office
+)
+SELECT * FROM o
+UNION ALL
+SELECT 'All offices', sum(gotv_canvassers)::bigint, sum(active_canvassers)::bigint, sum(active_regulars)::bigint,
+       sum(active_occasional)::bigint, sum(active_one_day_hires)::bigint, sum(regulars_all_time)::bigint,
+       sum(one_day_hires_all_time)::bigint
+FROM o;
+
+-- Remaining turf per office by coverage band and density band, plus 'All offices'. Density bands follow the
+-- program plan: dense = over 2,000 doors per square mile, sparse = under 1,000.
+CREATE VIEW v_turf_summary AS
+WITH p AS (
+    SELECT office, coverage,
+           CASE WHEN doors_per_sq_mi > 2000 THEN 'dense' WHEN doors_per_sq_mi < 1000 THEN 'sparse' ELSE 'medium' END AS density,
+           target_doors, doors_untouched, not_home_doors
+    FROM v_precinct_coverage
+),
+o AS (
+    SELECT office, coverage, density, count(*) AS precincts, sum(target_doors) AS target_doors,
+           sum(doors_untouched) AS doors_untouched, sum(not_home_doors) AS not_home_doors
+    FROM p GROUP BY 1, 2, 3
+)
+SELECT * FROM o
+UNION ALL
+SELECT 'All offices', coverage, density, sum(precincts)::bigint, sum(target_doors), sum(doors_untouched), sum(not_home_doors)
+FROM o GROUP BY coverage, density;
 
 -- QC flags with the canvasser's name.
 CREATE VIEW v_qc_flags_detail AS

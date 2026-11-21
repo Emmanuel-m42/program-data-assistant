@@ -29,11 +29,7 @@ def offices(conn) -> dict:
     cost = {r["office"]: r["cost_per_door"] for r in _rows(conn, "SELECT office, cost_per_door FROM v_cost_per_door")}
     vr = {r["office"]: r for r in _rows(conn, "SELECT * FROM v_vr_pace")}
     qc = {r["office"]: r for r in _rows(conn, "SELECT office, shifts, flags, flags_per_100_shifts FROM v_qc_weekly WHERE week_start = %s",
-                                         (week,))}
-    if qc:
-        shifts = sum(r["shifts"] for r in qc.values())
-        flags = sum(r["flags"] for r in qc.values())
-        qc["All offices"] = {"flags": flags, "flags_per_100_shifts": round(100.0 * flags / shifts, 1) if shifts else None}
+                                         (week,))}  # includes the view's 'All offices' row
     out = []
     for office in OFFICES:
         p, v, q = pace.get(office, {}), vr.get(office, {}), qc.get(office, {})

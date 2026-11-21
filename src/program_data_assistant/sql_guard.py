@@ -18,7 +18,7 @@ ALLOWED_TABLES = {
     "client_daily_report", "qc_flags", "candidate_office_sites", "vr_goals", "vr_cards", "vr_qc_calls",
     "v_daily_doors", "v_office_pace", "v_precinct_coverage", "v_site_options", "v_vr_pace", "v_weekly_hours",
     "v_qc_weekly", "v_contact_rates", "v_cost_per_door", "v_weekly_report", "v_canvasser_status", "v_qc_flags_detail",
-    "v_shifts_to_fix", "v_vr_canvassers", "v_qc_call_outcomes",
+    "v_shifts_to_fix", "v_vr_canvassers", "v_qc_call_outcomes", "v_gotv_staff", "v_turf_summary",
 }
 ALLOWED_SCHEMAS = {"", "program"}
 DENIED_FUNCTIONS = re.compile(

@@ -23,6 +23,8 @@ VIEWS = {
     "v_precinct_coverage": "pct_touched, doors_per_sq_mi DESC",
     "v_site_options": "avg_km_to_untouched_doors",
     "v_canvasser_status": "active DESC, days_worked DESC",
+    "v_gotv_staff": "office",
+    "v_turf_summary": "office, coverage, density",
     "v_qc_flags_detail": "flag_date DESC, full_name",
     "v_qc_weekly": "week_start DESC, office",
     "v_vr_pace": "office",
@@ -42,7 +44,8 @@ TOOL_SPECS = [
         "description": (
             "Answers: program metrics that already have a view, read as is. Pace, projection and shortfall by office, "
             "shifts needed, contact rate by week, cost per door, the weekly client report, turf coverage by precinct, "
-            "sites for a new office, staff status (active, regular), QC flags with evidence, QC rate by week, "
+            "remaining turf by coverage and density, sites for a new office, staff status per person, GOTV staff "
+            "counts (active, regulars, one-day hires), QC flags with evidence, QC rate by week, "
             "registration pace and cards per hour, duplicates by canvasser, QC call outcomes, weekly hours and overtime, "
             "shifts waiting for a fix or approval. "
             "Doesn't answer: one specific day or shift, custom joins, rules or definitions. "
