@@ -1,6 +1,6 @@
 # program-data-assistant
 
-Demo: https://emmanuel-m42.github.io/program-data-assistant/ (recorded runs on fictional data, no backend needed)
+Demo: https://ebot.vote/demos/program-assistant/ (recorded runs on fictional data, no backend needed)
 
 An assistant that answers questions about a field program from that program's own data and documents. A field director or organizer asks something like "Which offices will miss their goal, and by how much?" and gets a short answer with the numbers, the SQL rows and document passages behind them, and a plain "I can't confirm that" when the data doesn't cover the question.
 
