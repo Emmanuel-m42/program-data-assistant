@@ -3,7 +3,7 @@ import json
 from conftest import ScriptedProvider, search_call, sql_call
 from fastapi.testclient import TestClient
 
-from program_data_assistant.agent import LOOK_NUDGE, RETRY_NUDGE, Assistant
+from program_data_assistant.agent import EMPTY_NUDGE, LOOK_NUDGE, RETRY_NUDGE, Assistant
 from program_data_assistant.api import create_app
 from program_data_assistant.llm import Reply, ToolCall
 from program_data_assistant.tools import Toolbox
@@ -35,7 +35,7 @@ def test_ask_runs_tools_and_returns_sources():
     assert [t["name"] for t in body["tool_calls"]] == ["query_program_data", "search_documents"]
     rows = [s for s in body["sources"] if s["type"] == "rows"]
     assert rows[0]["table"] == "v_office_pace"
-    assert [r[0] for r in rows[0]["rows"]][:3] == ["All offices", "Eastgate", "Harbor"]
+    assert [r[0] for r in rows[0]["rows"]] == ["Eastgate", "Harbor"]
     assert [s["doc"] for s in body["sources"] if s["type"] == "passage"] == ["program-plan#pace-and-projection"]
     # the model saw the real query result
     assert "Eastgate" in provider.seen[1]["content"]
@@ -69,6 +69,14 @@ def test_refusal_flag_after_looking_first():
     body = c.post("/ask", json={"question": "What will turnout be?"}).json()
     assert provider.seen[1]["content"] == LOOK_NUDGE
     assert body["refused"] is True and [t["name"] for t in body["tool_calls"]] == ["search_documents"]
+
+
+def test_an_empty_reply_gets_one_retry():
+    c, provider = client([sql_call("SELECT office, doors_untouched FROM v_office_pace"), Reply(""),
+                          Reply("Harbor has 8,096 doors no one has knocked [table:v_office_pace].")])
+    body = c.post("/ask", json={"question": "How many doors are left in Harbor?"}).json()
+    assert provider.seen[-1]["content"] == EMPTY_NUDGE
+    assert body["refused"] is False and "8,096" in body["answer"]
 
 
 def test_missing_citations_get_one_rewrite_with_the_valid_ids():
@@ -118,16 +126,18 @@ def test_get_view_returns_a_whole_view_or_one_office():
     src = body["sources"][0]
     assert src["table"] == "v_cost_per_door" and [r[0] for r in src["rows"]] == ["Eastgate"]
     assert Toolbox().run("get_view", {"view": "knocks"}).ok is False
-    assert len(Toolbox().run("get_view", {"view": "v_office_pace"}).rows) == 4
+    assert len(Toolbox().run("get_view", {"view": "v_office_pace"}).rows) == 3
+    total = Toolbox().run("get_view", {"view": "v_office_pace_total", "office": "Harbor"})  # office ignored on totals
+    assert [r[0] for r in total.rows] == ["All offices"] and "the program total" in total.content
 
 
 def test_get_view_all_offices_means_no_filter_and_week_is_ignored_where_absent():
     tb = Toolbox()
-    assert len(tb.run("get_view", {"view": "v_office_pace", "office": "All offices"}).rows) == 4
+    assert len(tb.run("get_view", {"view": "v_office_pace", "office": "All offices"}).rows) == 3
     assert len(tb.run("get_view", {"view": "v_precinct_coverage", "office": "all", "week_start": "2026-10-12"}).rows) == 40
     assert len(tb.run("get_view", {"view": "v_site_options", "office": "Harbor"}).rows) == 4
     assert {r[0] for r in tb.run("get_view", {"view": "v_contact_rates", "week_start": "2026-10-12"}).rows} == {
-        "All offices", "Eastgate", "Harbor", "Northside"}
+        "Eastgate", "Harbor", "Northside"}
     assert [r[0] for r in tb.run("get_view", {"view": "v_cost_per_door", "office": "Eastgate"}).rows] == ["Eastgate"]
 
 

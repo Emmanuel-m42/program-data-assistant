@@ -33,7 +33,7 @@ def test_cli_runs_the_real_tools_with_their_guards(tmp_path, capsys):
 
 def q01_run(tmp_path, capsys, name, answer):
     trace = tmp_path / f"{name}.jsonl"
-    out = call(capsys, trace, "q01", "get_view", {"view": "v_office_pace"})
+    out = call(capsys, trace, "q01", "get_view", {"view": "v_office_pace_total"})
     total_row = next(line for line in out.splitlines() if line.startswith("All offices"))
     cols = [c.strip() for c in total_row.split("|")]
     projected, gap = cols[7], cols[8].lstrip("-")
@@ -44,12 +44,12 @@ def q01_run(tmp_path, capsys, name, answer):
 
 
 GOOD = ("No, we're not on pace. If nothing changes we land at {projected} doors by election day, {gap} short of goal "
-        "[table:v_office_pace].")
+        "[table:v_office_pace_total].")
 
 
 def test_scores_from_traces_with_pass_hat_k(tmp_path, capsys):
     t1, a1 = q01_run(tmp_path, capsys, "r1", GOOD)
-    t2, a2 = q01_run(tmp_path, capsys, "r2", "We land at about 99999 doors [table:v_office_pace].")
+    t2, a2 = q01_run(tmp_path, capsys, "r2", "We land at about 99999 doors [table:v_office_pace_total].")
     report = agent_trace.run("x", [t1, t2], [a1, a2], tmp_path / "rep", only=["q01"])
     row = report["cases"][0]
     first, second = row["answer"], row["repeats"][0]

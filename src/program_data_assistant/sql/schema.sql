@@ -156,9 +156,14 @@ $$;
 
 -- ---------- metric views ----------
 
--- One row per office per knocking day, plus an 'All offices' row per day. A door is one door_id knocked on one day
--- (rollbacks excluded). Views built on this one filter out the 'All offices' rows.
-CREATE VIEW v_daily_doors AS
+-- Program totals live in separate *_total views, never as extra rows in an office view: a model that adds up an
+-- office view's rows must get the program total, not twice it. Each all_* view below builds the office rows and the
+-- 'All offices' rows together (so both come from one definition) and is split into v_<name> (offices only) and
+-- v_<name>_total (the 'All offices' rows). The all_* views are not on the SQL tool's allow list.
+
+-- One row per office per knocking day; v_daily_doors_total has one row per day. A door is one door_id knocked on one
+-- day (rollbacks excluded).
+CREATE VIEW all_daily_doors AS
 WITH o AS (
     SELECT knocked_at::date AS knock_date,
            office,
@@ -174,15 +179,24 @@ UNION ALL
 SELECT knock_date, 'All offices', sum(doors)::bigint, sum(contacts)::bigint, sum(attempts)::bigint,
        sum(rolled_back_attempts)::bigint
 FROM o GROUP BY knock_date;
+CREATE VIEW v_daily_doors AS SELECT * FROM all_daily_doors WHERE office <> 'All offices';
+CREATE VIEW v_daily_doors_total AS SELECT * FROM all_daily_doors WHERE office = 'All offices';
 
--- Door pace and projection per office, plus an 'All offices' total row.
-CREATE VIEW v_office_pace AS
+-- Door pace and projection per office (v_office_pace_total: the program). doors_untouched is every turf door never
+-- knocked (rollbacks removed), in every precinct, including the untouched doors of partly covered precincts.
+CREATE VIEW all_office_pace AS
 WITH s AS (SELECT * FROM program_settings),
 d AS (
     SELECT v.office,
            sum(v.doors) AS doors_to_date,
            sum(v.doors) FILTER (WHERE v.knock_date > s.as_of_date - 7) AS doors_last_7d
-    FROM v_daily_doors v, s WHERE v.office <> 'All offices' GROUP BY v.office
+    FROM v_daily_doors v, s GROUP BY v.office
+),
+t AS (
+    SELECT p.office, p.turf_doors, coalesce(k.doors_touched, 0) AS doors_touched
+    FROM (SELECT office, sum(target_doors) AS turf_doors FROM precincts GROUP BY office) p
+    LEFT JOIN (SELECT office, count(DISTINCT door_id) AS doors_touched FROM knocks WHERE NOT rolled_back GROUP BY office) k
+        USING (office)
 ),
 g AS (
     SELECT office, sum(door_goal) AS goal_total,
@@ -195,14 +209,14 @@ sh AS (
 ),
 o AS (
     SELECT d.office, g.goal_total, g.goal_to_date, d.doors_to_date, d.doors_last_7d, sh.shifts_last_7d,
-           (s.gotv_last_knock_day - s.as_of_date) AS knocking_days_left
-    FROM d JOIN g USING (office) JOIN sh USING (office), s
+           (s.gotv_last_knock_day - s.as_of_date) AS knocking_days_left, t.turf_doors, t.doors_touched
+    FROM d JOIN g USING (office) JOIN sh USING (office) JOIN t USING (office), s
 ),
 u AS (
     SELECT * FROM o
     UNION ALL
     SELECT 'All offices', sum(goal_total), sum(goal_to_date), sum(doors_to_date), sum(doors_last_7d), sum(shifts_last_7d),
-           max(knocking_days_left)
+           max(knocking_days_left), sum(turf_doors), sum(doors_touched)
     FROM o
 )
 SELECT office,
@@ -220,8 +234,12 @@ SELECT office,
        round(greatest(goal_total - doors_to_date, 0) / knocking_days_left::numeric / (doors_last_7d::numeric / shifts_last_7d), 1)
            AS shifts_per_day_needed,
        round(greatest(greatest(goal_total - doors_to_date, 0) / knocking_days_left::numeric / (doors_last_7d::numeric / shifts_last_7d)
-           - shifts_last_7d / 7.0, 0), 1) AS extra_shifts_per_day_needed
+           - shifts_last_7d / 7.0, 0), 1) AS extra_shifts_per_day_needed,
+       turf_doors,
+       turf_doors - doors_touched AS doors_untouched
 FROM u;
+CREATE VIEW v_office_pace AS SELECT * FROM all_office_pace WHERE office <> 'All offices';
+CREATE VIEW v_office_pace_total AS SELECT * FROM all_office_pace WHERE office = 'All offices';
 
 -- Turf coverage per precinct. Touched = door_id knocked at least once (rollbacks excluded).
 CREATE VIEW v_precinct_coverage AS
@@ -257,8 +275,8 @@ SELECT s.site_id, s.name, s.address, s.monthly_rent,
 FROM candidate_office_sites s CROSS JOIN v_precinct_coverage c
 GROUP BY s.site_id, s.name, s.address, s.monthly_rent, s.lat, s.lon;
 
--- Registration pace per office plus an 'All offices' row. Valid cards exclude duplicates.
-CREATE VIEW v_vr_pace AS
+-- Registration pace per office (v_vr_pace_total: the program). Valid cards exclude duplicates.
+CREATE VIEW all_vr_pace AS
 WITH s AS (SELECT * FROM program_settings),
 c AS (
     SELECT office, count(*) AS cards_collected,
@@ -294,21 +312,98 @@ SELECT office, card_goal, cards_collected, duplicate_cards, valid_cards,
        round(valid_cards + valid_cards_last_7d / 7.0 * days_left) AS projected_valid_cards,
        round(greatest(card_goal - valid_cards, 0) / (hours_last_7d / 7.0 * days_left), 2) AS cards_per_hour_needed
 FROM u;
+CREATE VIEW v_vr_pace AS SELECT * FROM all_vr_pace WHERE office <> 'All offices';
+CREATE VIEW v_vr_pace_total AS SELECT * FROM all_vr_pace WHERE office = 'All offices';
 
--- Paid hours per person per week (Monday start). needs_fix shifts with no clock out have no paid hours yet.
+-- Paid hours and wages per person per week (Monday start). A shift with no clock out has no paid hours yet:
+-- shifts_with_hours counts the shifts that have them. wages = paid hours x the person's hourly rate.
 CREATE VIEW v_weekly_hours AS
-SELECT c.canvasser_id, c.full_name, c.office, c.program,
+SELECT c.canvasser_id, c.full_name, c.office, c.program, c.role,
        date_trunc('week', sh.shift_date)::date AS week_start,
        count(*) AS shifts,
+       count(sh.paid_hours) AS shifts_with_hours,
        sum(sh.paid_hours) AS paid_hours,
+       round(sum(sh.paid_hours * r.hourly_rate), 2) AS wages,
        count(*) FILTER (WHERE sh.approval_status = 'pending') AS shifts_pending,
        count(*) FILTER (WHERE sh.approval_status = 'needs_fix') AS shifts_needs_fix,
        coalesce(sum(sh.paid_hours), 0) > (SELECT overtime_threshold_hours FROM program_settings) AS over_threshold
-FROM shifts sh JOIN canvassers c USING (canvasser_id)
-GROUP BY 1, 2, 3, 4, 5;
+FROM shifts sh JOIN canvassers c USING (canvasser_id) JOIN pay_rates r USING (role)
+GROUP BY 1, 2, 3, 4, 5, 6;
 
--- QC flags per office per week, with the rate per 100 GOTV shifts, plus an 'All offices' row per week.
-CREATE VIEW v_qc_weekly AS
+-- Shifts, paid hours, shift length and wages per office, program and week (v_weekly_shifts_total: all offices).
+-- Shift length = paid hours / shifts with a clock out; a shift with no clock out has no length yet.
+CREATE VIEW all_weekly_shifts AS
+WITH o AS (
+    SELECT s.office, s.program, date_trunc('week', s.shift_date)::date AS week_start,
+           count(*) AS shifts, count(s.paid_hours) AS shifts_with_hours,
+           count(*) FILTER (WHERE s.clock_out IS NULL) AS shifts_missing_clock_out,
+           sum(s.paid_hours) AS paid_hours, sum(s.paid_hours * r.hourly_rate) AS wages
+    FROM shifts s JOIN canvassers c USING (canvasser_id) JOIN pay_rates r USING (role)
+    GROUP BY 1, 2, 3
+),
+u AS (
+    SELECT * FROM o
+    UNION ALL
+    SELECT 'All offices', program, week_start, sum(shifts)::bigint, sum(shifts_with_hours)::bigint,
+           sum(shifts_missing_clock_out)::bigint, sum(paid_hours), sum(wages)
+    FROM o GROUP BY program, week_start
+)
+SELECT office, program, week_start, shifts, shifts_with_hours, shifts_missing_clock_out, paid_hours,
+       round(paid_hours / nullif(shifts_with_hours, 0), 2) AS avg_shift_hours, round(wages, 2) AS wages
+FROM u;
+CREATE VIEW v_weekly_shifts AS SELECT * FROM all_weekly_shifts WHERE office <> 'All offices';
+CREATE VIEW v_weekly_shifts_total AS SELECT * FROM all_weekly_shifts WHERE office = 'All offices';
+
+-- Doors against the door goal per office per week (v_weekly_pace_total: all offices).
+CREATE VIEW all_weekly_pace AS
+WITH g AS (
+    SELECT office, date_trunc('week', goal_date)::date AS week_start, sum(door_goal) AS door_goal
+    FROM daily_goals WHERE goal_date <= (SELECT as_of_date FROM program_settings) GROUP BY 1, 2
+),
+d AS (
+    SELECT office, date_trunc('week', knock_date)::date AS week_start, sum(doors) AS doors, sum(contacts) AS contacts
+    FROM v_daily_doors GROUP BY 1, 2
+),
+o AS (SELECT office, week_start, g.door_goal, coalesce(d.doors, 0) AS doors, coalesce(d.contacts, 0) AS contacts
+      FROM g LEFT JOIN d USING (office, week_start)),
+u AS (
+    SELECT * FROM o
+    UNION ALL
+    SELECT 'All offices', week_start, sum(door_goal), sum(doors), sum(contacts) FROM o GROUP BY week_start
+)
+SELECT office, week_start, door_goal, doors, contacts, doors - door_goal AS doors_vs_goal,
+       round(100.0 * doors / door_goal, 1) AS pct_of_goal
+FROM u;
+CREATE VIEW v_weekly_pace AS SELECT * FROM all_weekly_pace WHERE office <> 'All offices';
+CREATE VIEW v_weekly_pace_total AS SELECT * FROM all_weekly_pace WHERE office = 'All offices';
+
+-- Registration cards and hours per office per week (v_vr_weekly_total: all offices). Valid cards exclude duplicates.
+CREATE VIEW all_vr_weekly AS
+WITH c AS (
+    SELECT office, date_trunc('week', collected_at)::date AS week_start,
+           count(*) FILTER (WHERE NOT is_duplicate) AS valid_cards, count(*) FILTER (WHERE is_duplicate) AS duplicate_cards
+    FROM vr_cards GROUP BY 1, 2
+),
+h AS (
+    SELECT office, date_trunc('week', shift_date)::date AS week_start, sum(paid_hours) AS paid_hours
+    FROM shifts WHERE program = 'vr' GROUP BY 1, 2
+),
+o AS (SELECT office, week_start, coalesce(c.valid_cards, 0) AS valid_cards, coalesce(c.duplicate_cards, 0) AS duplicate_cards,
+             h.paid_hours
+      FROM h LEFT JOIN c USING (office, week_start)),
+u AS (
+    SELECT * FROM o
+    UNION ALL
+    SELECT 'All offices', week_start, sum(valid_cards), sum(duplicate_cards), sum(paid_hours) FROM o GROUP BY week_start
+)
+SELECT office, week_start, valid_cards, duplicate_cards, paid_hours,
+       round(valid_cards / nullif(paid_hours, 0), 2) AS cards_per_hour
+FROM u;
+CREATE VIEW v_vr_weekly AS SELECT * FROM all_vr_weekly WHERE office <> 'All offices';
+CREATE VIEW v_vr_weekly_total AS SELECT * FROM all_vr_weekly WHERE office = 'All offices';
+
+-- QC flags per office per week, with the rate per 100 GOTV shifts (v_qc_weekly_total: all offices).
+CREATE VIEW all_qc_weekly AS
 WITH sh AS (
     SELECT office, date_trunc('week', shift_date)::date AS week_start, count(*) AS shifts
     FROM shifts WHERE program = 'gotv' GROUP BY 1, 2
@@ -336,14 +431,16 @@ u AS (
     FROM o GROUP BY week_start
 )
 SELECT *, round(100.0 * flags / shifts, 1) AS flags_per_100_shifts FROM u;
+CREATE VIEW v_qc_weekly AS SELECT * FROM all_qc_weekly WHERE office <> 'All offices';
+CREATE VIEW v_qc_weekly_total AS SELECT * FROM all_qc_weekly WHERE office = 'All offices';
 
 -- ---------- helper views for common questions ----------
 
--- Contact rate per office per week (Monday start), plus 'All offices'.
-CREATE VIEW v_contact_rates AS
+-- Contact rate per office per week, Monday start (v_contact_rates_total: all offices).
+CREATE VIEW all_contact_rates AS
 WITH w AS (
     SELECT office, date_trunc('week', knock_date)::date AS week_start, sum(doors) AS doors, sum(contacts) AS contacts
-    FROM v_daily_doors WHERE office <> 'All offices' GROUP BY 1, 2
+    FROM v_daily_doors GROUP BY 1, 2
 ),
 u AS (
     SELECT * FROM w
@@ -351,27 +448,32 @@ u AS (
     SELECT 'All offices', week_start, sum(doors), sum(contacts) FROM w GROUP BY week_start
 )
 SELECT office, week_start, doors, contacts, round(100.0 * contacts / doors, 1) AS contact_rate_pct FROM u;
+CREATE VIEW v_contact_rates AS SELECT * FROM all_contact_rates WHERE office <> 'All offices';
+CREATE VIEW v_contact_rates_total AS SELECT * FROM all_contact_rates WHERE office = 'All offices';
 
--- GOTV wages and cost per door to date, plus 'All offices'.
-CREATE VIEW v_cost_per_door AS
+-- GOTV wages and cost per door to date (v_cost_per_door_total: all offices).
+CREATE VIEW all_cost_per_door AS
 WITH p AS (
     SELECT s.office, sum(s.paid_hours) AS paid_hours, sum(s.paid_hours * r.hourly_rate) AS wages
     FROM shifts s JOIN canvassers c USING (canvasser_id) JOIN pay_rates r USING (role)
     WHERE s.program = 'gotv' GROUP BY s.office
 ),
-d AS (SELECT office, sum(doors) AS doors FROM v_daily_doors WHERE office <> 'All offices' GROUP BY office),
+d AS (SELECT office, sum(doors) AS doors FROM v_daily_doors GROUP BY office),
 u AS (
     SELECT p.office, p.paid_hours, p.wages, d.doors FROM p JOIN d USING (office)
     UNION ALL
     SELECT 'All offices', sum(p.paid_hours), sum(p.wages), sum(d.doors) FROM p JOIN d USING (office)
 )
 SELECT office, paid_hours, round(wages, 2) AS wages, doors, round(wages / doors, 2) AS cost_per_door FROM u;
+CREATE VIEW v_cost_per_door AS SELECT * FROM all_cost_per_door WHERE office <> 'All offices';
+CREATE VIEW v_cost_per_door_total AS SELECT * FROM all_cost_per_door WHERE office = 'All offices';
 
--- The weekly client report: doors, contacts, valid cards and paid hours per office per week.
-CREATE VIEW v_weekly_report AS
+-- The weekly client report: doors, contacts, valid cards and paid hours per office per week
+-- (v_weekly_report_total: the report's total row).
+CREATE VIEW all_weekly_report AS
 WITH d AS (
     SELECT office, date_trunc('week', knock_date)::date AS week_start, sum(doors) AS doors, sum(contacts) AS contacts
-    FROM v_daily_doors WHERE office <> 'All offices' GROUP BY 1, 2
+    FROM v_daily_doors GROUP BY 1, 2
 ),
 c AS (
     SELECT office, date_trunc('week', collected_at)::date AS week_start, count(*) FILTER (WHERE NOT is_duplicate) AS valid_cards
@@ -391,6 +493,8 @@ SELECT * FROM o
 UNION ALL
 SELECT 'All offices', week_start, sum(doors), sum(contacts), sum(valid_cards), sum(paid_hours), sum(shifts_missing_clock_out)
 FROM o GROUP BY week_start;
+CREATE VIEW v_weekly_report AS SELECT * FROM all_weekly_report WHERE office <> 'All offices';
+CREATE VIEW v_weekly_report_total AS SELECT * FROM all_weekly_report WHERE office = 'All offices';
 
 -- One row per person with how much they have worked and whether they are active and regular.
 -- The staff definitions (program plan) are GOTV definitions: registration canvassers get staff_type 'registration'
@@ -407,9 +511,9 @@ SELECT c.canvasser_id, c.full_name, c.office, c.program, c.role,
 FROM canvassers c JOIN shifts s USING (canvasser_id)
 GROUP BY c.canvasser_id, c.full_name, c.office, c.program, c.role;
 
--- GOTV staff counts per office plus 'All offices', by the program plan's definitions: regular = 5 or more days
--- worked, one-day hire = exactly one day, active = a shift in the last 7 days. GOTV canvassers only.
-CREATE VIEW v_gotv_staff AS
+-- GOTV staff counts per office (v_gotv_staff_total: all offices), by the program plan's definitions: regular = 5 or
+-- more days worked, one-day hire = exactly one day, active = a shift in the last 7 days. GOTV canvassers only.
+CREATE VIEW all_gotv_staff AS
 WITH o AS (
     SELECT office,
            count(*) AS gotv_canvassers,
@@ -427,10 +531,13 @@ SELECT 'All offices', sum(gotv_canvassers)::bigint, sum(active_canvassers)::bigi
        sum(active_occasional)::bigint, sum(active_one_day_hires)::bigint, sum(regulars_all_time)::bigint,
        sum(one_day_hires_all_time)::bigint
 FROM o;
+CREATE VIEW v_gotv_staff AS SELECT * FROM all_gotv_staff WHERE office <> 'All offices';
+CREATE VIEW v_gotv_staff_total AS SELECT * FROM all_gotv_staff WHERE office = 'All offices';
 
--- Remaining turf per office by coverage band and density band, plus 'All offices'. Density bands follow the
--- program plan: dense = over 2,000 doors per square mile, sparse = under 1,000.
-CREATE VIEW v_turf_summary AS
+-- Remaining turf per office by coverage band and density band (v_turf_summary_total: all offices, by band). Density
+-- bands follow the program plan: dense = over 2,000 doors per square mile, sparse = under 1,000. For one number of
+-- untouched doors across all turf, use doors_untouched in v_office_pace / v_office_pace_total.
+CREATE VIEW all_turf_summary AS
 WITH p AS (
     SELECT office, coverage,
            CASE WHEN doors_per_sq_mi > 2000 THEN 'dense' WHEN doors_per_sq_mi < 1000 THEN 'sparse' ELSE 'medium' END AS density,
@@ -446,6 +553,8 @@ SELECT * FROM o
 UNION ALL
 SELECT 'All offices', coverage, density, sum(precincts)::bigint, sum(target_doors), sum(doors_untouched), sum(not_home_doors)
 FROM o GROUP BY coverage, density;
+CREATE VIEW v_turf_summary AS SELECT * FROM all_turf_summary WHERE office <> 'All offices';
+CREATE VIEW v_turf_summary_total AS SELECT * FROM all_turf_summary WHERE office = 'All offices';
 
 -- QC flags with the canvasser's name.
 CREATE VIEW v_qc_flags_detail AS
@@ -477,8 +586,8 @@ LEFT JOIN vr_qc_calls q USING (card_id)
 WHERE c.program = 'vr'
 GROUP BY c.canvasser_id, c.full_name, c.office;
 
--- Registration QC call outcomes per office, plus 'All offices'.
-CREATE VIEW v_qc_call_outcomes AS
+-- Registration QC call outcomes per office (v_qc_call_outcomes_total: all offices).
+CREATE VIEW all_qc_call_outcomes AS
 WITH o AS (
     SELECT v.office, q.outcome, count(*) AS calls FROM vr_qc_calls q JOIN vr_cards v USING (card_id) GROUP BY 1, 2
 ),
@@ -488,6 +597,8 @@ u AS (
     SELECT 'All offices', outcome, sum(calls) FROM o GROUP BY outcome
 )
 SELECT office, outcome, calls, round(100.0 * calls / sum(calls) OVER (PARTITION BY office), 1) AS share_pct FROM u;
+CREATE VIEW v_qc_call_outcomes AS SELECT * FROM all_qc_call_outcomes WHERE office <> 'All offices';
+CREATE VIEW v_qc_call_outcomes_total AS SELECT * FROM all_qc_call_outcomes WHERE office = 'All offices';
 
 -- ---------- documents ----------
 
@@ -516,6 +627,15 @@ END
 $$;
 GRANT USAGE ON SCHEMA program TO pda_reader;
 GRANT SELECT ON ALL TABLES IN SCHEMA program TO pda_reader;
+-- The all_* views (office and total rows together) stay internal; the reader gets v_<name> and v_<name>_total.
+DO $$
+DECLARE v text;
+BEGIN
+    FOR v IN SELECT table_name FROM information_schema.views WHERE table_schema = 'program' AND table_name LIKE 'all\_%' LOOP
+        EXECUTE format('REVOKE SELECT ON program.%I FROM pda_reader', v);
+    END LOOP;
+END
+$$;
 ALTER ROLE pda_reader SET search_path = program;
 ALTER ROLE pda_reader SET default_transaction_read_only = on;
 ALTER ROLE pda_reader SET statement_timeout = '5s';

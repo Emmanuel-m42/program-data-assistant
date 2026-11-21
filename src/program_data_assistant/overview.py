@@ -18,18 +18,22 @@ def _rows(conn, sql: str, params=()) -> list[dict]:
     return [dict(zip(cols, (_plain(v) for v in r))) for r in cur.fetchall()]
 
 
+def both(view: str) -> str:
+    """An office view plus its *_total view (whose office column reads 'All offices')."""
+    return f"SELECT * FROM {view} UNION ALL SELECT * FROM {view}_total"
+
+
 def offices(conn) -> dict:
     """One entry per office plus 'All offices': pace, contact rate by week, cost per door, registration, QC."""
     as_of = _rows(conn, "SELECT as_of_date, this_week_start FROM program_settings")[0]
     week = as_of["this_week_start"]
-    pace = {r["office"]: r for r in _rows(conn, "SELECT * FROM v_office_pace")}
+    pace = {r["office"]: r for r in _rows(conn, both("v_office_pace"))}
     rates: dict[str, list] = {}
-    for r in _rows(conn, "SELECT office, week_start, contact_rate_pct FROM v_contact_rates ORDER BY week_start"):
+    for r in _rows(conn, f"SELECT office, week_start, contact_rate_pct FROM ({both('v_contact_rates')}) x ORDER BY week_start"):
         rates.setdefault(r["office"], []).append({"week_start": r["week_start"], "contact_rate_pct": r["contact_rate_pct"]})
-    cost = {r["office"]: r["cost_per_door"] for r in _rows(conn, "SELECT office, cost_per_door FROM v_cost_per_door")}
-    vr = {r["office"]: r for r in _rows(conn, "SELECT * FROM v_vr_pace")}
-    qc = {r["office"]: r for r in _rows(conn, "SELECT office, shifts, flags, flags_per_100_shifts FROM v_qc_weekly WHERE week_start = %s",
-                                         (week,))}  # includes the view's 'All offices' row
+    cost = {r["office"]: r["cost_per_door"] for r in _rows(conn, both("v_cost_per_door"))}
+    vr = {r["office"]: r for r in _rows(conn, both("v_vr_pace"))}
+    qc = {r["office"]: r for r in _rows(conn, f"SELECT * FROM ({both('v_qc_weekly')}) x WHERE week_start = %s", (week,))}
     out = []
     for office in OFFICES:
         p, v, q = pace.get(office, {}), vr.get(office, {}), qc.get(office, {})

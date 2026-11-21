@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import datetime as dt
 import decimal
+import re
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -14,50 +15,93 @@ from . import db, retrieval, sql_guard
 MAX_ROWS = 200  # rows fetched from the database
 MODEL_ROWS = 60  # rows shown to the model
 
-# Metric views the get_view tool can return, with the order rows come back in.
-VIEWS = {
+# Metric views the get_view tool can return, with the order rows come back in. Office views have one row per office
+# (per week or day where they have one); program totals are in the matching *_total view, never mixed in.
+_OFFICE_VIEWS = {
     "v_office_pace": "office",
     "v_contact_rates": "week_start DESC, office",
     "v_cost_per_door": "cost_per_door DESC",
     "v_weekly_report": "week_start DESC, office",
+    "v_weekly_pace": "week_start DESC, office",
+    "v_weekly_shifts": "week_start DESC, program, office",
+    "v_vr_weekly": "week_start DESC, office",
+    "v_gotv_staff": "office",
+    "v_turf_summary": "office, coverage, density",
+    "v_qc_weekly": "week_start DESC, office",
+    "v_vr_pace": "office",
+    "v_qc_call_outcomes": "office, calls DESC",
+    "v_daily_doors": "knock_date DESC, office",
+}
+VIEWS = {
+    **_OFFICE_VIEWS,
+    **{f"{v}_total": order.replace(", office", "").replace("office, ", "").replace("office", "1")
+       for v, order in _OFFICE_VIEWS.items()},
     "v_precinct_coverage": "pct_touched, doors_per_sq_mi DESC",
     "v_site_options": "avg_km_to_untouched_doors",
     "v_canvasser_status": "active DESC, days_worked DESC",
-    "v_gotv_staff": "office",
-    "v_turf_summary": "office, coverage, density",
     "v_qc_flags_detail": "flag_date DESC, full_name",
-    "v_qc_weekly": "week_start DESC, office",
-    "v_vr_pace": "office",
     "v_vr_canvassers": "duplicate_cards DESC",
-    "v_qc_call_outcomes": "office, calls DESC",
     "v_weekly_hours": "week_start DESC, paid_hours DESC NULLS LAST",
     "v_shifts_to_fix": "shift_date DESC",
-    "v_daily_doors": "knock_date DESC, office",
 }
-WEEK_COLUMN = {"v_contact_rates", "v_weekly_report", "v_qc_weekly", "v_weekly_hours", "v_shifts_to_fix", "v_qc_flags_detail"}
-OFFICE_COLUMN = set(VIEWS) - {"v_site_options"}
+_WEEKLY = {"v_contact_rates", "v_weekly_report", "v_weekly_pace", "v_weekly_shifts", "v_vr_weekly", "v_qc_weekly"}
+WEEK_COLUMN = _WEEKLY | {f"{v}_total" for v in _WEEKLY} | {"v_weekly_hours", "v_shifts_to_fix", "v_qc_flags_detail"}
+OFFICE_COLUMN = {v for v in VIEWS if not v.endswith("_total")} - {"v_site_options"}
 ALL_OFFICES = {"all", "all offices", "all_offices", "any", "*", "program", "total"}
+OFFICES = ["Northside", "Eastgate", "Harbor"]
+WEEKS = ["2026-09-21", "2026-09-28", "2026-10-05", "2026-10-12"]  # Mondays; data runs Sep 21 to Sun Oct 18
+DATA_START, DATA_END = "2026-09-21", "2026-10-18"
+
+# What one row of each view is, shown with its results so the model knows the grain before using the numbers.
+VIEW_NOTES = {
+    "v_office_pace": "one row per office, to date (Sep 21 to Oct 18); doors_untouched = turf doors never knocked",
+    "v_contact_rates": "one row per office per week (week_start = Monday)",
+    "v_cost_per_door": "one row per office, GOTV wages and doors to date",
+    "v_weekly_report": "one row per office per week (week_start = Monday); the client report",
+    "v_weekly_pace": "one row per office per week: door goal, doors, contacts for that week",
+    "v_weekly_shifts": "one row per office, program and week; avg_shift_hours counts only shifts with a clock out",
+    "v_vr_weekly": "one row per office per week: valid registration cards, hours, cards per hour",
+    "v_gotv_staff": "one row per office, GOTV canvassers only",
+    "v_turf_summary": "one row per office, coverage band and density band",
+    "v_qc_weekly": "one row per office per week; flags per 100 GOTV shifts",
+    "v_vr_pace": "one row per office, registration to date; last_7d = Oct 12 to 18 (this week)",
+    "v_qc_call_outcomes": "one row per office per call outcome",
+    "v_daily_doors": "one row per office per knocking day",
+    "v_precinct_coverage": "one row per precinct",
+    "v_site_options": "one row per candidate site for a new office",
+    "v_canvasser_status": "one row per person (GOTV and registration)",
+    "v_qc_flags_detail": "one row per QC flag",
+    "v_vr_canvassers": "one row per registration canvasser",
+    "v_weekly_hours": "one row per person per week; shifts_with_hours excludes shifts with no clock out",
+    "v_shifts_to_fix": "one row per shift not yet approved",
+}
+VIEW_NOTES.update({f"{v}_total": "the program total (all offices): " + VIEW_NOTES[v].replace("one row per office, ", "")
+                   .replace("one row per office per ", "one row per ").replace("one row per office ", "one row ")
+                   for v in _OFFICE_VIEWS})
 
 TOOL_SPECS = [
     {
         "name": "get_view",
         "description": (
-            "Answers: program metrics that already have a view, read as is. Pace, projection and shortfall by office, "
-            "shifts needed, contact rate by week, cost per door, the weekly client report, turf coverage by precinct, "
-            "remaining turf by coverage and density, sites for a new office, staff status per person, GOTV staff "
-            "counts (active, regulars, one-day hires), QC flags with evidence, QC rate by week, "
-            "registration pace and cards per hour, duplicates by canvasser, QC call outcomes, weekly hours and overtime, "
-            "shifts waiting for a fix or approval. "
-            "Doesn't answer: one specific day or shift, custom joins, rules or definitions. "
-            'Example: {"view": "v_office_pace"}. '
-            "Use this before query_program_data; switch to SQL only when no view has the columns you need."
+            "Call this first for any number about the program. It returns a metric view's rows as they are: pace, "
+            "projection and shortfall, untouched doors, shifts needed, doors and goal by week, contact rate by week, "
+            "cost per door, the weekly client report, shifts, shift length and wages by week, turf coverage, sites for "
+            "a new office, staff counts (active, regulars, one-day hires), QC flags and QC rate by week, registration "
+            "pace and cards per hour by week, duplicates, QC call outcomes, weekly hours and overtime, shifts waiting "
+            "for a fix or approval. Office views have one row per office; for the whole program read the matching "
+            "*_total view. "
+            "Don't call it for: one specific day or shift, custom joins, rules or definitions. "
+            'Example: {"view": "v_office_pace_total"}.'
         ),
         "parameters": {
             "type": "object",
             "properties": {
                 "view": {"type": "string", "enum": sorted(VIEWS)},
-                "office": {"type": "string", "description": "Only when the question names one office: 'Northside', 'Eastgate' or 'Harbor'. Leave it out otherwise."},
-                "week_start": {"type": "string", "description": "Only when the question names one week, for weekly views. Leave it out to compare weeks. This week is 2026-10-12, last week 2026-10-05."},
+                "office": {"type": "string", "enum": OFFICES,
+                           "description": "Only when the question names one office. Leave it out otherwise."},
+                "week_start": {"type": "string", "enum": WEEKS,
+                               "description": "Only when the question names one week, for weekly views. Leave it out "
+                                              "to compare weeks. This week is 2026-10-12, last week 2026-10-05."},
             },
             "required": ["view"],
         },
@@ -65,10 +109,10 @@ TOOL_SPECS = [
     {
         "name": "query_program_data",
         "description": (
-            "Answers: numbers no view covers, such as one day (for example Oct 12), one shift, one canvasser's knocks, "
-            "or a join across tables. Runs one read-only Postgres SELECT over the tables and views in the system prompt; "
-            "results are capped at 200 rows. "
-            "Doesn't answer: rules or definitions, or anything a view already gives as a column. "
+            "Call this only when no view has the number: one day (for example Oct 12), one shift, one canvasser's "
+            "knocks, or a join across tables. Runs one read-only Postgres SELECT over the tables and views in the "
+            "system prompt; results are capped at 200 rows. "
+            "Don't call it for rules or definitions, or for anything a view already gives as a column. "
             "Example: {\"sql\": \"SELECT office, doors, attempts, rolled_back_attempts FROM v_daily_doors WHERE knock_date = '2026-10-16'\"}."
         ),
         "parameters": {
@@ -80,11 +124,11 @@ TOOL_SPECS = [
     {
         "name": "search_documents",
         "description": (
-            "Answers: definitions, rules, methods and the reasons behind numbers: how doors, attempts and contacts are "
+            "Call this for definitions, rules, methods and the reasons behind numbers: how doors, attempts and contacts are "
             "counted, why the client's report differs from ours, QC rules (flash knocking, householding, gaps, apartments), "
             "the program plan (goals, projection method, regulars, more doors or a second pass, a new office), payroll "
             "rules (overtime, approval, deadline), client reporting and the registration drive. "
-            "Doesn't answer: numbers. "
+            "Don't call it for numbers. "
             'Example: {"query": "how overtime is approved"}. '
             "Use it with a data tool whenever the question asks why, or uses a program term that needs a definition."
         ),
@@ -120,6 +164,22 @@ def _plain(v):
 
 def _fmt(v) -> str:
     return "" if v is None else str(v)
+
+
+DATE_LITERAL = re.compile(r"'(20\d\d-\d\d-\d\d)'")
+
+
+def date_lint(sql: str, tables: list[str]) -> str:
+    """A hint when a query's dates fall outside the data (Sep 21 to Oct 18; goals run to Nov 3)."""
+    dates = DATE_LITERAL.findall(sql)
+    late = [d for d in dates if d > DATA_END]
+    early = [d for d in dates if d < DATA_START]
+    if late and "daily_goals" not in tables:
+        return (f"\n(Note: {', '.join(sorted(set(late)))} is after the last day of data, {DATA_END}. "
+                "This week is Oct 12 to 18 and last week Oct 5 to 11.)")
+    if early:
+        return f"\n(Note: {', '.join(sorted(set(early)))} is before the first day of data, {DATA_START}.)"
+    return ""
 
 
 class Toolbox:
@@ -185,7 +245,10 @@ class Toolbox:
                     "Run it again without the extra conditions; do not answer with numbers you have not seen.)")
         elif len(rows) > len(shown) or truncated:
             note = f"\n({len(rows)}{'+' if truncated else ''} rows, first {len(shown)} shown; filter or aggregate to see the rest)"
-        content = f"tables: {', '.join(checked.tables)}\n" + "\n".join(lines) + note
+        about = [f"{t}: {VIEW_NOTES[t]}" for t in checked.tables if t in VIEW_NOTES]
+        note += date_lint(sql, checked.tables) if tool == "query_program_data" else ""
+        content = (f"tables: {', '.join(checked.tables)}\n" + "".join(f"rows of {a}\n" for a in about)
+                   + "\n".join(lines) + note)
         summary = f"{len(rows)}{'+' if truncated else ''} row{'s' if len(rows) != 1 else ''} from {', '.join(checked.tables) or 'query'}"
         return ToolResult(tool, args, True, content, summary, checked.tables, columns, rows)
 

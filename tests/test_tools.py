@@ -10,8 +10,18 @@ def test_query_returns_rows_and_tables():
     assert r.ok
     assert r.tables == ["v_office_pace"]
     assert r.columns == ["office", "goal_total"]
-    assert [row[0] for row in r.rows] == ["All offices", "Eastgate", "Harbor", "Northside"]
+    assert [row[0] for row in r.rows] == ["Eastgate", "Harbor", "Northside"]
     assert "tables: v_office_pace" in r.content
+    assert "rows of v_office_pace: one row per office" in r.content  # results say what a row is
+
+
+def test_dates_outside_the_data_get_a_hint():
+    late = Toolbox().run("query_program_data", {"sql": "SELECT sum(doors) FROM v_daily_doors WHERE knock_date >= '2026-10-19'"})
+    assert late.ok and "after the last day of data, 2026-10-18" in late.content
+    goals = Toolbox().run("query_program_data", {"sql": "SELECT sum(door_goal) FROM daily_goals WHERE goal_date > '2026-10-18'"})
+    assert "after the last day of data" not in goals.content  # goals run to Nov 3
+    early = Toolbox().run("query_program_data", {"sql": "SELECT count(*) FROM shifts WHERE shift_date < '2026-09-01'"})
+    assert "before the first day of data" in early.content
 
 
 def test_rejected_query_is_reported_to_the_model():
@@ -65,7 +75,7 @@ def test_guard_allow_list_matches_what_the_reader_can_see():
             "SELECT table_name FROM information_schema.tables WHERE table_schema = 'program'").fetchall()}
         for t in ALLOWED_TABLES:
             conn.execute(f"SELECT * FROM {t} LIMIT 1")
-    assert visible == ALLOWED_TABLES
+    assert visible == ALLOWED_TABLES  # the internal all_* views are not visible to the reader
 
 
 def test_unknown_tool():

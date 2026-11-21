@@ -31,6 +31,7 @@ PROVENANCE_ASK = ("Return your answer above as JSON lines. Keep each sentence or
                   "rule comes from, or 'none' if the line states no figure or rule.")
 WITHHELD = ("I can't confirm that from the program data or documents. My draft answer used numbers that aren't in "
             "the query results, so I'm not giving it.")
+EMPTY_NUDGE = "Your last reply was empty. Answer the question now from the tool results above, with citations."
 GROUNDING_NUDGE = ("These numbers in your answer do not appear in any tool result: {numbers}. Rewrite the answer using "
                    "only numbers from the tool results above. If you need a number you don't have, query for it first.")
 INLINE_CALL = re.compile(r"\{\s*\"name\"\s*:\s*\"(query_program_data|search_documents)\".*\}", re.DOTALL)
@@ -248,11 +249,16 @@ class Assistant:
         calls_log: list[dict] = []
         reply = Reply("")
         steps = 0
-        nudged = revised = looked = cite_fixed = False
+        nudged = revised = looked = cite_fixed = emptied = False
         self.toolbox.reset()
         for steps in range(1, MAX_STEPS + 1):
             reply = self.provider.chat(messages, TOOL_SPECS)
             calls = reply.tool_calls or inline_tool_calls(reply.content)
+            # An empty completion (no text, no tool call) gets one retry before anything else.
+            if not calls and not (reply.content or "").strip() and not emptied and steps < MAX_STEPS:
+                emptied = True
+                messages.append({"role": "user", "content": EMPTY_NUDGE})
+                continue
             if not calls:
                 # Giving up right after a failed query usually means a fixable SQL mistake, not missing data.
                 if (REFUSAL.search(reply.content or "") and results and not results[-1].ok and not nudged
