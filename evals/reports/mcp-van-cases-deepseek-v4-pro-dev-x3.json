@@ -34,11 +34,11 @@
     "facts_n": 3,
     "citation": 1.0,
     "citation_n": 3,
-    "refusal": 0.833,
+    "refusal": 1.0,
     "refusal_n": 4,
-    "pass": 0.833,
+    "pass": 1.0,
     "pass_n": 4,
-    "pass_all": 0.75,
+    "pass_all": 1.0,
     "pass_all_n": 4,
     "avg_latency_ms": 7838
   },
@@ -1370,9 +1370,9 @@
         "retrieval": null,
         "facts": null,
         "citation": null,
-        "refusal": 0.333,
-        "pass": 0.333,
-        "pass_all": 0.0
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [],
       "answer": {
@@ -1480,8 +1480,8 @@
             "retrieval": null,
             "facts": null,
             "citation": null,
-            "refusal": 0.0,
-            "pass": 0.0
+            "refusal": 1.0,
+            "pass": 1.0
           },
           "facts": [],
           "answer": {
@@ -1612,8 +1612,8 @@
             "retrieval": null,
             "facts": null,
             "citation": null,
-            "refusal": 0.0,
-            "pass": 0.0
+            "refusal": 1.0,
+            "pass": 1.0
           },
           "facts": [],
           "answer": {
@@ -1721,5 +1721,6 @@
     "prompt_cache_hit_tokens": 202624,
     "prompt_cache_miss_tokens": 13330
   },
-  "api_calls": 33
+  "api_calls": 33,
+  "rescored_at": "2026-11-21T03:19:27+00:00"
 }

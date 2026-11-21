@@ -34,11 +34,11 @@
     "facts_n": 3,
     "citation": 0.778,
     "citation_n": 3,
-    "refusal": 0.667,
+    "refusal": 0.834,
     "refusal_n": 4,
-    "pass": 0.667,
+    "pass": 0.834,
     "pass_n": 4,
-    "pass_all": 0.25,
+    "pass_all": 0.5,
     "pass_all_n": 4,
     "avg_latency_ms": 6676
   },
@@ -1447,9 +1447,9 @@
         "retrieval": null,
         "facts": null,
         "citation": null,
-        "refusal": 0.333,
-        "pass": 0.333,
-        "pass_all": 0.0
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [],
       "answer": {
@@ -1656,8 +1656,8 @@
             "retrieval": null,
             "facts": null,
             "citation": null,
-            "refusal": 0.0,
-            "pass": 0.0
+            "refusal": 1.0,
+            "pass": 1.0
           },
           "facts": [],
           "answer": {
@@ -1765,5 +1765,6 @@
     "prompt_cache_hit_tokens": 227456,
     "prompt_cache_miss_tokens": 20944
   },
-  "api_calls": 38
+  "api_calls": 38,
+  "rescored_at": "2026-11-21T03:19:13+00:00"
 }

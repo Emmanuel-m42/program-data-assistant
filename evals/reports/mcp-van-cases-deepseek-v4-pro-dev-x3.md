@@ -7,9 +7,9 @@ Model `openai_compat/deepseek-v4-pro`, commit `6155e6e`, 2026-11-21T02:58:02+00:
 | tool_choice | 1.00 | 3 |
 | facts | 1.00 | 3 |
 | citation | 1.00 | 3 |
-| refusal | 0.83 | 4 |
-| pass | 0.83 | 4 |
-| pass_all | 0.75 | 4 |
+| refusal | 1.00 | 4 |
+| pass | 1.00 | 4 |
+| pass_all | 1.00 | 4 |
 
 Average latency 7.8 s per question.
 
@@ -18,7 +18,7 @@ Average latency 7.8 s per question.
 | v01 | VAN | 1.00 | n/a | 1.00 | 1.00 | 1.00 | 1.00 | 8 |
 | v02 | VAN | 1.00 | n/a | 1.00 | 1.00 | 1.00 | 1.00 | 6 |
 | v03 | VAN | 1.00 | n/a | 1.00 | 1.00 | 1.00 | 1.00 | 4 |
-| v04 | VAN | n/a | n/a | n/a | n/a | 0.33 | 0.33 | 15 |
+| v04 | VAN | n/a | n/a | n/a | n/a | 1.00 | 1.00 | 15 |
 
 ## Missed facts
 

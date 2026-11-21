@@ -7093,5 +7093,6 @@
     "prompt_cache_hit_tokens": 632832,
     "prompt_cache_miss_tokens": 67603
   },
-  "api_calls": 103
+  "api_calls": 103,
+  "rescored_at": "2026-11-21T03:19:52+00:00"
 }
