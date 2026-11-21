@@ -21,7 +21,7 @@ def test_pda_demo_rebuilds_the_scoreboard_and_notes(tmp_path, monkeypatch):
     data = json.loads(out.read_text())
     after = data["scoreboard"]["after"]
     assert (after["tuned"]["pass"], after["tuned"]["pass_all_runs"]) == (12, 12)
-    assert (after["heldout"]["pass"], after["heldout"]["pass_all_runs"]) == (11, 11)
+    assert (after["heldout"]["pass"], after["heldout"]["pass_all_runs"]) == (12, 12)  # q12 counts since the scorer reads words
     by = {q["id"]: q for q in data["questions"]}
     assert by["q13"]["eval"]["note"] == "reads its rows backwards" and by["q13"]["eval"]["after"]["pass"] == 0
     assert "note" not in by["q01"]["eval"]
