@@ -16,6 +16,17 @@ describe('citations', () => {
 		expect(sourceIndex({ type: 'doc', id: 'qc-rules#gaps' }, sources)).toBeNull();
 	});
 
+	it('map VAN citations to the matching tool call', () => {
+		const withVan: Source[] = [
+			...sources,
+			{ type: 'mcp', server: 'ngpvan-mcp', tool: 'turf_door_counts', args: {}, result: '{"doors": 437}', audit: { status: 'ok' } }
+		];
+		expect(sourceIndex({ type: 'van', id: 'turf_door_counts' }, withVan)).toBe(3);
+		expect(sourceIndex({ type: 'van', id: 'list_events' }, withVan)).toBeNull();
+		const t = inline('437 doors on VAN saved lists [van:turf_door_counts].', withVan);
+		expect(t.find((x) => x.kind === 'cite')).toEqual({ kind: 'cite', cite: { type: 'van', id: 'turf_door_counts' }, source: 3 });
+	});
+
 	it('become chip tokens, including several inside one bracket', () => {
 		const t = inline('Short by 3,204 [table:v_office_pace] and [table: v_daily_doors, doc:qc-rules#flash-knocking].', sources);
 		expect(t.filter((x) => x.kind === 'cite').map((x) => (x.kind === 'cite' ? [x.cite.id, x.source] : null))).toEqual([

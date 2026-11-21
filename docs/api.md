@@ -36,6 +36,16 @@ Response:
 
 Citations in `answer` look like `[table:<name>]` and `[doc:<passage id>]`. Each one matches a `sources` entry: `rows` by `table` (a comma-separated list when one query read several tables), `passage` by `doc`.
 
+With the VAN tools on (`PDA_VAN_MCP=demo`, the MCP version on the `mcp-van` branch), answers can also cite `[van:<tool>]`, which matches an `mcp` source:
+
+```json
+{"type": "mcp", "server": "ngpvan-mcp", "tool": "turf_door_counts", "args": {"folder_name": "Northside"},
+ "result": "{\n  \"folders\": [ ... ]\n}",
+ "audit": {"ts": "2026-10-18T...", "tool": "turf_door_counts", "status": "ok", "duration_ms": 2.4, "van_requests": 2, "items": 1}}
+```
+
+`result` is exactly what the model saw, already masked by ngpvan-mcp (no phone numbers, emails, addresses or birth dates; names shortened). `audit` is the line ngpvan-mcp wrote to its own audit log for that call. This app never sees unmasked VAN data. `GET /health` lists the VAN tools when they are on.
+
 ## GET /offices
 
 Office tabs. One entry per office plus `All offices`, computed straight from the metric views, no model involved.

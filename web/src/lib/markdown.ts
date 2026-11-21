@@ -14,21 +14,24 @@ export type Block =
 	| { kind: 'h'; inline: Inline[] }
 	| { kind: 'ul'; items: Inline[][] };
 
-const CITE = /\[\s*((?:table|doc)\s*:[^\]]+)\]/g;
+const CITE = /\[\s*((?:table|doc|van)\s*:[^\]]+)\]/g;
 
-/** The source index a citation points to: rows by table name (a source may list several), passages by doc id. */
+/** The source index a citation points to: rows by table name (a source may list several), passages by doc id,
+ * VAN tool calls by tool name. */
 export function sourceIndex(cite: Citation, sources: Source[]): number | null {
 	const i = sources.findIndex((s) =>
 		cite.type === 'table'
 			? s.type === 'rows' && s.table.split(',').map((t) => t.trim()).includes(cite.id)
-			: s.type === 'passage' && s.doc === cite.id
+			: cite.type === 'van'
+				? s.type === 'mcp' && s.tool === cite.id
+				: s.type === 'passage' && s.doc === cite.id
 	);
 	return i === -1 ? null : i;
 }
 
 function parseCites(inner: string): Citation[] {
-	return [...inner.matchAll(/(table|doc)\s*:\s*([A-Za-z0-9_#-]+)/g)].map((m) => ({
-		type: m[1] as 'table' | 'doc',
+	return [...inner.matchAll(/(table|doc|van)\s*:\s*([A-Za-z0-9_#-]+)/g)].map((m) => ({
+		type: m[1] as Citation['type'],
 		id: m[2].replace(/[-#]+$/, '')
 	}));
 }

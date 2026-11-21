@@ -22,10 +22,30 @@ export interface PassageSource {
 	text: string;
 }
 
-export type Source = RowsSource | PassageSource;
+/** One VAN tool call through ngpvan-mcp. `result` is exactly what the model saw, already masked by the server. */
+export interface McpSource {
+	type: 'mcp';
+	server: string;
+	tool: string;
+	args: Record<string, unknown>;
+	result: string;
+	audit: {
+		ts?: string;
+		tool?: string;
+		status?: string;
+		duration_ms?: number;
+		van_requests?: number;
+		items?: number;
+		truncated?: boolean;
+		error_kind?: string;
+		[key: string]: unknown;
+	} | null;
+}
+
+export type Source = RowsSource | PassageSource | McpSource;
 
 export interface Citation {
-	type: 'table' | 'doc';
+	type: 'table' | 'doc' | 'van';
 	id: string;
 }
 

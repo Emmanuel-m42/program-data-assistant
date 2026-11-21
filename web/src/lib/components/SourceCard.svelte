@@ -3,6 +3,12 @@
 
 	let { source, index, highlighted = false }: { source: Source; index: number; highlighted?: boolean } = $props();
 
+	function argsText(args: Record<string, unknown>): string {
+		return Object.entries(args)
+			.map(([k, v]) => `${k}=${JSON.stringify(v)}`)
+			.join(', ');
+	}
+
 	function cell(v: unknown): string {
 		if (v === null || v === undefined) return '';
 		if (typeof v === 'number') return Number.isInteger(v) ? v.toLocaleString('en-US') : String(v);
@@ -36,6 +42,22 @@
 				<summary>SQL</summary>
 				<pre><code>{source.sql}</code></pre>
 			</details>
+		{/if}
+	{:else if source.type === 'mcp'}
+		<header>
+			<span class="kind">VAN tool</span>
+			<span class="name">{source.tool}</span>
+			<span class="note">via {source.server}</span>
+		</header>
+		<pre class="call"><code>{source.tool}({argsText(source.args)})</code></pre>
+		<p class="label">Result as the model saw it (masked by the server)</p>
+		<pre class="result"><code>{source.result}</code></pre>
+		{#if source.audit}
+			<p class="audit">
+				Audit: {source.audit.status ?? 'n/a'}{#if source.audit.items !== undefined}, {source.audit.items} items{/if}{#if source.audit.van_requests !== undefined}, {source.audit.van_requests} VAN requests{/if}{#if source.audit.duration_ms !== undefined}, {source.audit.duration_ms} ms{/if}{#if source.audit.truncated}, truncated{/if}{#if source.audit.error_kind}, {source.audit.error_kind}{/if}{#if source.audit.ts}, {source.audit.ts}{/if}
+			</p>
+		{:else}
+			<p class="audit">No audit line was returned for this call.</p>
 		{/if}
 	{:else}
 		<header>
@@ -114,6 +136,27 @@
 	details {
 		margin-top: 0.4rem;
 		font-size: 0.8rem;
+	}
+	.call,
+	.result {
+		margin: 0.3rem 0;
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+		background: var(--code);
+		padding: 0.5rem;
+		border-radius: 6px;
+		font: 0.76rem var(--mono);
+	}
+	.result {
+		max-height: 18rem;
+		overflow: auto;
+	}
+	.label,
+	.audit {
+		margin: 0.3rem 0 0;
+		font-size: 0.75rem;
+		color: var(--ink-soft);
+		overflow-wrap: anywhere;
 	}
 	pre {
 		white-space: pre-wrap;
