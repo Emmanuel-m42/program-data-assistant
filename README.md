@@ -101,6 +101,33 @@ Settings:
 
 Nothing has been deployed. The Terraform passes `validate`, `tflint` and `checkov` and plans against a made-up project; the Docker images have not been built, because the build machine has no Docker.
 
+## MCP version: VAN tools through ngpvan-mcp (this branch)
+
+This branch (`mcp-van`) is a separate version. Its scores are reported separately, and the published results below (including 11 of 14 on the held-out half) belong to the version without VAN tools.
+
+The assistant also acts as an MCP client. With `PDA_VAN_MCP=demo` it launches [ngpvan-mcp](https://github.com/Emmanuel-m42/ngpvan-mcp) over stdio with its built-in fictional Riverbend data, lists the server's tools and offers the read-only ones to the model as `van_*`. It never offers the write tool, even if the server has it turned on. VAN answers people, events and shifts, signups, saved lists, survey questions and activist codes; Postgres still answers doors knocked, pace, QC and payroll.
+
+- Privacy: ngpvan-mcp masks every result before it leaves the server (no phone numbers, emails, addresses or birth dates; names shortened to a first name and initial). This app and the model only ever see that masked text.
+- Sources: each VAN call becomes an `mcp` source with the server, tool, arguments, the masked result as the model saw it, and the audit line ngpvan-mcp wrote for the call. Answers cite it as `[van:<tool>]`, and the web app shows it as a card.
+- Two kinds of doors: VAN saved-list doors are the walk lists cut for upcoming canvasses; precinct turf and doors knocked come from Postgres. The prompt tells the model to say which one a number is.
+- The two datasets line up: both are dated Oct 18, 2026, use the same office addresses, and share no surnames (ngpvan-mcp pinned at e5be227).
+
+Run it: `uv sync --extra van`, then `PDA_VAN_MCP=demo uv run uvicorn program_data_assistant.api:app`. `PDA_VAN_MCP_COMMAND` launches a different MCP server command instead.
+
+Evals for this version, with their own labels:
+
+| run | cases | label |
+| --- | --- | --- |
+| VAN-routed cases | 8 in `evals/cases_mcp_van.yaml` (4 dev, 4 held out, split fixed before tuning) | `mcp-van-cases-*` |
+| original 28 with VAN tools present, to check routing didn't regress | `evals/cases.yaml` | `mcp-van-original-*` |
+
+```bash
+uv run evals --van demo --cases evals/cases_mcp_van.yaml --label mcp-van-cases-<model> --repeat 3
+uv run evals --van demo --label mcp-van-original-<model> --repeat 3
+```
+
+Ground truth for the VAN cases comes from calling the ngpvan-mcp tool directly at eval time, never from the model. Results: pending; no model run yet.
+
 ## Evals
 
 `evals/cases.yaml` has 28 cases: the 19 demo questions, three paraphrases, three questions only the documents can answer, and three the assistant should refuse (turnout, a staff member's phone number, a past cycle). Each case lists the tools it needs, the passages a retriever should find, and the facts the answer has to contain. Numeric facts are SQL against the raw tables, written separately from the views, so ground truth never comes from the model or from the views it reads.
