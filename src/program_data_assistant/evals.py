@@ -119,6 +119,39 @@ def summarize(rows: list[dict]) -> dict:
     return out
 
 
+# Reporting groups, in order. The first held-out half (test) is contaminated: its misses were read while choosing
+# fixes. heldout_v2 is the fresh held-out set.
+GROUPS = {"dev": "dev (tuned)", "test": "old held-out (contaminated)", "heldout_v2": "new held-out"}
+
+
+def groups(rows: list[dict], splits: dict[str, str]) -> list[dict]:
+    """Per-group scores: pass and pass_all (pass^k) as case counts, the other metrics as means."""
+    out = []
+    for split, label in GROUPS.items():
+        g = [r for r in rows if splits.get(r["id"]) == split]
+        if not g:
+            continue
+        s = summarize(g)
+        out.append({"split": split, "label": label, "cases": len(g),
+                    "pass": int(round(sum(r["scores"]["pass"] for r in g))),
+                    "pass_all": int(sum(r["scores"].get("pass_all", r["scores"]["pass"]) for r in g)),
+                    **{m: s[m] for m in METRICS}, "avg_latency_ms": s["avg_latency_ms"]})
+    return out
+
+
+def group_table(gs: list[dict], repeat: int) -> list[str]:
+    lines = [f"| group | cases | pass | pass^{repeat} | tool choice | retrieval | facts | citation | refusal |",
+             "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
+    for g in gs:
+        lines.append(f"| {g['label']} | {g['cases']} | {g['pass']} of {g['cases']} | {g['pass_all']} of {g['cases']} | "
+                     + " | ".join(fmt(g[m]) for m in METRICS) + " |")
+    return lines
+
+
+def split_of() -> dict[str, str]:
+    return {c["id"]: c.get("split", "") for c in load_cases()[0]}
+
+
 def git_commit() -> str:
     try:
         return subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=db.REPO, capture_output=True, text=True,
@@ -145,6 +178,8 @@ def markdown(report: dict) -> str:
     for m in METRICS + ["pass", "pass_all"]:
         if s.get(m) is not None:
             lines.append(f"| {m} | {fmt(s[m])} | {s[f'{m}_n']} |")
+    if report.get("groups"):
+        lines += ["", "By group:", "", *group_table(report["groups"], report.get("repeat", 1))]
     lines += ["", f"Average latency {s['avg_latency_ms'] / 1000:.1f} s per question.", "",
               "| case | category | tool choice | retrieval | facts | citation | refusal | pass | latency s |",
               "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
@@ -171,12 +206,15 @@ def combine_scores(runs: list[dict]) -> dict:
 
 
 def run(label: str, provider: str | None, model: str | None, only: list[str] | None, out_dir: Path,
-        resume: bool = False, split: str | None = None, repeat: int = 1) -> dict:
+        resume: bool = False, split: list[str] | str | None = None, repeat: int = 1) -> dict:
     cases, defaults = load_cases()
+    splits = {c["id"]: c.get("split", "") for c in cases}
+    if isinstance(split, str):
+        split = [split]
     if only:
         cases = [c for c in cases if c["id"] in only]
     if split:
-        cases = [c for c in cases if c.get("split") == split]
+        cases = [c for c in cases if c.get("split") in split]
     with db.connect_admin() as conn:
         truth = compute_truth(conn, cases)
         retrieved = {c["id"]: [h["chunk_id"] for h in retrieval.search(conn, c["question"])] for c in cases}
@@ -195,9 +233,10 @@ def run(label: str, provider: str | None, model: str | None, only: list[str] | N
             "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
             "model": assistant.provider.name + "/" + assistant.provider.model,
             "commit": git_commit(),
-            "split": split or "all",
+            "split": "+".join(split) if split else "all",
             "repeat": repeat,
             "summary": summarize(rows),
+            "groups": groups(rows, splits),
             "cases": rows,
         }
 
@@ -241,6 +280,7 @@ def rescore(path: Path) -> dict:
             r["facts"] = first["facts"]
             r["scores"] = combine_scores([first["scores"]] + [x["scores"] for x in r.get("repeats", [])])
     report["summary"] = summarize(report["cases"])
+    report["groups"] = groups(report["cases"], {c["id"]: c.get("split", "") for c in cases})
     report["rescored_at"] = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
     path.write_text(json.dumps(report, indent=2, default=str))
     path.with_suffix(".md").write_text(markdown(report))
@@ -255,10 +295,18 @@ def main() -> None:
     ap.add_argument("--only", nargs="*", help="case ids to run")
     ap.add_argument("--out", default=str(REPORTS))
     ap.add_argument("--resume", action="store_true", help="continue from <label>.partial.json")
-    ap.add_argument("--split", choices=["dev", "test"], help="run only the dev or the held-out test cases")
+    ap.add_argument("--split", nargs="+", choices=list(GROUPS),
+                    help="run only these splits: dev, test (old held-out, contaminated), heldout_v2 (new held-out)")
     ap.add_argument("--repeat", type=int, default=1, help="runs per case; scores are means, pass_all is pass^k")
     ap.add_argument("--rescore", help="re-score a saved report with the current cases instead of running the model")
+    ap.add_argument("--groups", nargs="+", metavar="REPORT",
+                    help="print the per-group table (dev, old held-out, new held-out) for one or more saved reports")
     args = ap.parse_args()
+    if args.groups:
+        reports = [json.loads(Path(p).read_text()) for p in args.groups]
+        rows = [r for rep in reports for r in rep["cases"]]
+        print("\n".join(group_table(groups(rows, split_of()), max(rep.get("repeat", 1) for rep in reports))))
+        return
     if args.rescore:
         report = rescore(Path(args.rescore))
         s = report["summary"]
