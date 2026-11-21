@@ -12,7 +12,7 @@ What's in this repository:
 - **Backend**: Python and FastAPI, with read-only tools over Postgres and pgvector document search.
 - **Model**: a self-hosted open model through Ollama (qwen3.8:27b in the results below), with Claude on the Anthropic API or Vertex AI as a configuration switch.
 - **Infrastructure**: Terraform for Google Cloud in `infra/` (Cloud Run, Cloud SQL Postgres with pgvector, Secret Manager, Artifact Registry, per-service accounts) and Dockerfiles. Checked with `terraform validate` and a plan against a placeholder project; never applied, so nothing is deployed.
-- **Evals**: 28 test questions scored against SQL ground truth, half of them held out from tuning.
+- **Evals**: 43 test questions scored against SQL ground truth: 14 tuned on, 14 first held out (now contaminated), and 15 fresh held-out questions written and committed before the latest fixes.
 
 ## Why
 
@@ -88,7 +88,7 @@ Settings:
 | `src/program_data_assistant/` | FastAPI app (`api.py`), agent loop, tools, SQL guard, retrieval, model providers, eval runner, data generator and loader |
 | `src/program_data_assistant/sql/schema.sql` | tables, metric views, the read-only role |
 | `data/csv/`, `corpus/` | the fictional program data and its six documents |
-| `evals/` | `cases.yaml` (28 cases with a dev/held-out split) and every report |
+| `evals/` | `cases.yaml` (43 cases: dev, the first held-out split and the fresh `heldout_v2` set) and every report |
 | `demo/` | recorded runs the web app's demo mode uses |
 | `web/` | SvelteKit and TypeScript front end |
 | `docs/api.md` | the API contract |
@@ -104,7 +104,7 @@ Nothing has been deployed. The Terraform passes `validate`, `tflint` and `checko
 
 ## Evals
 
-`evals/cases.yaml` has 28 cases: the 19 demo questions, three paraphrases, three questions only the documents can answer, and three the assistant should refuse (turnout, a staff member's phone number, a past cycle). Each case lists the tools it needs, the passages a retriever should find, and the facts the answer has to contain. Numeric facts are SQL against the raw tables, written separately from the views, so ground truth never comes from the model or from the views it reads.
+`evals/cases.yaml` has 43 cases. The first 28: the 19 demo questions, three paraphrases, three questions only the documents can answer, and three the assistant should refuse (turnout, a staff member's phone number, a past cycle). Then 15 fresh held-out questions (n01 to n15), described below. Each case lists the tools it needs, the passages a retriever should find, and the facts the answer has to contain. Numeric facts are SQL against the raw tables, written separately from the views, so ground truth never comes from the model or from the views it reads.
 
 The first held-out half (`split: test`) is now contaminated: its misses were read and discussed while choosing the next fixes. It stays on record and is still reported, labelled that way. A fresh held-out set of 15 new questions (`split: heldout_v2`, n01 to n15: the same categories plus two refusals, ground truth by SQL on the raw tables) was written and committed before any of those fixes, so the git history shows the order.
 
@@ -121,6 +121,12 @@ The first held-out half (`split: test`) is now contaminated: its misses were rea
 
 `uv run evals --rescore evals/reports/<name>.json` re-scores saved answers with the current cases without calling the model.
 
+Measurement fixes since the first reports, each followed by a rescore of every saved report (no model calls):
+
+- **q13 case fix**: q13 also checks the program-wide QC direction and rates. Answers that read their own rows backwards had passed on the Harbor numbers alone.
+- **Scorer fix, counts written as words**: the number scorer reads zero to twenty and "a dozen". Only q12 changed, in the two qwen3.8:27b runs ("Four open flags").
+- **Scorer fix, declines**: refusal also counts a clear decline in the answer's first sentence ("I can't provide...", "not available"), unless that sentence carries data. No saved report changed.
+
 ### An outside agent as the model
 
 A coding agent (for example a Claude subagent) can be the model without an API key. `uv run pda-agent-tool setup` loads the data into `PDA_PGDATA`; `pda-agent-tool prompt` prints the system prompt and tool specs exactly as the app sends them; `pda-agent-tool <tool> '<json args>' --case <id> --trace run1.jsonl` runs the app's own Toolbox (SQL guard, read-only role, statement timeout, row caps, the repeated-query check within a case), prints exactly what the model would get back and appends the call to the trace. The agent writes its final answers to a JSON file, `{"q01": "answer", ...}`. Scoring:
@@ -130,11 +136,34 @@ uv run evals --provider agent-trace --split dev --trace run1.jsonl --answers run
   --trace run2.jsonl --answers run2.json --label claude-agent_dev
 ```
 
-Each traced call is replayed through a fresh Toolbox and has to return what the agent was shown, or the case fails. Then the app's after-answer steps run (citations to results the agent never got are dropped, a draft with two or more unsupported numbers is withheld) and the usual scorer applies; several trace and answer pairs give pass^k. What doesn't apply: the agent loop's in-loop guardrail rewrites (the retry nudge after a failed query, the grounding, look-first and citation nudges) and its 7-step cap, because the agent runs its own loop, and latency isn't measured. Reports label these runs "Claude Opus 5.5 as the agent through the tool CLI (OpenCode subagent; same tools and prompt, not the app's own agent loop)".
+Each traced call is replayed through a fresh Toolbox and has to return what the agent was shown, or the case fails. Then the app's after-answer steps run (citations to results the agent never got are dropped, a draft with two or more unsupported numbers is withheld) and the usual scorer applies; several trace and answer pairs give pass^k. What doesn't apply: the agent loop's in-loop guardrail rewrites (the retry nudge after a failed query, the grounding, look-first and citation nudges) and its 7-step cap, because the agent runs its own loop, and latency isn't measured. Reports label these runs "Claude Opus 5.5 as the agent through the tool CLI (same tools and prompt, not the app's own agent loop; the in-loop guardrail rewrites don't apply)". Trace lines under a case id that isn't in `cases.yaml` are ignored. The Claude runs' traces and answers are in `evals/reports/claude-agent-runs/`, so their scores can be replayed.
+
+## Model comparison
+
+Three groups of questions, scored the same way:
+
+- **Tuned** (14): the half the prompts and tools were adjusted against.
+- **Old held-out** (14, contaminated): held out from the later tuning, but its misses were read while choosing the latest fixes, so it no longer says much about new questions.
+- **Fresh held-out** (15): new questions in the same categories, plus two refusals, written and committed (`heldout_v2` in `cases.yaml`) before the latest fixes: the regulars definition in the data layer, program totals next to office comparisons, and the scorer reading counts written as words. The git history shows that order.
+
+"Before" and "after" are the code before and after those fixes, run on the same model. Each cell is cases passed, then pass^3 (cases passed on all 3 runs).
+
+| model | code | tuned | old held-out (contaminated) | fresh held-out |
+| --- | --- | --- | --- | --- |
+| Claude Opus 5.5 as the agent through the tool CLI | after | 14 of 14, pass^3 14 | not run | 15 of 15, pass^3 15 |
+| qwen3.8:27b Q4_K_M, RTX 3080 laptop (the published run) | before | 12 of 14, pass^3 12 | 12 of 14, pass^3 12 (11 of 14 as first scored) | not run |
+| qwen3.8:27b Q4_K_M, GPD (Ryzen AI Max+ 395, Radeon 8060S) | before | running | running | running |
+| qwen3.8:27b Q4_K_M, GPD | after | running | running | running |
+| DeepSeek-V4-Pro (open weights), DeepSeek hosted API | before / after | running | running | running |
+| DeepSeek-V4.1-Flash (open weights), DeepSeek hosted API | before / after | running | running | running |
+
+- Claude Opus 5.5 ran as the agent through the tool CLI: the same tools and prompt, but not the app's own agent loop, so the in-loop guardrail rewrites don't apply. Facts, tool choice, citation and refusal were 100% in both groups it ran; retrieval was 96% on tuned and 85% on fresh held-out (retrieval scores the retriever on the question, so it doesn't depend on the model).
+- The published qwen3.8:27b run is rescored with the current cases and scorer. Its old held-out half was first scored 11 of 14; it's 12 of 14 since the scorer reads counts written as words (q12 wrote "Four"). That is a measurement fix, not a model change. Its tuned half is 12 of 14 since q13 checks the program-wide QC direction.
+- The GPD runs use the same model and quantization as the published run on a different machine. Rows marked running are filled in when the runs finish.
 
 ## Results
 
-All runs use the same 28 cases and the same scorer, at temperature 0. Every report has been rescored with the current cases (see the q13 note below). The CPU runs are on the 8-core server (shared, no GPU); the GPU runs go to Ollama on an RTX 3080 laptop GPU (16 GB) over an SSH tunnel. Per-case tables for every run are in `evals/reports/`.
+All runs use the same 28 cases and the same scorer, at temperature 0. Every report has been rescored with the current cases and scorer (see the q13 note below; the scorer also reads counts written as words now, which changed only q12 in the two qwen3.8:27b runs). The CPU runs are on the 8-core server (shared, no GPU); the GPU runs go to Ollama on an RTX 3080 laptop GPU (16 GB) over an SSH tunnel. Per-case tables for every run are in `evals/reports/`.
 
 | run | model | hardware | code | tool choice | retrieval | facts | citation | refusal | pass | s per answer |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -146,9 +175,9 @@ All runs use the same 28 cases and the same scorer, at temperature 0. Every repo
 | improved-gpu-7b | qwen2.5:7b | RTX 3080 laptop | + look-first nudge (final code) | 84% | 98% | 72% | 84% | 93% | 16 of 28 | 8 |
 | improved-gpu-14b | qwen2.5:14b | RTX 3080 laptop | final code | 84% | 98% | 67% | 64% | 96% | 13 of 28 | 57 |
 | improved-gpu-qwen35-9b | qwen3.5:9b | RTX 3080 laptop | final code, thinking off | 88% | 98% | 71% | 88% | 93% | 18 of 28 | 9 |
-| improved-gpu-qwen38-27b | qwen3.8:27b | RTX 3080 laptop, part on CPU | final code, thinking off | 96% | 98% | 93% | 100% | 100% | 25 of 28 | 52 |
+| improved-gpu-qwen38-27b | qwen3.8:27b | RTX 3080 laptop, part on CPU | final code, thinking off | 96% | 98% | 94% | 100% | 100% | 26 of 28 | 52 |
 
-Where the best run (qwen3.8:27b) lands against the targets: tool choice 96%, retrieval 98%, facts 93%, citation 100%, refusal 100%, and 25 of 28 passing all meet them. Speed doesn't: 52 s per answer, because the 27B model doesn't fit in 16 GB of VRAM and part of it runs on the CPU. The fastest run that comes close is qwen3.5:9b at 9 s per answer and 18 of 28 passing, with facts at 71%. The qwen2.5 runs miss the facts and pass targets.
+Where the best run (qwen3.8:27b) lands against the targets: tool choice 96%, retrieval 98%, facts 94%, citation 100%, refusal 100%, and 26 of 28 passing all meet them (25 of 28 as first scored; q12 counts since the scorer reads words). Speed doesn't: 52 s per answer, because the 27B model doesn't fit in 16 GB of VRAM and part of it runs on the CPU. The fastest run that comes close is qwen3.5:9b at 9 s per answer and 18 of 28 passing, with facts at 71%. The qwen2.5 runs miss the facts and pass targets.
 
 Rescored with the current cases: q13 (QC week over week) now also checks the program-wide direction and rates. Program-wide, QC got better: 8 flags in 184 shifts, then 7 in 205, or 4.3 to 3.4 flags per 100 shifts. The baseline answered that it got worse, and most other runs said it got better without giving the program-wide rates; some of those had passed on the Harbor numbers alone. The rescore moved the baseline from 7 to 6 of 28 and qwen3.5:9b from 19 to 18, and lowered facts by up to a point on the other qwen2.5 runs. The qwen3.8:27b run above gave the right direction and rates and still passes.
 
@@ -197,23 +226,23 @@ The same final code on qwen3.8:27b, 3 runs per case with a 16,384-token context 
 | split | tool choice | retrieval | facts | citation | refusal | pass | pass^3 | s per answer |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | dev | 100% | 96% | 92% | 100% | 100% | 12 of 14 | 12 of 14 | 57 |
-| test (held out) | 92% | 100% | 87% | 100% | 100% | 11 of 14 | 11 of 14 | 59 |
+| test (held out) | 92% | 100% | 88% | 100% | 100% | 12 of 14 | 12 of 14 | 59 |
 
-Both tables are rescored with the current cases. The 27B dev answer to q13 said QC got worse ("3.9 to 5.0 flags per 100 shifts", "householding 2 to 5, all at Eastgate") while the rows it cited add up to 8 flags in 184 shifts, then 7 in 205 (4.3 to 3.4), and householding 2 to 4, one of them at Northside. It was scored as a pass until q13 checked the program-wide direction. The 9B answer has the direction right but gives no program-wide rates (and says every office improved, which Eastgate didn't), so it fails the stricter case too.
+Both tables are rescored with the current cases and scorer. The 27B held-out half was first scored 11 of 14 (facts 87%); q12 counts since the scorer reads counts written as words. The 27B dev answer to q13 said QC got worse ("3.9 to 5.0 flags per 100 shifts", "householding 2 to 5, all at Eastgate") while the rows it cited add up to 8 flags in 184 shifts, then 7 in 205 (4.3 to 3.4), and householding 2 to 4, one of them at Northside. It was scored as a pass until q13 checked the program-wide direction. The 9B answer has the direction right but gives no program-wide rates (and says every office improved, which Eastgate didn't), so it fails the stricter case too.
 
 Cases the final qwen3.8:27b runs still get wrong:
 
 - Held out:
   - q04 (regulars among active canvassers) counts registration canvassers too: 66, where the program plan's definition covers GOTV canvassers only (49 of 57).
   - q08 (untouched precincts) names the right dense untouched precincts but never totals their untouched doors (7,118).
-  - q12 (shifts that need a conversation today) is right: it lists all four open flags with their evidence. It writes the count as "Four", and the number scorer only reads digits, so it's marked as a miss. That one is a scorer quirk, not a wrong answer.
+  - q12 (shifts that need a conversation today) was scored a miss at first: it lists all four open flags with their evidence but writes the count as "Four", and the number scorer only read digits. It passes since the scorer reads counts written as words.
 - Tuned:
   - q07 (the Oct 12 client report gap) explains the attempts and the rollback with correct per-office numbers, but never gives the program totals (1,484 reported against 1,281 on the dashboard).
   - q13 (QC week over week) reads its own rows backwards, as above.
 
-On the held-out half, 27B is one case ahead of 9B (11 against 10) and nine points higher on facts, at about six times the time per answer. The larger context is needed because a long second turn overflowed 8,192 tokens; Ollama then dropped the question from the conversation and the request failed.
+On the held-out half, 27B is two cases ahead of 9B (12 against 10) and ten points higher on facts, at about six times the time per answer. The larger context is needed because a long second turn overflowed 8,192 tokens; Ollama then dropped the question from the conversation and the request failed.
 
-Against the targets, qwen3.5:9b now meets retrieval, facts, citation, refusal, pass (20 of 28) and speed (8 s). It misses tool choice (88% against 90%). The held-out test facts score (78%) is below the dev score (84%), which is the gap the split is there to show. At temperature 0 the three runs rarely differ, so pass^3 equals pass here. Cases still failing: q04 (counts registration canvassers too), q05 (more doors vs second pass numbers), q07 (Oct 12 totals), q08 (dense untouched doors total), q11 (one name missed), q12 (counts written as words), q13 (no program-wide QC rates), q16 (Harbor duplicates total).
+Against the targets, qwen3.5:9b now meets retrieval, facts, citation, refusal, pass (20 of 28) and speed (8 s). It misses tool choice (88% against 90%). The held-out test facts score (78%) is below the dev score (84%), which is the gap the split is there to show. At temperature 0 the three runs rarely differ, so pass^3 equals pass here. Cases still failing: q04 (counts registration canvassers too), q05 (more doors vs second pass numbers), q07 (Oct 12 totals), q08 (dense untouched doors total), q11 (one name missed), q12 (summarized every flag instead of the open ones), q13 (no program-wide QC rates), q16 (Harbor duplicates total).
 
 ## Tests
 
