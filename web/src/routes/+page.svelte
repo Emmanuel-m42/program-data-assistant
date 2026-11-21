@@ -53,6 +53,8 @@
 	}
 </script>
 
+<svelte:head><title>Program data assistant</title></svelte:head>
+
 <h1>Ask about the program</h1>
 <p class="lede">
 	Questions about the fictional Riverbend Votes canvass and Riverbend Registers drive. Every number in an answer links
@@ -112,6 +114,12 @@
 							model="qwen2.5:7b on CPU (baseline)"
 						/>
 					{:else}
+						{#if a.recorded && (a.recorded.eval.after?.pass ?? 1) < 1}
+							<p class="missed">
+								<span class="badge">Scored a miss</span>
+								{a.recorded.eval.note ?? 'This answer failed at least one check in the evals.'}
+							</p>
+						{/if}
 						<Answer
 							id={ex.id}
 							answer={a.response.answer}
@@ -202,6 +210,21 @@
 		font-size: 0.8rem;
 		color: var(--ink-soft);
 		margin: 0 0 0.5rem;
+	}
+	.missed {
+		font-size: 0.82rem;
+		color: var(--ink-soft);
+		margin: 0 0 0.6rem;
+	}
+	.badge {
+		display: inline-block;
+		font-size: 0.72rem;
+		font-weight: 600;
+		color: var(--bad);
+		border: 1px solid var(--bad);
+		border-radius: 999px;
+		padding: 0 0.45rem;
+		margin-right: 0.3rem;
 	}
 	.toggle {
 		display: inline-flex;

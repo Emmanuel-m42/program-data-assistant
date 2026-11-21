@@ -95,7 +95,7 @@ export interface RecordedQuestion extends RecordedRun {
 	keywords: string[];
 	model: string;
 	baseline?: RecordedRun;
-	eval: { before: Metrics | null; after: Metrics | null };
+	eval: { before: Metrics | null; after: Metrics | null; note?: string }; // note: why the shown answer scored as it did
 }
 
 export interface RecordedRuns {
