@@ -108,6 +108,8 @@ Nothing has been deployed. The Terraform passes `validate`, `tflint` and `checko
 
 The first held-out half (`split: test`) is now contaminated: its misses were read and discussed while choosing the next fixes. It stays on record and is still reported, labelled that way. A fresh held-out set of 15 new questions (`split: heldout_v2`, n01 to n15: the same categories plus two refusals, ground truth by SQL on the raw tables) was written and committed before any of those fixes, so the git history shows the order.
 
+`heldout_v2` is now contaminated too: its failures in the DeepSeek runs were read case by case and quoted in the analysis that chose the next round of fixes. A third set of 15 new questions (`split: heldout_v3`, v01 to v15, new wording, same categories plus two refusals) was written after that analysis and committed before those fixes. Each of its 18 numeric truths was checked against a second, independently written query before the commit; all agreed (one differs only by the view's rounding to 2 decimals, inside the case's tolerance).
+
 `uv run evals --label <name>` runs every case against the model and writes `evals/reports/<name>.json` and `.md`. Metrics:
 
 | metric | what it checks |
