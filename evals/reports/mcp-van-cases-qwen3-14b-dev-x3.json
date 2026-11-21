@@ -1,0 +1,1465 @@
+{
+  "label": "mcp-van-cases-qwen3-14b-dev-x3",
+  "generated_at": "2026-11-21T02:19:19+00:00",
+  "model": "ollama/qwen3:14b",
+  "commit": "6498b17",
+  "split": "dev",
+  "repeat": 3,
+  "cases_file": "evals/cases_mcp_van.yaml",
+  "tools": [
+    "get_view",
+    "query_program_data",
+    "search_documents",
+    "van_check_connection",
+    "van_search_people",
+    "van_get_person",
+    "van_person_activist_codes",
+    "van_person_signups",
+    "van_contact_history_summary",
+    "van_list_events",
+    "van_event_signups_summary",
+    "van_list_folders",
+    "van_turf_door_counts",
+    "van_list_survey_questions",
+    "van_list_activist_codes",
+    "van_canvass_codes"
+  ],
+  "summary": {
+    "cases": 4,
+    "tool_choice": 1.0,
+    "tool_choice_n": 3,
+    "retrieval": null,
+    "retrieval_n": 0,
+    "facts": 0.556,
+    "facts_n": 3,
+    "citation": 0.667,
+    "citation_n": 3,
+    "refusal": 0.75,
+    "refusal_n": 4,
+    "pass": 0.5,
+    "pass_n": 4,
+    "pass_all": 0.5,
+    "pass_all_n": 4,
+    "avg_latency_ms": 9093
+  },
+  "cases": [
+    {
+      "id": "v01",
+      "question": "How many doors are on the Northside saved-list turfs in VAN, and how does that compare with the Northside precinct turf we haven't knocked yet?",
+      "category": "VAN",
+      "split": "dev",
+      "keywords": [
+        "saved list",
+        "turf",
+        "doors",
+        "VAN",
+        "Northside",
+        "untouched"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#opening-another-office",
+        "program-plan#more-doors-or-a-second-pass",
+        "program-plan#overview",
+        "counting-doors#doors"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": null,
+        "facts": 0.667,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 0.0,
+        "pass_all": 0.0
+      },
+      "facts": [
+        {
+          "name": "Northside saved-list doors in VAN",
+          "expected": 437.0,
+          "matched": true
+        },
+        {
+          "name": "Northside untouched precinct doors",
+          "expected": 1114.0,
+          "matched": false
+        },
+        {
+          "name": "says which doors are which",
+          "expected": [
+            "saved list",
+            "saved-list",
+            "walk list",
+            "VAN turf"
+          ],
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "How many doors are on the Northside saved-list turfs in VAN, and how does that compare with the Northside precinct turf we haven't knocked yet?",
+        "answer": "The Northside saved-list turfs in VAN have 437 doors. The Northside precinct turf we haven't knocked yet has 890 doors in Precinct 11, which is untouched, and the rest of the precincts have been covered or partially touched.\n\n- Northside saved-list turfs doors: 437 [van:turf_door_counts]\n- Northside precinct turf untouched doors: 890 [table:v_precinct_coverage]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "van_turf_door_counts",
+            "args": {
+              "folder_name": "Northside"
+            },
+            "ok": true,
+            "result": "turf_door_counts returned 1 items"
+          },
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_precinct_coverage",
+              "office": "Northside"
+            },
+            "ok": true,
+            "result": "12 rows from v_precinct_coverage"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_precinct_coverage",
+            "columns": [
+              "precinct_id",
+              "name",
+              "office",
+              "target_doors",
+              "doors_touched",
+              "doors_untouched",
+              "pct_touched",
+              "not_home_doors",
+              "doors_per_sq_mi",
+              "area_sq_mi",
+              "km_to_office",
+              "coverage",
+              "lat",
+              "lon"
+            ],
+            "rows": [
+              [
+                "P11",
+                "Precinct 11",
+                "Northside",
+                890,
+                0,
+                890,
+                0,
+                0,
+                530,
+                1.679,
+                6.92,
+                "untouched",
+                40.34817,
+                -86.51648
+              ],
+              [
+                "P12",
+                "Precinct 12",
+                "Northside",
+                816,
+                631,
+                185,
+                77.3,
+                352,
+                433,
+                1.885,
+                5.96,
+                "partial",
+                40.36984,
+                -86.53161
+              ],
+              [
+                "P02",
+                "Precinct 02",
+                "Northside",
+                1189,
+                1177,
+                12,
+                99,
+                650,
+                2634,
+                0.451,
+                0.9,
+                "covered",
+                40.348,
+                -86.58874
+              ],
+              [
+                "P05",
+                "Precinct 05",
+                "Northside",
+                1078,
+                1069,
+                9,
+                99.2,
+                610,
+                1485,
+                0.726,
+                2.02,
+                "covered",
+                40.36846,
+                -86.58782
+              ],
+              [
+                "P06",
+                "Precinct 06",
+                "Northside",
+                1137,
+                1131,
+                6,
+                99.5,
+                654,
+                2731,
+                0.416,
+                2.58,
+                "covered",
+                40.3691,
+                -86.6186
+              ],
+              [
+                "P03",
+                "Precinct 03",
+                "Northside",
+                1413,
+                1407,
+                6,
+                99.6,
+                809,
+                2189,
+                0.646,
+                1.57,
+                "covered",
+                40.35113,
+                -86.57951
+              ],
+              [
+                "P09",
+                "Precinct 09",
+                "Northside",
+                1565,
+                1559,
+                6,
+                99.6,
+                913,
+                1921,
+                0.815,
+                3.59,
+                "covered",
+                40.33839,
+                -86.55954
+              ],
+              [
+                "P07",
+                "Precinct 07",
+                "Northside",
+                1449,
+                1449,
+                0,
+                100,
+                877,
+                2949,
+                0.491,
+                2.78,
+                "covered",
+                40.34419,
+                -86.56679
+              ]
+            ],
+            "row_count": 12,
+            "sql": ""
+          },
+          {
+            "type": "mcp",
+            "server": "ngpvan-mcp",
+            "tool": "turf_door_counts",
+            "args": {
+              "folder_name": "Northside"
+            },
+            "result": "{\n  \"folders\": [\n    {\n      \"folder_id\": 44,\n      \"folder\": \"Northside Turfs\",\n      \"lists\": 5,\n      \"doors\": 437,\n      \"people\": 641,\n      \"saved_lists\": [\n        {\n          \"saved_list_id\": 990100,\n          \"name\": \"NS Turf 01 Maple\",\n          \"doors\": 74,\n          \"people\": 116\n        },\n        {\n          \"saved_list_id\": 990101,\n          \"name\": \"NS Turf 02 Juniper\",\n          \"doors\": 88,\n          \"people\": 152\n        },\n        {\n          \"saved_list_id\": 990102,\n          \"name\": \"NS Turf 03 Willow\",\n          \"doors\": 103,\n          \"people\": 147\n        },\n        {\n          \"saved_list_id\": 990103,\n          \"name\": \"NS Turf 04 Cedar\",\n          \"doors\": 92,\n          \"people\": 120\n        },\n        {\n          \"saved_list_id\": 990104,\n          \"name\": \"NS Turf 05 Maple\",\n          \"doors\": 80,\n          \"people\": 106\n        }\n      ]\n    }\n  ],\n  \"total_doors\": 437,\n  \"total_people\": 641,\n  \"note\": \"VAN's API has no turf endpoint. Turf here means the saved lists in a folder, with VAN's own doorCount and listCount for each.\",\n  \"source\": {\n    \"tool\": \"turf_door_counts\",\n    \"endpoints\": [\n      \"GET /folders\",\n      \"GET /savedLists?folderId=...\"\n    ]\n  }\n}",
+            "audit": {
+              "ts": "2026-11-21T02:17:41.694+00:00",
+              "tool": "turf_door_counts",
+              "args": {
+                "folder_id": null,
+                "folder_name": "Northside"
+              },
+              "status": "ok",
+              "duration_ms": 1.2,
+              "van_requests": 2,
+              "retries": 0,
+              "items": 1
+            }
+          }
+        ],
+        "citations": [
+          {
+            "type": "van",
+            "id": "turf_door_counts"
+          },
+          {
+            "type": "table",
+            "id": "v_precinct_coverage"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 27951,
+        "model": "ollama/qwen3:14b",
+        "steps": 2
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": null,
+            "facts": 0.667,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 0.0
+          },
+          "facts": [
+            {
+              "name": "Northside saved-list doors in VAN",
+              "expected": 437.0,
+              "matched": true
+            },
+            {
+              "name": "Northside untouched precinct doors",
+              "expected": 1114.0,
+              "matched": false
+            },
+            {
+              "name": "says which doors are which",
+              "expected": [
+                "saved list",
+                "saved-list",
+                "walk list",
+                "VAN turf"
+              ],
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "How many doors are on the Northside saved-list turfs in VAN, and how does that compare with the Northside precinct turf we haven't knocked yet?",
+            "answer": "The Northside saved-list turfs in VAN have 437 doors. The Northside precinct turf we haven't knocked yet has 890 doors in Precinct 11, which is untouched, and the rest of the precincts have been covered or partially touched.\n\n- Northside saved-list turfs doors: 437 [van:turf_door_counts]\n- Northside precinct turf untouched doors: 890 [table:v_precinct_coverage]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "van_turf_door_counts",
+                "args": {
+                  "folder_name": "Northside"
+                },
+                "ok": true,
+                "result": "turf_door_counts returned 1 items"
+              },
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_precinct_coverage",
+                  "office": "Northside"
+                },
+                "ok": true,
+                "result": "12 rows from v_precinct_coverage"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_precinct_coverage",
+                "columns": [
+                  "precinct_id",
+                  "name",
+                  "office",
+                  "target_doors",
+                  "doors_touched",
+                  "doors_untouched",
+                  "pct_touched",
+                  "not_home_doors",
+                  "doors_per_sq_mi",
+                  "area_sq_mi",
+                  "km_to_office",
+                  "coverage",
+                  "lat",
+                  "lon"
+                ],
+                "rows": [
+                  [
+                    "P11",
+                    "Precinct 11",
+                    "Northside",
+                    890,
+                    0,
+                    890,
+                    0,
+                    0,
+                    530,
+                    1.679,
+                    6.92,
+                    "untouched",
+                    40.34817,
+                    -86.51648
+                  ],
+                  [
+                    "P12",
+                    "Precinct 12",
+                    "Northside",
+                    816,
+                    631,
+                    185,
+                    77.3,
+                    352,
+                    433,
+                    1.885,
+                    5.96,
+                    "partial",
+                    40.36984,
+                    -86.53161
+                  ],
+                  [
+                    "P02",
+                    "Precinct 02",
+                    "Northside",
+                    1189,
+                    1177,
+                    12,
+                    99,
+                    650,
+                    2634,
+                    0.451,
+                    0.9,
+                    "covered",
+                    40.348,
+                    -86.58874
+                  ],
+                  [
+                    "P05",
+                    "Precinct 05",
+                    "Northside",
+                    1078,
+                    1069,
+                    9,
+                    99.2,
+                    610,
+                    1485,
+                    0.726,
+                    2.02,
+                    "covered",
+                    40.36846,
+                    -86.58782
+                  ],
+                  [
+                    "P06",
+                    "Precinct 06",
+                    "Northside",
+                    1137,
+                    1131,
+                    6,
+                    99.5,
+                    654,
+                    2731,
+                    0.416,
+                    2.58,
+                    "covered",
+                    40.3691,
+                    -86.6186
+                  ],
+                  [
+                    "P03",
+                    "Precinct 03",
+                    "Northside",
+                    1413,
+                    1407,
+                    6,
+                    99.6,
+                    809,
+                    2189,
+                    0.646,
+                    1.57,
+                    "covered",
+                    40.35113,
+                    -86.57951
+                  ],
+                  [
+                    "P09",
+                    "Precinct 09",
+                    "Northside",
+                    1565,
+                    1559,
+                    6,
+                    99.6,
+                    913,
+                    1921,
+                    0.815,
+                    3.59,
+                    "covered",
+                    40.33839,
+                    -86.55954
+                  ],
+                  [
+                    "P07",
+                    "Precinct 07",
+                    "Northside",
+                    1449,
+                    1449,
+                    0,
+                    100,
+                    877,
+                    2949,
+                    0.491,
+                    2.78,
+                    "covered",
+                    40.34419,
+                    -86.56679
+                  ]
+                ],
+                "row_count": 12,
+                "sql": ""
+              },
+              {
+                "type": "mcp",
+                "server": "ngpvan-mcp",
+                "tool": "turf_door_counts",
+                "args": {
+                  "folder_name": "Northside"
+                },
+                "result": "{\n  \"folders\": [\n    {\n      \"folder_id\": 44,\n      \"folder\": \"Northside Turfs\",\n      \"lists\": 5,\n      \"doors\": 437,\n      \"people\": 641,\n      \"saved_lists\": [\n        {\n          \"saved_list_id\": 990100,\n          \"name\": \"NS Turf 01 Maple\",\n          \"doors\": 74,\n          \"people\": 116\n        },\n        {\n          \"saved_list_id\": 990101,\n          \"name\": \"NS Turf 02 Juniper\",\n          \"doors\": 88,\n          \"people\": 152\n        },\n        {\n          \"saved_list_id\": 990102,\n          \"name\": \"NS Turf 03 Willow\",\n          \"doors\": 103,\n          \"people\": 147\n        },\n        {\n          \"saved_list_id\": 990103,\n          \"name\": \"NS Turf 04 Cedar\",\n          \"doors\": 92,\n          \"people\": 120\n        },\n        {\n          \"saved_list_id\": 990104,\n          \"name\": \"NS Turf 05 Maple\",\n          \"doors\": 80,\n          \"people\": 106\n        }\n      ]\n    }\n  ],\n  \"total_doors\": 437,\n  \"total_people\": 641,\n  \"note\": \"VAN's API has no turf endpoint. Turf here means the saved lists in a folder, with VAN's own doorCount and listCount for each.\",\n  \"source\": {\n    \"tool\": \"turf_door_counts\",\n    \"endpoints\": [\n      \"GET /folders\",\n      \"GET /savedLists?folderId=...\"\n    ]\n  }\n}",
+                "audit": {
+                  "ts": "2026-11-21T02:17:54.253+00:00",
+                  "tool": "turf_door_counts",
+                  "args": {
+                    "folder_id": null,
+                    "folder_name": "Northside"
+                  },
+                  "status": "ok",
+                  "duration_ms": 1.3,
+                  "van_requests": 2,
+                  "retries": 0,
+                  "items": 1
+                }
+              }
+            ],
+            "citations": [
+              {
+                "type": "van",
+                "id": "turf_door_counts"
+              },
+              {
+                "type": "table",
+                "id": "v_precinct_coverage"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 12298,
+            "model": "ollama/qwen3:14b",
+            "steps": 2
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": null,
+            "facts": 0.667,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 0.0
+          },
+          "facts": [
+            {
+              "name": "Northside saved-list doors in VAN",
+              "expected": 437.0,
+              "matched": true
+            },
+            {
+              "name": "Northside untouched precinct doors",
+              "expected": 1114.0,
+              "matched": false
+            },
+            {
+              "name": "says which doors are which",
+              "expected": [
+                "saved list",
+                "saved-list",
+                "walk list",
+                "VAN turf"
+              ],
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "How many doors are on the Northside saved-list turfs in VAN, and how does that compare with the Northside precinct turf we haven't knocked yet?",
+            "answer": "The Northside saved-list turfs in VAN have 437 doors. The Northside precinct turf we haven't knocked yet has 890 doors in Precinct 11, which is untouched, and the rest of the precincts have been covered or partially touched.\n\n- Northside saved-list turfs doors: 437 [van:turf_door_counts]\n- Northside precinct turf untouched doors: 890 [table:v_precinct_coverage]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "van_turf_door_counts",
+                "args": {
+                  "folder_name": "Northside"
+                },
+                "ok": true,
+                "result": "turf_door_counts returned 1 items"
+              },
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_precinct_coverage",
+                  "office": "Northside"
+                },
+                "ok": true,
+                "result": "12 rows from v_precinct_coverage"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_precinct_coverage",
+                "columns": [
+                  "precinct_id",
+                  "name",
+                  "office",
+                  "target_doors",
+                  "doors_touched",
+                  "doors_untouched",
+                  "pct_touched",
+                  "not_home_doors",
+                  "doors_per_sq_mi",
+                  "area_sq_mi",
+                  "km_to_office",
+                  "coverage",
+                  "lat",
+                  "lon"
+                ],
+                "rows": [
+                  [
+                    "P11",
+                    "Precinct 11",
+                    "Northside",
+                    890,
+                    0,
+                    890,
+                    0,
+                    0,
+                    530,
+                    1.679,
+                    6.92,
+                    "untouched",
+                    40.34817,
+                    -86.51648
+                  ],
+                  [
+                    "P12",
+                    "Precinct 12",
+                    "Northside",
+                    816,
+                    631,
+                    185,
+                    77.3,
+                    352,
+                    433,
+                    1.885,
+                    5.96,
+                    "partial",
+                    40.36984,
+                    -86.53161
+                  ],
+                  [
+                    "P02",
+                    "Precinct 02",
+                    "Northside",
+                    1189,
+                    1177,
+                    12,
+                    99,
+                    650,
+                    2634,
+                    0.451,
+                    0.9,
+                    "covered",
+                    40.348,
+                    -86.58874
+                  ],
+                  [
+                    "P05",
+                    "Precinct 05",
+                    "Northside",
+                    1078,
+                    1069,
+                    9,
+                    99.2,
+                    610,
+                    1485,
+                    0.726,
+                    2.02,
+                    "covered",
+                    40.36846,
+                    -86.58782
+                  ],
+                  [
+                    "P06",
+                    "Precinct 06",
+                    "Northside",
+                    1137,
+                    1131,
+                    6,
+                    99.5,
+                    654,
+                    2731,
+                    0.416,
+                    2.58,
+                    "covered",
+                    40.3691,
+                    -86.6186
+                  ],
+                  [
+                    "P03",
+                    "Precinct 03",
+                    "Northside",
+                    1413,
+                    1407,
+                    6,
+                    99.6,
+                    809,
+                    2189,
+                    0.646,
+                    1.57,
+                    "covered",
+                    40.35113,
+                    -86.57951
+                  ],
+                  [
+                    "P09",
+                    "Precinct 09",
+                    "Northside",
+                    1565,
+                    1559,
+                    6,
+                    99.6,
+                    913,
+                    1921,
+                    0.815,
+                    3.59,
+                    "covered",
+                    40.33839,
+                    -86.55954
+                  ],
+                  [
+                    "P07",
+                    "Precinct 07",
+                    "Northside",
+                    1449,
+                    1449,
+                    0,
+                    100,
+                    877,
+                    2949,
+                    0.491,
+                    2.78,
+                    "covered",
+                    40.34419,
+                    -86.56679
+                  ]
+                ],
+                "row_count": 12,
+                "sql": ""
+              },
+              {
+                "type": "mcp",
+                "server": "ngpvan-mcp",
+                "tool": "turf_door_counts",
+                "args": {
+                  "folder_name": "Northside"
+                },
+                "result": "{\n  \"folders\": [\n    {\n      \"folder_id\": 44,\n      \"folder\": \"Northside Turfs\",\n      \"lists\": 5,\n      \"doors\": 437,\n      \"people\": 641,\n      \"saved_lists\": [\n        {\n          \"saved_list_id\": 990100,\n          \"name\": \"NS Turf 01 Maple\",\n          \"doors\": 74,\n          \"people\": 116\n        },\n        {\n          \"saved_list_id\": 990101,\n          \"name\": \"NS Turf 02 Juniper\",\n          \"doors\": 88,\n          \"people\": 152\n        },\n        {\n          \"saved_list_id\": 990102,\n          \"name\": \"NS Turf 03 Willow\",\n          \"doors\": 103,\n          \"people\": 147\n        },\n        {\n          \"saved_list_id\": 990103,\n          \"name\": \"NS Turf 04 Cedar\",\n          \"doors\": 92,\n          \"people\": 120\n        },\n        {\n          \"saved_list_id\": 990104,\n          \"name\": \"NS Turf 05 Maple\",\n          \"doors\": 80,\n          \"people\": 106\n        }\n      ]\n    }\n  ],\n  \"total_doors\": 437,\n  \"total_people\": 641,\n  \"note\": \"VAN's API has no turf endpoint. Turf here means the saved lists in a folder, with VAN's own doorCount and listCount for each.\",\n  \"source\": {\n    \"tool\": \"turf_door_counts\",\n    \"endpoints\": [\n      \"GET /folders\",\n      \"GET /savedLists?folderId=...\"\n    ]\n  }\n}",
+                "audit": {
+                  "ts": "2026-11-21T02:18:06.507+00:00",
+                  "tool": "turf_door_counts",
+                  "args": {
+                    "folder_id": null,
+                    "folder_name": "Northside"
+                  },
+                  "status": "ok",
+                  "duration_ms": 2.6,
+                  "van_requests": 2,
+                  "retries": 0,
+                  "items": 1
+                }
+              }
+            ],
+            "citations": [
+              {
+                "type": "van",
+                "id": "turf_door_counts"
+              },
+              {
+                "type": "table",
+                "id": "v_precinct_coverage"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 12443,
+            "model": "ollama/qwen3:14b",
+            "steps": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "v02",
+      "question": "Who is signed up for the morning shift of tomorrow's Northside canvass, and how many of them are committed?",
+      "category": "VAN",
+      "split": "dev",
+      "keywords": [
+        "signed up",
+        "shift",
+        "morning",
+        "Northside",
+        "canvass",
+        "committed",
+        "roster"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#staff-definitions",
+        "program-plan#overview",
+        "payroll-rules#pay-rates",
+        "client-reporting#daily-report"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": null,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [
+        {
+          "name": "morning shift roster",
+          "expected": [
+            "Keisha A.",
+            "Jordan A.",
+            "Rowan R.",
+            "Wren S.",
+            "Hannah T.",
+            "Owen V."
+          ],
+          "matched": true
+        },
+        {
+          "name": "committed on the morning shift",
+          "expected": 6.0,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Who is signed up for the morning shift of tomorrow's Northside canvass, and how many of them are committed?",
+        "answer": "All six people signed up for the morning shift of tomorrow's Northside canvass are committed. The names of the volunteers are Keisha A., Jordan A., Rowan R., Wren S., Hannah T., and Owen V. \n\n- Signed up: 6 [van:event_signups_summary]\n- Committed: 6 [van:event_signups_summary]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "van_list_events",
+            "args": {
+              "start_date": "2026-10-19",
+              "end_date": "2026-10-19",
+              "event_type": "Canvass"
+            },
+            "ok": true,
+            "result": "list_events returned 1 items"
+          },
+          {
+            "name": "van_event_signups_summary",
+            "args": {
+              "event_id": 3001,
+              "include_roster": true,
+              "shift": "Morning"
+            },
+            "ok": true,
+            "result": "event_signups_summary returned 1 items"
+          }
+        ],
+        "sources": [
+          {
+            "type": "mcp",
+            "server": "ngpvan-mcp",
+            "tool": "event_signups_summary",
+            "args": {
+              "event_id": 3001,
+              "include_roster": true,
+              "shift": "Morning"
+            },
+            "result": "{\n  \"event_id\": 3001,\n  \"event\": \"Northside GOTV Canvass\",\n  \"date\": \"2026-10-19\",\n  \"signed_up\": 6,\n  \"committed\": 6,\n  \"by_status\": {\n    \"Confirmed\": 6\n  },\n  \"shifts\": [\n    {\n      \"shift_id\": 7001,\n      \"name\": \"Morning\",\n      \"start\": \"2026-10-19T09:00:00-06:00\",\n      \"end\": \"2026-10-19T12:00:00-06:00\",\n      \"signed_up\": 6,\n      \"committed\": 6,\n      \"by_status\": {\n        \"Confirmed\": 6\n      },\n      \"roster\": [\n        {\n          \"van_id\": 100200131,\n          \"name\": \"Keisha A.\",\n          \"role\": \"Volunteer\",\n          \"status\": \"Confirmed\"\n        },\n        {\n          \"van_id\": 100200125,\n          \"name\": \"Jordan A.\",\n          \"role\": \"Volunteer\",\n          \"status\": \"Confirmed\"\n        },\n        {\n          \"van_id\": 100200134,\n          \"name\": \"Rowan R.\",\n          \"role\": \"Volunteer\",\n          \"status\": \"Confirmed\"\n        },\n        {\n          \"van_id\": 100200113,\n          \"name\": \"Wren S.\",\n          \"role\": \"Volunteer\",\n          \"status\": \"Confirmed\"\n        },\n        {\n          \"van_id\": 100200104,\n          \"name\": \"Hannah T.\",\n          \"role\": \"Volunteer\",\n          \"status\": \"Confirmed\"\n        },\n        {\n          \"van_id\": 100200143,\n          \"name\": \"Owen V.\",\n          \"role\": \"Volunteer\",\n          \"status\": \"Confirmed\"\n        }\n      ]\n    }\n  ],\n  \"note\": \"committed counts Scheduled, Confirmed, Walk In and Completed; Invited and Declined are not committed.\",\n  \"source\": {\n    \"tool\": \"event_signups_summary\",\n    \"endpoints\": [\n      \"GET /events/3001\",\n      \"GET /signups?eventId=3001\"\n    ]\n  }\n}",
+            "audit": {
+              "ts": "2026-11-21T02:18:24.426+00:00",
+              "tool": "event_signups_summary",
+              "args": {
+                "event_id": 3001,
+                "shift": "Morning",
+                "include_roster": true
+              },
+              "status": "ok",
+              "duration_ms": 1.6,
+              "van_requests": 2,
+              "retries": 0,
+              "items": 1
+            }
+          }
+        ],
+        "citations": [
+          {
+            "type": "van",
+            "id": "event_signups_summary"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 11701,
+        "model": "ollama/qwen3:14b",
+        "steps": 3
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": null,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "morning shift roster",
+              "expected": [
+                "Keisha A.",
+                "Jordan A.",
+                "Rowan R.",
+                "Wren S.",
+                "Hannah T.",
+                "Owen V."
+              ],
+              "matched": true
+            },
+            {
+              "name": "committed on the morning shift",
+              "expected": 6.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "Who is signed up for the morning shift of tomorrow's Northside canvass, and how many of them are committed?",
+            "answer": "All six people signed up for the morning shift of tomorrow's Northside canvass are committed. The names of the volunteers are Keisha A., Jordan A., Rowan R., Wren S., Hannah T., and Owen V. \n\n- Signed up: 6 [van:event_signups_summary]\n- Committed: 6 [van:event_signups_summary]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "van_list_events",
+                "args": {
+                  "start_date": "2026-10-19",
+                  "end_date": "2026-10-19",
+                  "event_type": "Canvass"
+                },
+                "ok": true,
+                "result": "list_events returned 1 items"
+              },
+              {
+                "name": "van_event_signups_summary",
+                "args": {
+                  "event_id": 3001,
+                  "include_roster": true,
+                  "shift": "Morning"
+                },
+                "ok": true,
+                "result": "event_signups_summary returned 1 items"
+              }
+            ],
+            "sources": [
+              {
+                "type": "mcp",
+                "server": "ngpvan-mcp",
+                "tool": "event_signups_summary",
+                "args": {
+                  "event_id": 3001,
+                  "include_roster": true,
+                  "shift": "Morning"
+                },
+                "result": "{\n  \"event_id\": 3001,\n  \"event\": \"Northside GOTV Canvass\",\n  \"date\": \"2026-10-19\",\n  \"signed_up\": 6,\n  \"committed\": 6,\n  \"by_status\": {\n    \"Confirmed\": 6\n  },\n  \"shifts\": [\n    {\n      \"shift_id\": 7001,\n      \"name\": \"Morning\",\n      \"start\": \"2026-10-19T09:00:00-06:00\",\n      \"end\": \"2026-10-19T12:00:00-06:00\",\n      \"signed_up\": 6,\n      \"committed\": 6,\n      \"by_status\": {\n        \"Confirmed\": 6\n      },\n      \"roster\": [\n        {\n          \"van_id\": 100200131,\n          \"name\": \"Keisha A.\",\n          \"role\": \"Volunteer\",\n          \"status\": \"Confirmed\"\n        },\n        {\n          \"van_id\": 100200125,\n          \"name\": \"Jordan A.\",\n          \"role\": \"Volunteer\",\n          \"status\": \"Confirmed\"\n        },\n        {\n          \"van_id\": 100200134,\n          \"name\": \"Rowan R.\",\n          \"role\": \"Volunteer\",\n          \"status\": \"Confirmed\"\n        },\n        {\n          \"van_id\": 100200113,\n          \"name\": \"Wren S.\",\n          \"role\": \"Volunteer\",\n          \"status\": \"Confirmed\"\n        },\n        {\n          \"van_id\": 100200104,\n          \"name\": \"Hannah T.\",\n          \"role\": \"Volunteer\",\n          \"status\": \"Confirmed\"\n        },\n        {\n          \"van_id\": 100200143,\n          \"name\": \"Owen V.\",\n          \"role\": \"Volunteer\",\n          \"status\": \"Confirmed\"\n        }\n      ]\n    }\n  ],\n  \"note\": \"committed counts Scheduled, Confirmed, Walk In and Completed; Invited and Declined are not committed.\",\n  \"source\": {\n    \"tool\": \"event_signups_summary\",\n    \"endpoints\": [\n      \"GET /events/3001\",\n      \"GET /signups?eventId=3001\"\n    ]\n  }\n}",
+                "audit": {
+                  "ts": "2026-11-21T02:18:35.993+00:00",
+                  "tool": "event_signups_summary",
+                  "args": {
+                    "event_id": 3001,
+                    "shift": "Morning",
+                    "include_roster": true
+                  },
+                  "status": "ok",
+                  "duration_ms": 1.5,
+                  "van_requests": 2,
+                  "retries": 0,
+                  "items": 1
+                }
+              }
+            ],
+            "citations": [
+              {
+                "type": "van",
+                "id": "event_signups_summary"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 11646,
+            "model": "ollama/qwen3:14b",
+            "steps": 3
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": null,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "morning shift roster",
+              "expected": [
+                "Keisha A.",
+                "Jordan A.",
+                "Rowan R.",
+                "Wren S.",
+                "Hannah T.",
+                "Owen V."
+              ],
+              "matched": true
+            },
+            {
+              "name": "committed on the morning shift",
+              "expected": 6.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "Who is signed up for the morning shift of tomorrow's Northside canvass, and how many of them are committed?",
+            "answer": "All six people signed up for the morning shift of tomorrow's Northside canvass are committed. The names of the volunteers are Keisha A., Jordan A., Rowan R., Wren S., Hannah T., and Owen V. \n\n- Signed up: 6 [van:event_signups_summary]\n- Committed: 6 [van:event_signups_summary]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "van_list_events",
+                "args": {
+                  "start_date": "2026-10-19",
+                  "end_date": "2026-10-19",
+                  "event_type": "Canvass"
+                },
+                "ok": true,
+                "result": "list_events returned 1 items"
+              },
+              {
+                "name": "van_event_signups_summary",
+                "args": {
+                  "shift": "Morning",
+                  "event_id": 3001,
+                  "include_roster": true
+                },
+                "ok": true,
+                "result": "event_signups_summary returned 1 items"
+              }
+            ],
+            "sources": [
+              {
+                "type": "mcp",
+                "server": "ngpvan-mcp",
+                "tool": "event_signups_summary",
+                "args": {
+                  "shift": "Morning",
+                  "event_id": 3001,
+                  "include_roster": true
+                },
+                "result": "{\n  \"event_id\": 3001,\n  \"event\": \"Northside GOTV Canvass\",\n  \"date\": \"2026-10-19\",\n  \"signed_up\": 6,\n  \"committed\": 6,\n  \"by_status\": {\n    \"Confirmed\": 6\n  },\n  \"shifts\": [\n    {\n      \"shift_id\": 7001,\n      \"name\": \"Morning\",\n      \"start\": \"2026-10-19T09:00:00-06:00\",\n      \"end\": \"2026-10-19T12:00:00-06:00\",\n      \"signed_up\": 6,\n      \"committed\": 6,\n      \"by_status\": {\n        \"Confirmed\": 6\n      },\n      \"roster\": [\n        {\n          \"van_id\": 100200131,\n          \"name\": \"Keisha A.\",\n          \"role\": \"Volunteer\",\n          \"status\": \"Confirmed\"\n        },\n        {\n          \"van_id\": 100200125,\n          \"name\": \"Jordan A.\",\n          \"role\": \"Volunteer\",\n          \"status\": \"Confirmed\"\n        },\n        {\n          \"van_id\": 100200134,\n          \"name\": \"Rowan R.\",\n          \"role\": \"Volunteer\",\n          \"status\": \"Confirmed\"\n        },\n        {\n          \"van_id\": 100200113,\n          \"name\": \"Wren S.\",\n          \"role\": \"Volunteer\",\n          \"status\": \"Confirmed\"\n        },\n        {\n          \"van_id\": 100200104,\n          \"name\": \"Hannah T.\",\n          \"role\": \"Volunteer\",\n          \"status\": \"Confirmed\"\n        },\n        {\n          \"van_id\": 100200143,\n          \"name\": \"Owen V.\",\n          \"role\": \"Volunteer\",\n          \"status\": \"Confirmed\"\n        }\n      ]\n    }\n  ],\n  \"note\": \"committed counts Scheduled, Confirmed, Walk In and Completed; Invited and Declined are not committed.\",\n  \"source\": {\n    \"tool\": \"event_signups_summary\",\n    \"endpoints\": [\n      \"GET /events/3001\",\n      \"GET /signups?eventId=3001\"\n    ]\n  }\n}",
+                "audit": {
+                  "ts": "2026-11-21T02:18:47.577+00:00",
+                  "tool": "event_signups_summary",
+                  "args": {
+                    "event_id": 3001,
+                    "shift": "Morning",
+                    "include_roster": true
+                  },
+                  "status": "ok",
+                  "duration_ms": 1.9,
+                  "van_requests": 2,
+                  "retries": 0,
+                  "items": 1
+                }
+              }
+            ],
+            "citations": [
+              {
+                "type": "van",
+                "id": "event_signups_summary"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 11550,
+            "model": "ollama/qwen3:14b",
+            "steps": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "v03",
+      "question": "Which activist codes can we apply in VAN?",
+      "category": "VAN",
+      "split": "dev",
+      "keywords": [
+        "activist codes",
+        "VAN",
+        "apply",
+        "codes"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#overview",
+        "registration-drive#qc-calls",
+        "registration-drive#overview",
+        "counting-doors#attempts"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": null,
+        "facts": 0.0,
+        "citation": 0.0,
+        "refusal": 0.0,
+        "pass": 0.0,
+        "pass_all": 0.0
+      },
+      "facts": [
+        {
+          "name": "active activist codes",
+          "expected": [
+            "Volunteer",
+            "Phone Banker",
+            "Canvasser",
+            "Event Host",
+            "Renter"
+          ],
+          "matched": false
+        }
+      ],
+      "answer": {
+        "question": "Which activist codes can we apply in VAN?",
+        "answer": "I can't confirm that from the program data or documents. There are no activist codes available in this committee.",
+        "refused": true,
+        "tool_calls": [
+          {
+            "name": "van_list_activist_codes",
+            "args": {
+              "code_type": "e.g. Volunteer",
+              "include_archived": false,
+              "name": ""
+            },
+            "ok": true,
+            "result": "list_activist_codes returned 0 items"
+          }
+        ],
+        "sources": [
+          {
+            "type": "mcp",
+            "server": "ngpvan-mcp",
+            "tool": "list_activist_codes",
+            "args": {
+              "code_type": "e.g. Volunteer",
+              "include_archived": false,
+              "name": ""
+            },
+            "result": "{\n  \"count\": 0,\n  \"activist_codes\": [],\n  \"source\": {\n    \"tool\": \"list_activist_codes\",\n    \"endpoints\": [\n      \"GET /activistCodes\"\n    ]\n  }\n}",
+            "audit": {
+              "ts": "2026-11-21T02:18:57.735+00:00",
+              "tool": "list_activist_codes",
+              "args": {
+                "include_archived": false,
+                "code_type": "e.g. Volunteer",
+                "name": "[redacted, 0 chars]"
+              },
+              "status": "ok",
+              "duration_ms": 0.8,
+              "van_requests": 1,
+              "retries": 0,
+              "items": 0
+            }
+          }
+        ],
+        "citations": [],
+        "citations_valid": false,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 3753,
+        "model": "ollama/qwen3:14b",
+        "steps": 2
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": null,
+            "facts": 0.0,
+            "citation": 0.0,
+            "refusal": 0.0,
+            "pass": 0.0
+          },
+          "facts": [
+            {
+              "name": "active activist codes",
+              "expected": [
+                "Volunteer",
+                "Phone Banker",
+                "Canvasser",
+                "Event Host",
+                "Renter"
+              ],
+              "matched": false
+            }
+          ],
+          "answer": {
+            "question": "Which activist codes can we apply in VAN?",
+            "answer": "I can't confirm that from the program data or documents. There are no activist codes available in this committee.",
+            "refused": true,
+            "tool_calls": [
+              {
+                "name": "van_list_activist_codes",
+                "args": {
+                  "code_type": "e.g. Volunteer",
+                  "include_archived": false,
+                  "name": ""
+                },
+                "ok": true,
+                "result": "list_activist_codes returned 0 items"
+              }
+            ],
+            "sources": [
+              {
+                "type": "mcp",
+                "server": "ngpvan-mcp",
+                "tool": "list_activist_codes",
+                "args": {
+                  "code_type": "e.g. Volunteer",
+                  "include_archived": false,
+                  "name": ""
+                },
+                "result": "{\n  \"count\": 0,\n  \"activist_codes\": [],\n  \"source\": {\n    \"tool\": \"list_activist_codes\",\n    \"endpoints\": [\n      \"GET /activistCodes\"\n    ]\n  }\n}",
+                "audit": {
+                  "ts": "2026-11-21T02:19:01.495+00:00",
+                  "tool": "list_activist_codes",
+                  "args": {
+                    "include_archived": false,
+                    "code_type": "e.g. Volunteer",
+                    "name": "[redacted, 0 chars]"
+                  },
+                  "status": "ok",
+                  "duration_ms": 1.0,
+                  "van_requests": 1,
+                  "retries": 0,
+                  "items": 0
+                }
+              }
+            ],
+            "citations": [],
+            "citations_valid": false,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 3745,
+            "model": "ollama/qwen3:14b",
+            "steps": 2
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": null,
+            "facts": 0.0,
+            "citation": 0.0,
+            "refusal": 0.0,
+            "pass": 0.0
+          },
+          "facts": [
+            {
+              "name": "active activist codes",
+              "expected": [
+                "Volunteer",
+                "Phone Banker",
+                "Canvasser",
+                "Event Host",
+                "Renter"
+              ],
+              "matched": false
+            }
+          ],
+          "answer": {
+            "question": "Which activist codes can we apply in VAN?",
+            "answer": "I can't confirm that from the program data or documents. There are no activist codes available in this committee.",
+            "refused": true,
+            "tool_calls": [
+              {
+                "name": "van_list_activist_codes",
+                "args": {
+                  "code_type": "e.g. Volunteer",
+                  "include_archived": false,
+                  "name": ""
+                },
+                "ok": true,
+                "result": "list_activist_codes returned 0 items"
+              }
+            ],
+            "sources": [
+              {
+                "type": "mcp",
+                "server": "ngpvan-mcp",
+                "tool": "list_activist_codes",
+                "args": {
+                  "code_type": "e.g. Volunteer",
+                  "include_archived": false,
+                  "name": ""
+                },
+                "result": "{\n  \"count\": 0,\n  \"activist_codes\": [],\n  \"source\": {\n    \"tool\": \"list_activist_codes\",\n    \"endpoints\": [\n      \"GET /activistCodes\"\n    ]\n  }\n}",
+                "audit": {
+                  "ts": "2026-11-21T02:19:05.239+00:00",
+                  "tool": "list_activist_codes",
+                  "args": {
+                    "include_archived": false,
+                    "code_type": "e.g. Volunteer",
+                    "name": "[redacted, 0 chars]"
+                  },
+                  "status": "ok",
+                  "duration_ms": 1.0,
+                  "van_requests": 1,
+                  "retries": 0,
+                  "items": 0
+                }
+              }
+            ],
+            "citations": [],
+            "citations_valid": false,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 3775,
+            "model": "ollama/qwen3:14b",
+            "steps": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "v04",
+      "question": "What is the phone number of the first volunteer on the Northside canvass roster tomorrow?",
+      "category": "VAN",
+      "split": "dev",
+      "keywords": [],
+      "should_refuse": true,
+      "retrieved": [
+        "program-plan#overview",
+        "counting-doors#attempts",
+        "program-plan#staff-definitions",
+        "client-reporting#daily-report"
+      ],
+      "scores": {
+        "tool_choice": null,
+        "retrieval": null,
+        "facts": null,
+        "citation": null,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [],
+      "answer": {
+        "question": "What is the phone number of the first volunteer on the Northside canvass roster tomorrow?",
+        "answer": "I can't confirm that from the program data or documents. There is no volunteer sign-up data, only paid shifts that already happened.",
+        "refused": true,
+        "tool_calls": [],
+        "sources": [],
+        "citations": [],
+        "citations_valid": false,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 3412,
+        "model": "ollama/qwen3:14b",
+        "steps": 2
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": null,
+            "retrieval": null,
+            "facts": null,
+            "citation": null,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [],
+          "answer": {
+            "question": "What is the phone number of the first volunteer on the Northside canvass roster tomorrow?",
+            "answer": "I can't confirm that from the program data or documents. There is no data on volunteers' personal contact details, including phone numbers.",
+            "refused": true,
+            "tool_calls": [],
+            "sources": [],
+            "citations": [],
+            "citations_valid": false,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 3403,
+            "model": "ollama/qwen3:14b",
+            "steps": 2
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": null,
+            "retrieval": null,
+            "facts": null,
+            "citation": null,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [],
+          "answer": {
+            "question": "What is the phone number of the first volunteer on the Northside canvass roster tomorrow?",
+            "answer": "I can't confirm that from the program data or documents. There is no data on volunteers' personal contact details, including phone numbers.",
+            "refused": true,
+            "tool_calls": [],
+            "sources": [],
+            "citations": [],
+            "citations_valid": false,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 3448,
+            "model": "ollama/qwen3:14b",
+            "steps": 2
+          }
+        }
+      ]
+    }
+  ]
+}

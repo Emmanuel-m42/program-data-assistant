@@ -127,7 +127,20 @@ uv run evals --van demo --cases evals/cases_mcp_van.yaml --label mcp-van-cases-<
 uv run evals --van demo --label mcp-van-original-<model> --repeat 3
 ```
 
-Ground truth for the VAN cases comes from calling the ngpvan-mcp tool directly at eval time, never from the model. Results: pending; no model run yet.
+Ground truth for the VAN cases comes from calling the ngpvan-mcp tool directly at eval time, never from the model.
+
+Results for this version, measured on Nov 20, 2026: qwen3:14b (Q4_K_M) through Ollama on a Ryzen AI Max+ 395 mini PC, thinking off, 16k context, temperature 0, 3 runs per case. This is a smaller model than the one behind the published results, so the two sets of numbers aren't directly comparable.
+
+| run | split | pass | pass^3 | tool choice | facts | citation | refusal | s per answer |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| VAN cases | dev | 2 of 4 | 2 of 4 | 100% | 56% | 67% | 75% | 9 |
+| VAN cases | held out | 3 of 4 | 3 of 4 | 100% | 75% | 100% | 100% | 16 |
+| original 28, VAN tools present | dev | 10 of 14 | 10 of 14 | 83% | 78% | 100% | 100% | 10 |
+| original 28, VAN tools present | held out | 8 of 14 | 8 of 14 | 92% | 69% | 95% | 95% | 14 |
+
+- Routing: across all 84 answers to the original 28 questions, the model never called a VAN tool, so adding the VAN tools didn't pull program questions to the wrong source.
+- VAN misses: v03 copied the example text in a tool's parameter description ("e.g. Volunteer") as a filter and got no codes back; v05 filtered to one folder the question didn't name; v01 gave one untouched precinct instead of Northside's untouched total.
+- Not measured yet: qwen3:14b on the original 28 without VAN tools, which is the run needed to say whether the VAN tools change the score at all on the same model.
 
 ## Evals
 
