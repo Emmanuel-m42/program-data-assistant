@@ -140,3 +140,19 @@ def test_reasoning_goes_back_on_guardrail_rewrite_turns_too(env):
     drafts = [m for m in rewrite if m["role"] == "assistant" and not m.get("tool_calls")]
     assert drafts and drafts[-1]["reasoning_content"] == "draft"
     assert [m for m in rewrite if m.get("tool_calls")][0]["reasoning_content"] == "look first"
+
+
+def test_strict_mode_makes_every_property_required_and_drops_none(env, monkeypatch):
+    from program_data_assistant.tools import TOOL_SPECS
+
+    monkeypatch.setenv("PDA_OPENAI_STRICT", "1")
+    http = FakeHttp([completion(tool_calls=call("get_view", {"view": "v_office_pace", "office": "none", "week_start": "none"}))])
+    reply = llm.OpenAICompatProvider(client=http).chat([{"role": "user", "content": "q"}], TOOL_SPECS)
+    assert reply.tool_calls[0].args == {"view": "v_office_pace"}  # "none" means left out
+    for t in http.bodies[0]["tools"]:
+        f = t["function"]
+        params = f["parameters"]
+        assert f["strict"] is True and params["additionalProperties"] is False
+        assert sorted(params["required"]) == sorted(params["properties"])
+    gv = next(t["function"]["parameters"]["properties"] for t in http.bodies[0]["tools"] if t["function"]["name"] == "get_view")
+    assert gv["office"]["enum"][-1] == "none" and "none" not in gv["view"]["enum"]  # view stays required

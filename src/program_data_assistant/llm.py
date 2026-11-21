@@ -229,6 +229,29 @@ class VertexProvider(AnthropicProvider):
         return super().chat(messages, tools, format)
 
 
+STRICT_NONE = "none"
+
+
+def strict_spec(tool: dict) -> dict:
+    """A tool spec in strict form: every property required, no extra properties, and each optional property given
+    an explicit "none" choice (its enum gains "none"; a free string becomes anyOf the string or "none")."""
+    params = tool["parameters"]
+    required = set(params.get("required", []))
+    props = {}
+    for name, p in params["properties"].items():
+        p = dict(p)
+        if name not in required:
+            if "enum" in p:
+                p["enum"] = [*p["enum"], STRICT_NONE]
+            else:
+                desc = p.pop("description", "")
+                p = {"anyOf": [p, {"type": "string", "enum": [STRICT_NONE]}], "description": desc}
+            p["description"] = (p.get("description", "") + f' Use "{STRICT_NONE}" to leave it out.').strip()
+        props[name] = p
+    return {**tool, "strict": True,
+            "parameters": {"type": "object", "properties": props, "required": list(props), "additionalProperties": False}}
+
+
 class OpenAICompatProvider:
     """Any OpenAI-compatible chat completions API with tool calling, for example DeepSeek's hosted API.
 
@@ -242,6 +265,10 @@ class OpenAICompatProvider:
                             unset leaves the API's default. Thinking mode ignores temperature.
     PDA_OPENAI_REASONING_EFFORT  optional reasoning_effort, e.g. high
     PDA_OPENAI_MAX_TOKENS   output cap per call (default 2000; reasoning counts toward it, so raise it for thinking)
+    PDA_OPENAI_STRICT       "1" sends the tools in DeepSeek's strict mode (beta): every function strict, every
+                            property required, no additional properties. An optional parameter gets a "none"
+                            choice, and "none" is dropped from the arguments before the tool runs. Strict mode
+                            needs the beta base URL, e.g. https://api.deepseek.com/beta
     Token usage from every response is added up in `usage`.
     """
 
@@ -261,6 +288,7 @@ class OpenAICompatProvider:
         self.send_reasoning = os.environ.get("PDA_OPENAI_SEND_REASONING", "1") == "1"
         self.thinking = os.environ.get("PDA_OPENAI_THINKING", "")
         self.reasoning_effort = os.environ.get("PDA_OPENAI_REASONING_EFFORT", "")
+        self.strict = os.environ.get("PDA_OPENAI_STRICT", "") == "1"
         self.client = client or httpx.Client(timeout=timeout, headers={"Authorization": f"Bearer {key}"})
         self.usage: dict[str, int] = {}
         self.calls = 0
@@ -301,7 +329,7 @@ class OpenAICompatProvider:
         if self.reasoning_effort:
             body["reasoning_effort"] = self.reasoning_effort
         if tools:
-            body["tools"] = [{"type": "function", "function": t} for t in tools]
+            body["tools"] = [{"type": "function", "function": strict_spec(t) if self.strict else t} for t in tools]
         r = self.client.post(f"{self.base_url}/chat/completions", json=body)
         if r.status_code >= 400:
             # The error body, never the request headers (which carry the key).
@@ -316,7 +344,10 @@ class OpenAICompatProvider:
                 args = json.loads(fn.get("arguments") or "{}")
             except json.JSONDecodeError:
                 args = {"raw": fn.get("arguments")}
-            calls.append(ToolCall(c.get("id") or f"call_{i}", fn.get("name", ""), args if isinstance(args, dict) else {}))
+            args = args if isinstance(args, dict) else {}
+            if self.strict:  # an optional parameter's "none" choice means the parameter was left out
+                args = {k: v for k, v in args.items() if v != STRICT_NONE}
+            calls.append(ToolCall(c.get("id") or f"call_{i}", fn.get("name", ""), args))
         content = THINK_BLOCK.sub("", msg.get("content") or "").strip()
         return Reply(content, calls, msg.get("reasoning_content") or "")
 
