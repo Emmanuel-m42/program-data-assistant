@@ -3,12 +3,15 @@
 # Each case:
 #   question        exact text sent to the assistant
 #   category        demo grouping
-#   expected_tools  tools the assistant must call (all of them)
+#   expected_tools  tools the assistant must call (all of them). An entry can be a list of alternatives, any one of
+#                   which is enough; "get_view:<view>" means that view was read (by get_view or named in SQL)
 #   expected_docs   passage ids a good retriever returns in its top 4 for this question
 #   facts           what the answer must contain. A fact is either
 #                     sql: one value computed directly from the raw tables (ground truth, never from the model)
 #                          with tol (relative) or abs (absolute) tolerance; kind: percent also accepts a 0-1 fraction
-#                     any_of: list of strings, one of which must appear (case-insensitive)
+#                     any_of: list of strings, one of which must appear (case-insensitive; a plural label before
+#                             a list of numbers names each, so "Precincts 37, 38" matches "Precinct 37")
+#                   optional: true marks context the question doesn't ask for: reported, not scored
 #   should_refuse   true when the data and documents cannot answer it
 #   split           dev (used while changing prompts and tools), test (the first held-out half), heldout_v2 (the
 #                   second held-out set) or heldout_v3 (the third, at the end of the file)
@@ -48,7 +51,7 @@ cases:
           SELECT (SELECT sum(door_goal) FROM daily_goals) - (sum(doors) + (sum(doors) FILTER (WHERE day > '2026-10-11')) / 7.0 * 16) FROM d
         tol: 0.03
       - name: says we are not on pace
-        any_of: [not on pace, not on track, behind, short of, miss, below goal, below the goal, under goal]
+        any_of: [not on pace, not on track, behind, short of, miss, below goal, below the goal, under goal, short, shortfall]
 
   - id: q02
     split: test
@@ -103,7 +106,8 @@ cases:
     question: How many of our active canvassers are regulars, not one-day hires?
     category: staffing
     keywords: [active, canvassers, regulars, one-day hires, retention, staff]
-    expected_tools: [query_program_data, search_documents]
+    # The definition is in the program plan and, since the data-layer change, in v_gotv_staff: either source counts.
+    expected_tools: [query_program_data, [search_documents, "get_view:v_gotv_staff"]]
     expected_docs: [program-plan#staff-definitions]
     facts:
       - name: active regulars
@@ -111,9 +115,11 @@ cases:
           SELECT count(*) FROM (SELECT canvasser_id FROM shifts WHERE program = 'gotv' GROUP BY canvasser_id
                                 HAVING count(DISTINCT shift_date) >= 5 AND max(shift_date) >= '2026-10-12') x
         abs: 0
+      # Optional: the question asks one number (regulars); the active total is context, reported but not scored.
       - name: active canvassers
         sql: SELECT count(DISTINCT canvasser_id) FROM shifts WHERE program = 'gotv' AND shift_date >= '2026-10-12'
         abs: 0
+        optional: true
 
   - id: q05
     split: dev

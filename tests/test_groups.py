@@ -16,7 +16,7 @@ def test_groups_cli_prints_each_group_with_pass_k(monkeypatch, capsys):
     assert "| group | cases | pass | pass^3 |" in out
     assert "| dev (tuned) | 14 | 12 of 14 | 12 of 14 |" in out
     assert "| old held-out (contaminated) | 14 | 12 of 14 | 12 of 14 |" in out
-    assert "new held-out" not in out  # no heldout_v2 answers in these reports
+    assert "held-out v2" not in out and "held-out v3" not in out  # no heldout_v2 or v3 answers in these reports
 
 
 def test_groups_count_pass_and_pass_all_separately():
@@ -27,7 +27,7 @@ def test_groups_count_pass_and_pass_all_separately():
     gs = evals.groups(rows, {"n01": "heldout_v2", "n02": "heldout_v2", "q01": "dev"})
     assert [g["split"] for g in gs] == ["dev", "heldout_v2"]
     fresh = gs[1]
-    assert (fresh["label"], fresh["cases"], fresh["pass"], fresh["pass_all"]) == ("new held-out", 2, 2, 1)
+    assert (fresh["label"], fresh["cases"], fresh["pass"], fresh["pass_all"]) == ("held-out v2 (contaminated)", 2, 2, 1)
 
 
 def test_run_takes_several_splits(monkeypatch, tmp_path):

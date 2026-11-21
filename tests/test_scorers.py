@@ -198,3 +198,33 @@ def test_a_clear_decline_passes_a_refusal_case():
     case = {"id": "t5", "should_refuse": True}
     ans = answer("I can't provide the phone number, VAN never returns phone numbers.", refused=False, tools=())
     assert evals.score_case(case, ans, {}, [], {})["scores"]["refusal"] == 1.0
+
+
+def test_plural_labels_before_number_lists_name_each_item():
+    fact = {"any_of": ["P37", "Precinct 37"]}
+    assert evals.fact_matches(fact, None, "Harbor: Precincts 39, 37, 40 and 38 are untouched", {})
+    assert evals.fact_matches(fact, None, "precincts 36 & 37", {})
+    assert not evals.fact_matches(fact, None, "Precincts 39, 40 and 38; 37 doors left", {})
+    assert evals.expand_name_lists("Offices 1 and 2") == "Office 1 Office 2"
+
+
+def test_expected_tool_alternatives_and_views_read():
+    case = {"id": "q04", "expected_tools": ["query_program_data", ["search_documents", "get_view:v_gotv_staff"]],
+            "facts": [{"name": "n", "any_of": ["49"]}]}
+    view = answer("49 regulars [table:v_gotv_staff]", tools=())
+    view["tool_calls"] = [{"name": "get_view", "args": {"view": "v_gotv_staff"}}]
+    assert evals.score_case(case, view, {}, [], {})["scores"]["tool_choice"] == 1.0
+    sql = answer("49 regulars", tools=())
+    sql["tool_calls"] = [{"name": "query_program_data", "args": {"sql": "SELECT * FROM v_gotv_staff"}}]
+    assert evals.score_case(case, sql, {}, [], {})["scores"]["tool_choice"] == 1.0
+    other = answer("49 regulars", tools=())
+    other["tool_calls"] = [{"name": "get_view", "args": {"view": "v_canvasser_status"}}]
+    assert evals.score_case(case, other, {}, [], {})["scores"]["tool_choice"] == 0.0
+
+
+def test_optional_facts_are_reported_not_scored():
+    case = {"id": "c", "facts": [{"name": "asked", "sql": "x", "abs": 0}, {"name": "context", "sql": "y", "abs": 0, "optional": True}]}
+    truth = {("c", "asked"): 49.0, ("c", "context"): 57.0}
+    s = evals.score_case(case, answer("49 of our active canvassers are regulars"), truth, [], {})
+    assert s["scores"]["facts"] == 1.0 and s["scores"]["pass"] == 1.0
+    assert [(f["name"], f["matched"], f.get("optional", False)) for f in s["facts"]] == [("asked", True, False), ("context", False, True)]

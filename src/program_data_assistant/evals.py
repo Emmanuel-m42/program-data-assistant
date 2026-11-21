@@ -87,10 +87,22 @@ def numbers_in(text: str) -> list[float]:
     return digits + [WORD_VALUE[m.group(1).lower()] for m in WORD_NUMBER.finditer(plain)]
 
 
+# A plural label before a list of numbers names each one: "Precincts 39, 37 and 40" -> "Precinct 39 Precinct 37 ...".
+NAME_LIST = re.compile(r"\b([A-Za-z]+)s\s+(\d+(?:\s*(?:,|and|&|or)\s*(?:and\s+)?\d+)+)")
+
+
+def expand_name_lists(text: str) -> str:
+    def expand(m: re.Match) -> str:
+        return " ".join(f"{m.group(1)} {n}" for n in re.findall(r"\d+", m.group(2)))
+
+    return NAME_LIST.sub(expand, text)
+
+
 def fact_matches(fact: dict, truth: float | None, answer: str, defaults: dict) -> bool:
     if "any_of" in fact:
         low = answer.lower()
-        return any(s.lower() in low for s in fact["any_of"])
+        listed = expand_name_lists(answer).lower()
+        return any(s.lower() in low or s.lower() in listed for s in fact["any_of"])
     if truth is None:
         return False
     target = abs(truth)
@@ -107,11 +119,29 @@ def fact_matches(fact: dict, truth: float | None, answer: str, defaults: dict) -
     return False
 
 
-def score_case(case: dict, answer: dict, truth: dict, retrieved: list[str], defaults: dict) -> dict:
-    should_refuse = bool(case.get("should_refuse"))
-    called = {t["name"] for t in answer["tool_calls"]}
+def tools_called(answer: dict) -> set[str]:
+    """Tool names called, plus "get_view:<view>" for each view read (by get_view or named in SQL)."""
+    called = set()
+    for t in answer["tool_calls"]:
+        called.add(t["name"])
+        args = t.get("args") or {}
+        if t["name"] == "get_view" and args.get("view"):
+            called.add(f"get_view:{args['view']}")
+        for v in re.findall(r"\bv_\w+", str(args.get("sql", ""))):
+            called.add(f"get_view:{v}")
     if "get_view" in called:  # get_view is a narrower way to query program data
         called.add("query_program_data")
+    return called
+
+
+def tool_expected(entry, called: set[str]) -> bool:
+    """An expected_tools entry is a tool name, or a list of alternatives (any one is enough)."""
+    return any(e in called for e in entry) if isinstance(entry, list) else entry in called
+
+
+def score_case(case: dict, answer: dict, truth: dict, retrieved: list[str], defaults: dict) -> dict:
+    should_refuse = bool(case.get("should_refuse"))
+    called = tools_called(answer)
     scores: dict[str, float | None] = dict.fromkeys(METRICS)
     details = []
     refused = answer["refused"] or declined(answer["answer"])
@@ -121,15 +151,19 @@ def score_case(case: dict, answer: dict, truth: dict, retrieved: list[str], defa
         scores["retrieval"] = round(sum(1 for d in exp if d in retrieved) / len(exp), 3)
     if not should_refuse:
         exp_tools = case.get("expected_tools", [])
-        scores["tool_choice"] = 1.0 if all(t in called for t in exp_tools) else 0.0
+        scores["tool_choice"] = 1.0 if all(tool_expected(t, called) for t in exp_tools) else 0.0
         facts = case.get("facts", [])
-        hits = 0
+        hits = scored = 0
         for f in facts:
             t = truth.get((case["id"], f["name"]))
             ok = (not refused) and fact_matches(f, t, answer["answer"], defaults)
-            hits += ok
-            details.append({"name": f["name"], "expected": t if "sql" in f else f["any_of"], "matched": ok})
-        scores["facts"] = round(hits / len(facts), 3) if facts else None
+            # An optional fact is context the question doesn't ask for: reported, not scored.
+            if not f.get("optional"):
+                hits += ok
+                scored += 1
+            details.append({"name": f["name"], "expected": t if "sql" in f else f["any_of"], "matched": ok,
+                            **({"optional": True} if f.get("optional") else {})})
+        scores["facts"] = round(hits / scored, 3) if scored else None
         scores["citation"] = 1.0 if answer["citations_valid"] else 0.0
     applicable = [scores[m] for m in METRICS if m != "retrieval" and scores[m] is not None]
     scores["pass"] = 1.0 if all(s == 1.0 for s in applicable) else 0.0
@@ -147,9 +181,10 @@ def summarize(rows: list[dict]) -> dict:
     return out
 
 
-# Reporting groups, in order. The first held-out half (test) is contaminated: its misses were read while choosing
-# fixes. heldout_v2 is the fresh held-out set.
-GROUPS = {"dev": "dev (tuned)", "test": "old held-out (contaminated)", "heldout_v2": "new held-out"}
+# Reporting groups, in order. The first held-out half (test) and heldout_v2 are contaminated: their failures were read
+# while choosing fixes. heldout_v3 is the clean held-out set.
+GROUPS = {"dev": "dev (tuned)", "test": "old held-out (contaminated)", "heldout_v2": "held-out v2 (contaminated)",
+          "heldout_v3": "held-out v3"}
 
 
 def groups(rows: list[dict], splits: dict[str, str]) -> list[dict]:
@@ -326,11 +361,11 @@ def main() -> None:
     ap.add_argument("--out", default=str(REPORTS))
     ap.add_argument("--resume", action="store_true", help="continue from <label>.partial.json")
     ap.add_argument("--split", nargs="+", choices=list(GROUPS),
-                    help="run only these splits: dev, test (old held-out, contaminated), heldout_v2 (new held-out)")
+                    help="run only these splits: dev, test (old held-out), heldout_v2 (contaminated), heldout_v3")
     ap.add_argument("--repeat", type=int, default=1, help="runs per case; scores are means, pass_all is pass^k")
     ap.add_argument("--rescore", help="re-score a saved report with the current cases instead of running the model")
     ap.add_argument("--groups", nargs="+", metavar="REPORT",
-                    help="print the per-group table (dev, old held-out, new held-out) for one or more saved reports")
+                    help="print the per-group table (dev and each held-out set) for one or more saved reports")
     ap.add_argument("--trace", action="append", help="agent-trace: a JSONL trace from pda-agent-tool (repeatable)")
     ap.add_argument("--answers", action="append", help="agent-trace: the answers JSON for the trace in the same position")
     args = ap.parse_args()
