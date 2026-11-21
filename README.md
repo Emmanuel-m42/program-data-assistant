@@ -106,6 +106,8 @@ Nothing has been deployed. The Terraform passes `validate`, `tflint` and `checko
 
 `evals/cases.yaml` has 28 cases: the 19 demo questions, three paraphrases, three questions only the documents can answer, and three the assistant should refuse (turnout, a staff member's phone number, a past cycle). Each case lists the tools it needs, the passages a retriever should find, and the facts the answer has to contain. Numeric facts are SQL against the raw tables, written separately from the views, so ground truth never comes from the model or from the views it reads.
 
+The first held-out half (`split: test`) is now contaminated: its misses were read and discussed while choosing the next fixes. It stays on record and is still reported, labelled that way. A fresh held-out set of 15 new questions (`split: heldout_v2`, n01 to n15: the same categories plus two refusals, ground truth by SQL on the raw tables) was written and committed before any of those fixes, so the git history shows the order.
+
 `uv run evals --label <name>` runs every case against the model and writes `evals/reports/<name>.json` and `.md`. Metrics:
 
 | metric | what it checks |

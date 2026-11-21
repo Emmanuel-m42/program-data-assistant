@@ -92,8 +92,9 @@ def test_refusal_detection():
 def test_every_case_is_well_formed():
     cases, _ = evals.load_cases()
     ids = [c["id"] for c in cases]
-    assert len(ids) == len(set(ids)) == 28
+    assert len(ids) == len(set(ids)) == 43
     assert [c["id"] for c in cases[:19]] == [f"q{i:02d}" for i in range(1, 20)]
+    assert [c["id"] for c in cases if c["split"] == "heldout_v2"] == [f"n{i:02d}" for i in range(1, 16)]
     for c in cases:
         assert c.get("should_refuse") or c.get("facts"), c["id"]
 
@@ -131,8 +132,10 @@ def test_split_is_even_and_keeps_refusals_on_both_sides():
     cases, _ = evals.load_cases()
     dev = [c for c in cases if c["split"] == "dev"]
     test = [c for c in cases if c["split"] == "test"]
-    assert len(dev) == len(test) == 14
-    assert any(c.get("should_refuse") for c in dev) and any(c.get("should_refuse") for c in test)
+    fresh = [c for c in cases if c["split"] == "heldout_v2"]
+    assert len(dev) == len(test) == 14 and len(fresh) == 15
+    assert all(any(c.get("should_refuse") for c in half) for half in (dev, test, fresh))
+    assert {c["category"] for c in fresh} >= {c["category"] for c in dev + test}  # every category covered again
 
 
 def test_repeated_runs_average_and_pass_all():
