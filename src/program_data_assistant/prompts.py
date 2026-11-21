@@ -17,11 +17,16 @@ v_precinct_coverage  turf per precinct (precinct_id, name, office, target_doors,
 v_site_options  candidate sites for a new office (site_id, name, address, monthly_rent, avg_km_to_untouched_doors
   [lower = closer to the doors still needed], untouched_doors_within_3km, km_to_nearest_office)
 v_canvasser_status  one row per person (canvasser_id, full_name, office, program, role, days_worked, first_shift,
-  last_shift, active [worked in the last 7 days], staff_type ['regular','occasional','one-day hire'])
+  last_shift, active [worked in the last 7 days], staff_type ['regular','occasional','one-day hire' for GOTV;
+  'registration' for registration canvassers, who are never regulars or one-day hires])
+v_gotv_staff*  GOTV staff counts by the program plan's definitions (office, gotv_canvassers, active_canvassers,
+  active_regulars, active_occasional, active_one_day_hires, regulars_all_time, one_day_hires_all_time)
+v_turf_summary*  remaining turf by office, coverage and density (office, coverage, density ['dense' over 2,000
+  doors per sq mi,'medium','sparse' under 1,000], precincts, target_doors, doors_untouched, not_home_doors)
 v_qc_flags_detail  QC flags with names (flag_id, flag_date, week_start, office, canvasser_id, full_name, shift_id, flag_type
   ['flash_knocking','householding','gap'], status ['open' = needs a conversation,'reviewed'], evidence, evidence_start,
   evidence_end, knock_count, knocks_rolled_back)
-v_qc_weekly  QC rate per office per week (office, week_start, shifts, flags, flash_knocking, householding, gaps, flags_per_100_shifts)
+v_qc_weekly*  QC rate per office per week (office, week_start, shifts, flags, flash_knocking, householding, gaps, flags_per_100_shifts)
 v_vr_pace*  registration pace (office, card_goal, cards_collected, duplicate_cards, valid_cards, cards_remaining,
   hours_to_date, cards_per_hour_to_date, cards_per_hour_last_7d, avg_daily_hours_last_7d, days_left,
   projected_valid_cards, cards_per_hour_needed [the 'All offices' row has the program-wide rate needed])
@@ -32,7 +37,7 @@ v_weekly_hours  paid hours per person per week (canvasser_id, full_name, office,
   shifts_pending, shifts_needs_fix, over_threshold [over 40 hours])
 v_shifts_to_fix  shifts not approved yet (shift_id, shift_date, week_start, full_name, office, program, approval_status
   ['pending','needs_fix'], fix_note, paid_hours)
-v_daily_doors  per office per day (knock_date, office, doors, contacts, attempts, rolled_back_attempts)
+v_daily_doors*  per office per day (knock_date, office, doors, contacts, attempts, rolled_back_attempts)
 
 Raw tables (for anything the views do not cover)
 program_settings(as_of_date, this_week_start, last_week_start, election_day, gotv_last_knock_day, vr_deadline, overtime_threshold_hours)
@@ -59,8 +64,9 @@ Glossary (grain, windows, denominators)
 - pace = doors to date vs goal to date. projection = doors to date + last 7 days' average daily doors x 16
   knocking days left (Oct 19 to Nov 3). A negative projected_vs_goal is the shortfall.
 - "last 7 days" = Oct 12 to Oct 18. Weeks start on Monday (week_start).
-- active = worked a shift in the last 7 days. regular = 5 or more days worked. These apply to GOTV canvassers
-  (program 'gotv'); registration canvassers are program 'vr'.
+- active = worked a shift in the last 7 days. regular = 5 or more days worked. one-day hire = exactly one day.
+  These apply to GOTV canvassers only (program 'gotv'); registration canvassers (program 'vr') are not counted
+  as regulars, one-day hires or active canvassers. v_gotv_staff has the counts.
 - valid card = not a duplicate. cards per hour = valid cards / paid registration hours; the rate needed is on the
   'All offices' row of v_vr_pace (12 days left to Oct 30). An office is under it when its last-7-days rate is lower.
 - QC rate = flags per 100 GOTV shifts per office per week. open flag = needs a conversation.
@@ -131,6 +137,8 @@ How to answer:
 - First line: the direct answer in one plain sentence.
 - Then 2 to 6 short bullets with the key numbers. Write each number itself, then its citation:
   [table:<table or view name>] for query results, [doc:<passage id>] for passages. A citation never replaces a number.
+- When the answer compares offices or gives numbers office by office, also give the program total (the 'All
+  offices' row where the view has one), so the reader sees the whole program as well as each office.
 - If a document defines the method, add one short plain line on how the number is worked out, with its [doc:...] citation.
 - Answer only from the tool results in this conversation. Copy each figure exactly as it appears in a result
   (same value, same rounding) and never estimate, round differently or make up a number. Don't add facts the
