@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { DEMO, recorded } from '#lib/api.ts';
 	import favicon from '#lib/assets/favicon.svg';
@@ -8,10 +9,11 @@
 	let { children }: LayoutProps = $props();
 
 	const links = [
-		{ href: '/', label: 'Ask' },
-		{ href: '/offices', label: 'Offices' },
-		{ href: '/tested', label: "How it's tested" }
+		{ href: resolve('/'), label: 'Ask' },
+		{ href: resolve('/offices'), label: 'Offices' },
+		{ href: resolve('/tested'), label: "How it's tested" }
 	];
+	const here = (href: string) => page.url.pathname.replace(/\/$/, '') === href.replace(/\/$/, '');
 </script>
 
 <svelte:head>
@@ -21,10 +23,10 @@
 
 <header class="top">
 	<div class="wrap bar">
-		<a class="brand" href="/">Program data assistant</a>
+		<a class="brand" href={resolve('/')}>Program data assistant</a>
 		<nav aria-label="Main">
 			{#each links as l (l.href)}
-				<a href={l.href} aria-current={page.url.pathname === l.href ? 'page' : undefined}>{l.label}</a>
+				<a href={l.href} aria-current={here(l.href) ? 'page' : undefined}>{l.label}</a>
 			{/each}
 		</nav>
 	</div>

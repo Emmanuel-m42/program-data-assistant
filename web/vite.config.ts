@@ -19,8 +19,11 @@ export default defineConfig({
 				runes: ({ filename }) =>
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
-			// Static files with an SPA fallback: any host can serve build/, unknown paths get index.html.
-			adapter: adapter({ fallback: 'index.html' })
+			// Static files with an SPA fallback: any host can serve build/, unknown paths get index.html
+			// (the build script also copies it to 404.html for GitHub Pages).
+			adapter: adapter({ fallback: 'index.html' }),
+			// BASE_PATH serves the app under a subpath, e.g. /program-data-assistant on GitHub Pages. Unset locally.
+			paths: { base: (process.env.BASE_PATH ?? '') as '' | `/${string}` }
 		})
 	],
 	test: {
