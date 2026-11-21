@@ -33,6 +33,7 @@ class ToolCall:
 class Reply:
     content: str
     tool_calls: list[ToolCall] = field(default_factory=list)
+    reasoning: str = ""  # a thinking model's reasoning, kept only where an API needs it sent back; never shown
 
 
 class Provider(Protocol):
@@ -215,11 +216,95 @@ class VertexProvider(AnthropicProvider):
         return super().chat(messages, tools, format)
 
 
-PROVIDERS = {"ollama": OllamaProvider, "anthropic": AnthropicProvider, "vertex": VertexProvider}
+class OpenAICompatProvider:
+    """Any OpenAI-compatible chat completions API with tool calling, for example DeepSeek's hosted API.
+
+    PDA_OPENAI_BASE_URL   API base, e.g. https://api.deepseek.com
+    PDA_OPENAI_MODEL      model id, e.g. deepseek-v4-pro
+    PDA_OPENAI_API_KEY_ENV  name of the environment variable that holds the key (default OPENAI_API_KEY);
+                            the key itself is never read from a file in this repo, logged or stored
+    PDA_OPENAI_SEND_REASONING  "1" sends a thinking model's reasoning_content back on assistant turns that
+                            made tool calls (some APIs require it within a tool-calling turn); default "1"
+    Token usage from every response is added up in `usage`.
+    """
+
+    name = "openai_compat"
+    supports_format = False
+
+    def __init__(self, model: str | None = None, max_tokens: int = 2000, timeout: float = 300, client=None):
+        self.base_url = os.environ.get("PDA_OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
+        self.model = model or os.environ.get("PDA_OPENAI_MODEL")
+        if not self.model:
+            raise ValueError("set PDA_OPENAI_MODEL (for example deepseek-v4-pro)")
+        key_env = os.environ.get("PDA_OPENAI_API_KEY_ENV", "OPENAI_API_KEY")
+        key = os.environ.get(key_env)
+        if not key and client is None:
+            raise ValueError(f"the API key environment variable {key_env} is not set")
+        self.max_tokens = max_tokens
+        self.send_reasoning = os.environ.get("PDA_OPENAI_SEND_REASONING", "1") == "1"
+        self.client = client or httpx.Client(timeout=timeout, headers={"Authorization": f"Bearer {key}"})
+        self.usage: dict[str, int] = {}
+        self.calls = 0
+
+    def to_messages(self, messages: list[dict]) -> list[dict]:
+        out = []
+        for m in messages:
+            if m["role"] == "assistant":
+                msg = {"role": "assistant", "content": m.get("content") or ""}
+                if m.get("tool_calls"):
+                    msg["tool_calls"] = [{"id": c["id"], "type": "function",
+                                          "function": {"name": c["name"], "arguments": json.dumps(c["args"])}}
+                                         for c in m["tool_calls"]]
+                    if self.send_reasoning and m.get("reasoning"):
+                        msg["reasoning_content"] = m["reasoning"]
+                out.append(msg)
+            elif m["role"] == "tool":
+                out.append({"role": "tool", "tool_call_id": m["tool_call_id"], "content": m["content"]})
+            else:
+                out.append({"role": m["role"], "content": m["content"]})
+        return out
+
+    def _count(self, usage: dict | None):
+        self.calls += 1
+        for k, v in (usage or {}).items():
+            if isinstance(v, int):
+                self.usage[k] = self.usage.get(k, 0) + v
+            elif isinstance(v, dict):
+                for k2, v2 in v.items():
+                    if isinstance(v2, int):
+                        self.usage[f"{k}.{k2}"] = self.usage.get(f"{k}.{k2}", 0) + v2
+
+    def chat(self, messages, tools, format=None):
+        body = {"model": self.model, "messages": self.to_messages(messages), "temperature": 0,
+                "max_tokens": self.max_tokens}
+        if tools:
+            body["tools"] = [{"type": "function", "function": t} for t in tools]
+        r = self.client.post(f"{self.base_url}/chat/completions", json=body)
+        if r.status_code >= 400:
+            # The error body, never the request headers (which carry the key).
+            raise RuntimeError(f"{self.base_url} returned {r.status_code}: {r.text[:300]}")
+        data = r.json()
+        self._count(data.get("usage"))
+        msg = data["choices"][0]["message"]
+        calls = []
+        for i, c in enumerate(msg.get("tool_calls") or []):
+            fn = c.get("function", {})
+            try:
+                args = json.loads(fn.get("arguments") or "{}")
+            except json.JSONDecodeError:
+                args = {"raw": fn.get("arguments")}
+            calls.append(ToolCall(c.get("id") or f"call_{i}", fn.get("name", ""), args if isinstance(args, dict) else {}))
+        content = THINK_BLOCK.sub("", msg.get("content") or "").strip()
+        return Reply(content, calls, msg.get("reasoning_content") or "")
+
+
+PROVIDERS = {"ollama": OllamaProvider, "anthropic": AnthropicProvider, "vertex": VertexProvider,
+             "openai_compat": OpenAICompatProvider}
 
 
 def get_provider(name: str | None = None, model: str | None = None) -> Provider:
-    """PDA_PROVIDER picks the backend: ollama (open model, default), anthropic (Claude) or vertex (Claude on Vertex AI)."""
+    """PDA_PROVIDER picks the backend: ollama (open model, default), anthropic (Claude), vertex (Claude on Vertex
+    AI) or openai_compat (any OpenAI-compatible API, such as DeepSeek's)."""
     name = name or os.environ.get("PDA_PROVIDER", "ollama")
     if name not in PROVIDERS:
         raise ValueError(f"unknown provider '{name}', choose one of {', '.join(PROVIDERS)}")

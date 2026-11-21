@@ -285,7 +285,8 @@ class Assistant:
                     continue
                 break
             messages.append({"role": "assistant", "content": "" if not reply.tool_calls else reply.content,
-                             "tool_calls": [{"id": c.id, "name": c.name, "args": c.args} for c in calls]})
+                             "tool_calls": [{"id": c.id, "name": c.name, "args": c.args} for c in calls],
+                             "reasoning": getattr(reply, "reasoning", "")})
             for c in calls:
                 res = self.toolbox.run(c.name, c.args)
                 results.append(res)
