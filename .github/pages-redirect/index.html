@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Program data assistant has moved</title>
+		<link rel="canonical" href="https://ebot.vote/demos/program-assistant/" />
+		<script>
+			// The demo moved to ebot.vote. Keep the path after /program-data-assistant/, plus any query and hash.
+			(function () {
+				var target = 'https://ebot.vote/demos/program-assistant/';
+				var rest = location.pathname.replace(/^\/program-data-assistant\/?/, '').replace(/^\/+/, '');
+				if (rest === 'index.html' || rest === '404.html') rest = '';
+				if (rest && !/\/$/.test(rest) && !/\.[a-z0-9]+$/i.test(rest)) rest += '/';
+				location.replace(target + rest + location.search + location.hash);
+			})();
+		</script>
+		<meta http-equiv="refresh" content="2; url=https://ebot.vote/demos/program-assistant/" />
+		<style>
+			body {
+				font: 16px/1.5 system-ui, sans-serif;
+				margin: 3rem auto;
+				max-width: 32rem;
+				padding: 0 1rem;
+				color: #1d2328;
+			}
+		</style>
+	</head>
+	<body>
+		<p>
+			The program data assistant demo has moved to
+			<a href="https://ebot.vote/demos/program-assistant/">ebot.vote/demos/program-assistant</a>.
+		</p>
+	</body>
+</html>

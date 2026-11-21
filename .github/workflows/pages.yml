@@ -1,4 +1,6 @@
-# Builds the web app in demo mode (recorded runs, no API) and publishes it to GitHub Pages.
+# The demo lives on ebot.vote (https://ebot.vote/demos/program-assistant/), built from this repository's main.
+# GitHub Pages only redirects there: any path under /program-data-assistant/ goes to the same path on ebot.vote.
+# The web app is still checked, tested and built here on every push; it just isn't deployed to Pages.
 name: Pages
 
 on:
@@ -16,7 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  web:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,12 +37,21 @@ jobs:
           npm test
       - name: Build (demo mode)
         working-directory: web
-        env:
-          BASE_PATH: /${{ github.event.repository.name }}
         run: npm run build
+
+  build:
+    needs: web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Redirect site
+        run: |
+          mkdir site
+          cp .github/pages-redirect/index.html site/index.html
+          cp .github/pages-redirect/index.html site/404.html
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: web/build
+          path: site
 
   deploy:
     needs: build
