@@ -228,6 +228,9 @@ def test_expected_tool_alternatives_and_views_read():
     sql = answer("49 regulars", tools=())
     sql["tool_calls"] = [{"name": "query_program_data", "args": {"sql": "SELECT * FROM v_gotv_staff"}}]
     assert evals.score_case(case, sql, {}, [], {})["scores"]["tool_choice"] == 1.0
+    total = answer("49 regulars", tools=())
+    total["tool_calls"] = [{"name": "get_view", "args": {"view": "v_gotv_staff_total"}}]
+    assert evals.score_case(case, total, {}, [], {})["scores"]["tool_choice"] == 1.0
     other = answer("49 regulars", tools=())
     other["tool_calls"] = [{"name": "get_view", "args": {"view": "v_canvasser_status"}}]
     assert evals.score_case(case, other, {}, [], {})["scores"]["tool_choice"] == 0.0

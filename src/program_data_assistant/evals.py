@@ -120,15 +120,17 @@ def fact_matches(fact: dict, truth: float | None, answer: str, defaults: dict) -
 
 
 def tools_called(answer: dict) -> set[str]:
-    """Tool names called, plus "get_view:<view>" for each view read (by get_view or named in SQL)."""
+    """Tool names called, plus "get_view:<view>" for each view read (by get_view or named in SQL). Reading a view's
+    *_total also counts as reading the view: both carry the same definitions."""
     called = set()
     for t in answer["tool_calls"]:
         called.add(t["name"])
         args = t.get("args") or {}
+        views = re.findall(r"\bv_\w+", str(args.get("sql", "")))
         if t["name"] == "get_view" and args.get("view"):
-            called.add(f"get_view:{args['view']}")
-        for v in re.findall(r"\bv_\w+", str(args.get("sql", ""))):
-            called.add(f"get_view:{v}")
+            views.append(args["view"])
+        for v in views:
+            called.update({f"get_view:{v}", f"get_view:{v.removesuffix('_total')}"})
     if "get_view" in called:  # get_view is a narrower way to query program data
         called.add("query_program_data")
     return called
