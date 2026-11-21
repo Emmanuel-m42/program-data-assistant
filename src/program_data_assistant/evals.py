@@ -30,6 +30,11 @@ REPORTS = db.REPO / "evals" / "reports"
 METRICS = ["tool_choice", "retrieval", "facts", "citation", "refusal"]
 NUMBER = re.compile(r"(?<![\w.])-?\$?((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)")
 CITE_MARK = re.compile(r"\[[^\]]*\]")
+# Counts written as words ("Four open flags"). Hyphenated forms like "one-day hire" are words, not counts.
+WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve",
+         "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"]
+WORD_VALUE = {w: float(i) for i, w in enumerate(WORDS)} | {"a dozen": 12.0}
+WORD_NUMBER = re.compile(r"(?<![\w-])(a dozen|" + "|".join(WORDS) + r")(?![\w-])", re.IGNORECASE)
 
 
 def load_cases(path: Path = CASES) -> tuple[list[dict], dict]:
@@ -51,7 +56,8 @@ def compute_truth(conn, cases: list[dict]) -> dict[tuple[str, str], float]:
 
 def numbers_in(text: str) -> list[float]:
     plain = CITE_MARK.sub(" ", text)
-    return [float(m.group(1).replace(",", "")) for m in NUMBER.finditer(plain)]
+    digits = [float(m.group(1).replace(",", "")) for m in NUMBER.finditer(plain)]
+    return digits + [WORD_VALUE[m.group(1).lower()] for m in WORD_NUMBER.finditer(plain)]
 
 
 def fact_matches(fact: dict, truth: float | None, answer: str, defaults: dict) -> bool:

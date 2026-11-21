@@ -9,15 +9,15 @@
     "tool_choice_n": 25,
     "retrieval": 0.98,
     "retrieval_n": 25,
-    "facts": 0.93,
+    "facts": 0.94,
     "facts_n": 25,
     "citation": 1.0,
     "citation_n": 25,
     "refusal": 1.0,
     "refusal_n": 28,
-    "pass": 0.893,
+    "pass": 0.929,
     "pass_n": 28,
-    "pass_all": 0.893,
+    "pass_all": 0.929,
     "pass_all_n": 28,
     "avg_latency_ms": 52092
   },
@@ -1985,11 +1985,11 @@
       "scores": {
         "tool_choice": 1.0,
         "retrieval": 1.0,
-        "facts": 0.75,
+        "facts": 1.0,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 0.0,
-        "pass_all": 0.0
+        "pass": 1.0,
+        "pass_all": 1.0
       },
       "facts": [
         {
@@ -2016,7 +2016,7 @@
         {
           "name": "open flag count",
           "expected": 4.0,
-          "matched": false
+          "matched": true
         }
       ],
       "answer": {
@@ -4529,5 +4529,5 @@
       }
     }
   ],
-  "rescored_at": "2026-11-21T01:29:35+00:00"
+  "rescored_at": "2026-11-21T01:48:24+00:00"
 }

@@ -10,6 +10,14 @@ def test_numbers_ignore_citations_and_commas():
     assert evals.numbers_in("Eastgate lands at 14,596 doors, $2.07 per door [table:v_office_pace] (82%)") == [14596.0, 2.07, 82.0]
 
 
+def test_counts_written_as_words():
+    assert evals.numbers_in("Four open flags need a conversation") == [4.0]
+    assert evals.numbers_in("zero misses, twenty shifts and a dozen cards; Eleven more") == [0.0, 20.0, 12.0, 11.0]
+    assert evals.numbers_in("49 regulars, not one-day hires, and someone else") == [49.0]
+    assert evals.numbers_in("twenty-one doors, fourteenth day, oneself") == []
+    assert evals.fact_matches({"abs": 0}, 4.0, "Four open flags need a conversation this week.", {})
+
+
 def test_relative_and_absolute_tolerance():
     assert evals.fact_matches({"tol": 0.01}, 57329.3, "We land at 57,100 doors.", {})
     assert not evals.fact_matches({"tol": 0.001}, 57329.3, "We land at 57,100 doors.", {})

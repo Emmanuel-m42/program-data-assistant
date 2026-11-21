@@ -6,11 +6,11 @@ Model `ollama/qwen3.8:27b`, commit `8f3bd66`, 2026-11-20T02:53:24+00:00, 28 case
 | --- | --- | --- |
 | tool_choice | 0.96 | 25 |
 | retrieval | 0.98 | 25 |
-| facts | 0.93 | 25 |
+| facts | 0.94 | 25 |
 | citation | 1.00 | 25 |
 | refusal | 1.00 | 28 |
-| pass | 0.89 | 28 |
-| pass_all | 0.89 | 28 |
+| pass | 0.93 | 28 |
+| pass_all | 0.93 | 28 |
 
 Average latency 52.1 s per question.
 
@@ -27,7 +27,7 @@ Average latency 52.1 s per question.
 | q09 | pace | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 27 |
 | q10 | payroll | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 32 |
 | q11 | QC | 1.00 | 0.50 | 1.00 | 1.00 | 1.00 | 1.00 | 50 |
-| q12 | QC | 1.00 | 1.00 | 0.75 | 1.00 | 1.00 | 0.00 | 49 |
+| q12 | QC | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 49 |
 | q13 | QC | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 86 |
 | q14 | VR rate | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 48 |
 | q15 | VR rate | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 22 |
@@ -49,4 +49,3 @@ Average latency 52.1 s per question.
 
 - q04: active regulars, active canvassers
 - q07: client reported doors Oct 12, dashboard doors Oct 12
-- q12: open flag count
