@@ -34,7 +34,7 @@
 		{#if source.sql}
 			<details>
 				<summary>SQL</summary>
-				<pre><code>{source.sql}</code></pre>
+				<div class="scroll"><pre><code>{source.sql}</code></pre></div>
 			</details>
 		{/if}
 	{:else}
@@ -53,6 +53,8 @@
 		padding: 0.6rem 0.75rem;
 		background: var(--panel);
 		scroll-margin-top: 5rem;
+		min-width: 0;
+		max-width: 100%;
 	}
 	.card.highlighted {
 		border-color: var(--accent);
@@ -84,6 +86,7 @@
 	}
 	.scroll {
 		overflow-x: auto;
+		max-width: 100%;
 	}
 	table {
 		border-collapse: collapse;

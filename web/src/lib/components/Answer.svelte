@@ -72,7 +72,7 @@
 					<li>
 						<span class="tool">{c.name}</span>
 						{#if c.ok === false}<span class="fail">failed</span>{/if}
-						<pre><code>{argText(c)}</code></pre>
+						<div class="code"><pre><code>{argText(c)}</code></pre></div>
 						<span class="result">{c.result}</span>
 					</li>
 				{/each}
@@ -95,6 +95,11 @@
 </div>
 
 <style>
+	/* Never wider than the card it sits in: wide tables and SQL scroll inside their own boxes. */
+	.answer {
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
 	.answer p {
 		margin: 0 0 0.6rem;
 	}
@@ -123,6 +128,11 @@
 	}
 	details {
 		margin-top: 0.5rem;
+		min-width: 0;
+	}
+	.code {
+		overflow-x: auto;
+		max-width: 100%;
 	}
 	summary {
 		cursor: pointer;
@@ -166,7 +176,11 @@
 	}
 	.cards {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		gap: 0.5rem;
 		margin-top: 0.25rem;
+	}
+	.cards > div {
+		min-width: 0;
 	}
 </style>

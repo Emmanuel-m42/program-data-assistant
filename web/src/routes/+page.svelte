@@ -176,11 +176,17 @@
 	}
 	.thread {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		gap: 1.25rem;
 		margin: 1.25rem 0;
 	}
 	.exchange {
 		scroll-margin-top: 4.5rem;
+		min-width: 0;
+	}
+	.exchange .panel {
+		min-width: 0;
+		overflow-wrap: anywhere;
 	}
 	.q {
 		font-weight: 600;
