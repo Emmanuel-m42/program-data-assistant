@@ -271,6 +271,8 @@ def _run(label, provider, model, out_dir, resume, split, repeat, cases_path, cas
               f"cite={fmt(sc['citation'])}  refusal={sc['refusal']:.0f}  {ans['latency_ms'] / 1000:.0f}s", flush=True)
         partial.write_text(json.dumps(report_for(rows), indent=2, default=str))  # progress, in case a long run stops
     report = report_for(rows)
+    report["api_usage"] = getattr(assistant.provider, "usage", None)  # token counts, when the API reports them
+    report["api_calls"] = getattr(assistant.provider, "calls", None)
     (out_dir / f"{label}.json").write_text(json.dumps(report, indent=2, default=str))
     (out_dir / f"{label}.md").write_text(markdown(report))
     partial.unlink()
