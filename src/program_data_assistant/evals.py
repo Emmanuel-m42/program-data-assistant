@@ -1,5 +1,9 @@
 """Eval runner. Run: uv run evals --label baseline
 
+The MCP version (VAN tools from ngpvan-mcp alongside the program tools) is scored separately:
+  uv run evals --van demo --cases evals/cases_mcp_van.yaml --label mcp-van-cases-...   the VAN-routed cases
+  uv run evals --van demo --label mcp-van-original-...                                 the 28 originals, VAN tools present
+
 Scores every case in evals/cases.yaml on five metrics:
   tool_choice   the assistant called every expected tool
   retrieval     recall@4 of the expected passages when the retriever is given the question directly
@@ -24,6 +28,7 @@ import yaml
 from . import db, retrieval
 from .agent import Assistant
 from .llm import get_provider
+from .tools import Toolbox
 
 CASES = db.REPO / "evals" / "cases.yaml"
 REPORTS = db.REPO / "evals" / "reports"
@@ -37,15 +42,28 @@ def load_cases(path: Path = CASES) -> tuple[list[dict], dict]:
     return data["cases"], data.get("defaults", {})
 
 
-def compute_truth(conn, cases: list[dict]) -> dict[tuple[str, str], float]:
-    """Ground truth for every numeric fact, straight from the raw tables."""
+def needs_van(cases: list[dict]) -> bool:
+    return any("mcp" in f for c in cases for f in c.get("facts", []))
+
+
+def compute_truth(conn, cases: list[dict], van=None) -> dict[tuple[str, str], object]:
+    """Ground truth for every fact that has one: SQL straight on the raw tables, or a VAN tool called directly
+    (never through the model) and read with a JMESPath expression."""
     conn.execute("SET search_path = program, public")
-    truth = {}
+    truth: dict[tuple[str, str], object] = {}
     for c in cases:
         for f in c.get("facts", []):
             if "sql" in f:
                 v = conn.execute(f["sql"]).fetchone()[0]
                 truth[(c["id"], f["name"])] = float(v)
+            elif "mcp" in f:
+                if van is None:
+                    raise RuntimeError(f"{c['id']} needs the VAN tools for its ground truth; pass --van demo")
+                import jmespath
+
+                data = van.call_direct(f["mcp"]["tool"], f["mcp"].get("args", {}))
+                v = jmespath.search(f["path"], data)
+                truth[(c["id"], f["name"])] = float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else v
     return truth
 
 
@@ -54,12 +72,16 @@ def numbers_in(text: str) -> list[float]:
     return [float(m.group(1).replace(",", "")) for m in NUMBER.finditer(plain)]
 
 
-def fact_matches(fact: dict, truth: float | None, answer: str, defaults: dict) -> bool:
+def fact_matches(fact: dict, truth, answer: str, defaults: dict) -> bool:
+    low = answer.lower()
     if "any_of" in fact:
-        low = answer.lower()
         return any(s.lower() in low for s in fact["any_of"])
     if truth is None:
         return False
+    if isinstance(truth, str):  # a name or label: it must appear
+        return truth.lower() in low
+    if isinstance(truth, list):  # several names or labels: all must appear
+        return bool(truth) and all(str(t).lower() in low for t in truth)
     target = abs(truth)
     for n in numbers_in(answer):
         cands = [abs(n)]
@@ -94,7 +116,7 @@ def score_case(case: dict, answer: dict, truth: dict, retrieved: list[str], defa
             t = truth.get((case["id"], f["name"]))
             ok = (not answer["refused"]) and fact_matches(f, t, answer["answer"], defaults)
             hits += ok
-            details.append({"name": f["name"], "expected": t if "sql" in f else f["any_of"], "matched": ok})
+            details.append({"name": f["name"], "expected": f["any_of"] if "any_of" in f else t, "matched": ok})
         scores["facts"] = round(hits / len(facts), 3) if facts else None
         scores["citation"] = 1.0 if answer["citations_valid"] else 0.0
     applicable = [scores[m] for m in METRICS if m != "retrieval" and scores[m] is not None]
@@ -164,17 +186,41 @@ def combine_scores(runs: list[dict]) -> dict:
     return out
 
 
+def start_van(mode: str | None):
+    """VAN tools for an eval run: 'demo' launches ngpvan-mcp --demo; None leaves them off."""
+    if not mode:
+        return None
+    from .van_mcp import VanMcp, _ngpvan_command
+
+    if mode != "demo":
+        raise ValueError("--van takes 'demo'")
+    return VanMcp(_ngpvan_command()).start()
+
+
 def run(label: str, provider: str | None, model: str | None, only: list[str] | None, out_dir: Path,
-        resume: bool = False, split: str | None = None, repeat: int = 1) -> dict:
-    cases, defaults = load_cases()
+        resume: bool = False, split: str | None = None, repeat: int = 1, cases_path: Path = CASES,
+        van_mode: str | None = None) -> dict:
+    cases, defaults = load_cases(cases_path)
     if only:
         cases = [c for c in cases if c["id"] in only]
     if split:
         cases = [c for c in cases if c.get("split") == split]
+    if needs_van(cases) and not van_mode:
+        raise ValueError(f"{cases_path.name} has VAN cases; run it with --van demo")
+    van = start_van(van_mode)
+    try:
+        return _run(label, provider, model, out_dir, resume, split, repeat, cases_path, cases, defaults, van)
+    finally:
+        if van is not None:
+            van.close()
+
+
+def _run(label, provider, model, out_dir, resume, split, repeat, cases_path, cases, defaults, van) -> dict:
     with db.connect_admin() as conn:
-        truth = compute_truth(conn, cases)
+        truth = compute_truth(conn, cases, van)
         retrieved = {c["id"]: [h["chunk_id"] for h in retrieval.search(conn, c["question"])] for c in cases}
-    assistant = Assistant(get_provider(provider, model))
+    assistant = Assistant(get_provider(provider, model), Toolbox(van=van))
+    tools_offered = [t["name"] for t in assistant.toolbox.specs()]
     out_dir.mkdir(parents=True, exist_ok=True)
     partial = out_dir / f"{label}.partial.json"
     rows = []
@@ -191,6 +237,8 @@ def run(label: str, provider: str | None, model: str | None, only: list[str] | N
             "commit": git_commit(),
             "split": split or "all",
             "repeat": repeat,
+            "cases_file": str(cases_path.relative_to(db.REPO)) if cases_path.is_relative_to(db.REPO) else str(cases_path),
+            "tools": tools_offered,  # the tool set this score belongs to
             "summary": summarize(rows),
             "cases": rows,
         }
@@ -222,10 +270,16 @@ def run(label: str, provider: str | None, model: str | None, only: list[str] | N
 def rescore(path: Path) -> dict:
     """Score the saved answers in a report again with the current cases and scorers (no model calls)."""
     report = json.loads(path.read_text())
-    cases, defaults = load_cases()
+    cases, defaults = load_cases(db.REPO / report.get("cases_file", "evals/cases.yaml"))
     by_id = {c["id"]: c for c in cases}
+    van = start_van("demo") if needs_van(cases) else None
+    try:
+        with db.connect_admin() as conn:
+            truth = compute_truth(conn, cases, van)
+    finally:
+        if van is not None:
+            van.close()
     with db.connect_admin() as conn:
-        truth = compute_truth(conn, cases)
         for r in report["cases"]:
             c = by_id[r["id"]]
             r["retrieved"] = [h["chunk_id"] for h in retrieval.search(conn, c["question"])]
@@ -252,13 +306,18 @@ def main() -> None:
     ap.add_argument("--split", choices=["dev", "test"], help="run only the dev or the held-out test cases")
     ap.add_argument("--repeat", type=int, default=1, help="runs per case; scores are means, pass_all is pass^k")
     ap.add_argument("--rescore", help="re-score a saved report with the current cases instead of running the model")
+    ap.add_argument("--cases", default=str(CASES), help="cases file (evals/cases_mcp_van.yaml for the VAN cases)")
+    ap.add_argument("--van", choices=["demo"], help="offer the VAN tools from ngpvan-mcp --demo (the MCP version)")
     args = ap.parse_args()
     if args.rescore:
         report = rescore(Path(args.rescore))
         s = report["summary"]
         print("  ".join(f"{m}={fmt(s[m])}" for m in METRICS + ["pass", "pass_all"]))
         return
-    report = run(args.label, args.provider, args.model, args.only, Path(args.out), args.resume, args.split, args.repeat)
+    if args.van and not args.label.startswith("mcp-van"):
+        ap.error("runs with the VAN tools are scored separately: use a label starting with mcp-van")
+    report = run(args.label, args.provider, args.model, args.only, Path(args.out), args.resume, args.split, args.repeat,
+                 Path(args.cases).resolve(), args.van)
     s = report["summary"]
     print("\n" + "  ".join(f"{m}={fmt(s[m])}" for m in METRICS + ["pass", "pass_all"]))
     print(f"wrote {args.out}/{args.label}.json and .md")

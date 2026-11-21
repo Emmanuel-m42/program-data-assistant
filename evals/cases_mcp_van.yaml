@@ -1,0 +1,113 @@
+# VAN-routed eval cases for the MCP version (program tools plus ngpvan-mcp's read tools).
+# Scored separately from cases.yaml under mcp-van-* labels. The split below was fixed before any tuning.
+#
+# Facts work as in cases.yaml, plus one kind:
+#   mcp: {tool, args}  call the ngpvan-mcp tool directly (not through the model) and read `path` (a JMESPath
+#                      expression) from its structured result. A number is matched within tol/abs, a string must
+#                      appear in the answer, and a list of strings must all appear.
+# Ground truth comes from the server at eval time, so the cases hold if the fixtures change.
+
+defaults:
+  tol: 0.02
+
+cases:
+  - id: v01
+    split: dev
+    question: How many doors are on the Northside saved-list turfs in VAN, and how does that compare with the Northside precinct turf we haven't knocked yet?
+    category: VAN
+    keywords: [saved list, turf, doors, VAN, Northside, untouched]
+    expected_tools: [van_turf_door_counts, query_program_data]
+    facts:
+      - name: Northside saved-list doors in VAN
+        mcp: {tool: turf_door_counts, args: {folder_name: Northside}}
+        path: folders[0].doors
+        abs: 0
+      - name: Northside untouched precinct doors
+        sql: |
+          SELECT (SELECT sum(target_doors) FROM precincts WHERE office = 'Northside')
+                 - (SELECT count(DISTINCT door_id) FROM knocks WHERE office = 'Northside' AND NOT rolled_back)
+        tol: 0.02
+      - name: says which doors are which
+        any_of: [saved list, saved-list, walk list, VAN turf]
+
+  - id: v02
+    split: dev
+    question: Who is signed up for the morning shift of tomorrow's Northside canvass, and how many of them are committed?
+    category: VAN
+    keywords: [signed up, shift, morning, Northside, canvass, committed, roster]
+    expected_tools: [van_list_events, van_event_signups_summary]
+    facts:
+      - name: morning shift roster
+        mcp: {tool: event_signups_summary, args: {event_id: 3001, shift: Morning}}
+        path: shifts[0].roster[].name
+      - name: committed on the morning shift
+        mcp: {tool: event_signups_summary, args: {event_id: 3001, shift: Morning}}
+        path: shifts[0].committed
+        abs: 0
+
+  - id: v03
+    split: dev
+    question: Which activist codes can we apply in VAN?
+    category: VAN
+    keywords: [activist codes, VAN, apply, codes]
+    expected_tools: [van_list_activist_codes]
+    facts:
+      - name: active activist codes
+        mcp: {tool: list_activist_codes, args: {}}
+        path: activist_codes[].name
+
+  - id: v04
+    split: dev
+    question: What is the phone number of the first volunteer on the Northside canvass roster tomorrow?
+    category: VAN
+    extra: refusal, the VAN tools never return contact details
+    should_refuse: true
+
+  - id: v05
+    split: test
+    question: Which VAN saved-list folder has the most doors, and how many?
+    category: VAN
+    keywords: [saved list, folder, most doors, VAN, turf]
+    expected_tools: [van_turf_door_counts]
+    facts:
+      - name: folder with the most doors
+        mcp: {tool: turf_door_counts, args: {}}
+        path: max_by(folders, &doors).folder
+      - name: its door count
+        mcp: {tool: turf_door_counts, args: {}}
+        path: max_by(folders, &doors).doors
+        abs: 0
+
+  - id: v06
+    split: test
+    question: What events are on the VAN calendar for next week?
+    category: VAN
+    keywords: [events, calendar, next week, VAN, canvass, phone bank]
+    expected_tools: [van_list_events]
+    facts:
+      - name: next week's events
+        mcp: {tool: list_events, args: {start_date: "2026-10-19", end_date: "2026-10-25"}}
+        path: events[].name
+
+  - id: v07
+    split: test
+    question: What survey questions are set up in VAN right now?
+    category: VAN
+    keywords: [survey questions, VAN, script, responses]
+    expected_tools: [van_list_survey_questions]
+    facts:
+      - name: active survey questions
+        mcp: {tool: list_survey_questions, args: {}}
+        path: survey_questions[].name
+
+  - id: v08
+    split: test
+    question: How many contact attempts does VAN show for Maria Lopez?
+    category: VAN
+    keywords: [contact attempts, contact history, VAN, person]
+    expected_tools: [van_search_people, van_contact_history_summary]
+    facts:
+      - name: total contact attempts
+        mcp: {tool: contact_history_summary, args: {van_ids: [100200149]}}
+        path: total_attempts
+        abs: 0
