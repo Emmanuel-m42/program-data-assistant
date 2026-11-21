@@ -1,6 +1,6 @@
 {
   "program": "Riverbend Votes (GOTV) and Riverbend Registers (voter registration), fictional programs",
-  "generated_at": "2026-11-21T01:31:06+00:00",
+  "generated_at": "2026-11-21T03:19:44+00:00",
   "model": "ollama/qwen3.8:27b",
   "scoreboard": {
     "before": {
@@ -47,11 +47,11 @@
       "heldout": {
         "cases": 14,
         "runs_per_case": 3,
-        "pass": 11,
-        "pass_all_runs": 11,
+        "pass": 12,
+        "pass_all_runs": 12,
         "tool_choice": 0.923,
         "retrieval": 1.0,
-        "facts": 0.865,
+        "facts": 0.885,
         "citation": 1.0,
         "refusal": 1.0,
         "avg_latency_ms": 58683
@@ -70,10 +70,121 @@
       }
     },
     "what_changed": "Before: qwen2.5:7b on the server's 8-core CPU, writing free SQL from a short schema list (86 s per answer). After: qwen3.8:27b through Ollama on a laptop RTX 3080 (16 GB) with part of the model on the CPU, thinking off, 16k context. Changes in between: helper views for the common questions and a get_view tool that returns a whole metric view; tool descriptions that say what each tool answers and doesn't, with a routing policy (views first, SQL only when no view has it, documents for rules and reasons); a schema guide and a glossary of definitions; an answer template with three examples that are not eval questions; real column names sent back on SQL errors with one retry; a note on 0-row results; a look-first nudge when a model answers without a tool; a citation check that lists the valid ids, and citations to ids no tool returned are dropped; a grounding check that withholds answers whose numbers are not in the tool results.",
-    "headline": "Held-out half: 11 of 14 passed, the same 11 on each of 3 runs.",
+    "headline": "Fresh held-out: 15 of 15, the same 15 on each of 3 runs (Claude Opus 5.5)",
     "split_note": "The split was made partway through tuning: the 28 questions were split into 14 tuned and 14 held-out after the earlier fixes, which were made while looking at all 28. The held-out half is held out from the later changes (tool descriptions, glossary, citation handling). Shown answers are run 1 of 3 for each question.",
     "shown_answers_avg_latency_ms": 70787,
-    "latency_note": "shown_answers_avg_latency_ms averages the answers shown on the page (one run per demo question). Each half's avg_latency_ms averages every eval answer in that half across all runs, including fast document and refusal questions."
+    "latency_note": "shown_answers_avg_latency_ms averages the answers shown on the page (one run per demo question). Each half's avg_latency_ms averages every eval answer in that half across all runs, including fast document and refusal questions.",
+    "comparison": [
+      {
+        "model": "Claude Opus 5.5, agent through the tool CLI",
+        "code": "after",
+        "groups": {
+          "dev": {
+            "label": "dev (tuned)",
+            "cases": 14,
+            "pass": 14,
+            "pass_all_runs": 14,
+            "runs_per_case": 3,
+            "tool_choice": 1.0,
+            "retrieval": 0.958,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "avg_latency_ms": 0
+          },
+          "heldout_v2": {
+            "label": "new held-out",
+            "cases": 15,
+            "pass": 15,
+            "pass_all_runs": 15,
+            "runs_per_case": 3,
+            "tool_choice": 1.0,
+            "retrieval": 0.846,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "avg_latency_ms": 0
+          }
+        }
+      },
+      {
+        "model": "qwen3.8:27b Q4_K_M, RTX 3080 laptop (the published run, rescored)",
+        "code": "before",
+        "groups": {
+          "dev": {
+            "label": "dev (tuned)",
+            "cases": 14,
+            "pass": 12,
+            "pass_all_runs": 12,
+            "runs_per_case": 3,
+            "tool_choice": 1.0,
+            "retrieval": 0.958,
+            "facts": 0.917,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "avg_latency_ms": 57277
+          },
+          "test": {
+            "label": "old held-out (contaminated)",
+            "cases": 14,
+            "pass": 12,
+            "pass_all_runs": 12,
+            "runs_per_case": 3,
+            "tool_choice": 0.923,
+            "retrieval": 1.0,
+            "facts": 0.885,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "avg_latency_ms": 58683
+          }
+        }
+      },
+      {
+        "model": "qwen3.8:27b Q4_K_M, GPD (Ryzen AI Max+ 395, Radeon 8060S)",
+        "code": "before",
+        "groups": {},
+        "status": "running"
+      },
+      {
+        "model": "qwen3.8:27b Q4_K_M, GPD (Ryzen AI Max+ 395, Radeon 8060S)",
+        "code": "after",
+        "groups": {},
+        "status": "running"
+      },
+      {
+        "model": "qwen3.8:27b Q4_K_M, GPD (Ryzen AI Max+ 395, Radeon 8060S), thinking on",
+        "code": "after",
+        "groups": {},
+        "status": "running"
+      },
+      {
+        "model": "DeepSeek-V4-Pro (open weights), DeepSeek hosted API, thinking off",
+        "code": "before",
+        "groups": {},
+        "status": "running"
+      },
+      {
+        "model": "DeepSeek-V4-Pro (open weights), DeepSeek hosted API, thinking off",
+        "code": "after",
+        "groups": {},
+        "status": "running"
+      },
+      {
+        "model": "DeepSeek-V4.1-Flash (open weights), DeepSeek hosted API, thinking on",
+        "code": "before",
+        "groups": {},
+        "status": "running"
+      },
+      {
+        "model": "DeepSeek-V4.1-Flash (open weights), DeepSeek hosted API, thinking on",
+        "code": "after",
+        "groups": {},
+        "status": "running"
+      }
+    ],
+    "comparison_note": "The fresh held-out questions were written and committed before the latest fixes. The published qwen3.8:27b run's old held-out half was first scored 11 of 14; it is 12 of 14 since the scorer reads counts written as words (q12 wrote \"Four\"), a measurement fix, not a model change.",
+    "headline_note": "Claude Opus 5.5 as the agent through the tool CLI (same tools and prompt, not the app's own agent loop; the in-loop guardrail rewrites don't apply). Code after the latest fixes.",
+    "shown_run_note": "The answers shown in this demo are the recorded answers of qwen3.8:27b, the run in the table below."
   },
   "questions": [
     {
@@ -2402,13 +2513,12 @@
         "after": {
           "tool_choice": 1.0,
           "retrieval": 1.0,
-          "facts": 0.75,
+          "facts": 1.0,
           "citation": 1.0,
           "refusal": 1.0,
-          "pass": 0.0,
-          "pass_all": 0.0
-        },
-        "note": "The answer is right, but it writes the count as \"Four\" and the number scorer only reads digits."
+          "pass": 1.0,
+          "pass_all": 1.0
+        }
       }
     },
     {

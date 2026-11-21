@@ -63,6 +63,18 @@ export interface SplitBlock {
 	avg_latency_ms: number;
 }
 
+export interface ComparisonCell extends SplitBlock {
+	label: string;
+}
+
+// One model and code version, scored per group: dev (tuned), test (old held-out, contaminated), heldout_v2 (fresh).
+export interface ComparisonRow {
+	model: string;
+	code: string;
+	status?: 'running';
+	groups: Partial<Record<'dev' | 'test' | 'heldout_v2', ComparisonCell>>;
+}
+
 export interface Scoreboard {
 	before: Metrics & {
 		label: string;
@@ -74,6 +86,10 @@ export interface Scoreboard {
 	};
 	after: { label: string; model: string; commit: string; heldout: SplitBlock; tuned: SplitBlock };
 	headline?: string;
+	headline_note?: string; // which model and mode the headline is for
+	shown_run_note?: string; // which run the shown answers come from
+	comparison?: ComparisonRow[];
+	comparison_note?: string;
 	split_note?: string;
 	what_changed: string;
 	shown_answers_avg_latency_ms?: number;

@@ -63,7 +63,7 @@ The eval scoreboard and the per-question results for the "How it's tested" page.
 ```json
 {
   "model": "ollama/qwen3.8:27b",
-  "scoreboard": {"before": {"...": "..."}, "after": {"heldout": {"cases": 14, "pass": 11, "pass_all_runs": 11}, "tuned": {"cases": 14, "pass": 12, "pass_all_runs": 12}}, "headline": "...", "split_note": "..."},
+  "scoreboard": {"before": {"...": "..."}, "after": {"heldout": {"cases": 14, "pass": 12, "pass_all_runs": 12}, "tuned": {"cases": 14, "pass": 12, "pass_all_runs": 12}}, "headline": "...", "headline_note": "...", "comparison": [{"model": "...", "code": "after", "groups": {"dev": {"cases": 14, "pass": 14, "pass_all_runs": 14}, "heldout_v2": {"...": "..."}}}], "split_note": "..."},
   "questions": [{"id": "q01", "question": "...", "category": "pace", "eval": {"before": {}, "after": {}, "note": "optional: why it scored as it did"}}]
 }
 ```

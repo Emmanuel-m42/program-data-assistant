@@ -17,6 +17,12 @@
 		['refusal', 'Refusal', 'declines exactly when the data can’t answer']
 	];
 
+	const COMPARE_GROUPS: ['dev' | 'test' | 'heldout_v2', string][] = [
+		['dev', 'Tuned'],
+		['test', 'Old held-out (contaminated)'],
+		['heldout_v2', 'Fresh held-out']
+	];
+
 	// The "Passed" row (case counts) followed by the five metrics, for the narrow-screen cards.
 	const CARD_ROWS: [keyof SplitBlock | null, string, string][] = [[null, 'Passed', ''], ...METRICS];
 
@@ -37,33 +43,88 @@
 	{@const h = sb.after.heldout}
 	{@const t = sb.after.tuned}
 	{@const changes = splitChanges(sb.what_changed)}
-	<p class="lede">
-		28 test questions, each with facts checked against SQL on the raw tables, never against the model. Half of them
-		were set aside and not tuned against.
-	</p>
-
-	<section class="panel headline">
-		<p class="big">{h.pass} of {h.cases}</p>
-		<p>
-			held-out questions passed, the same {h.pass_all_runs} on each of {h.runs_per_case} runs. On the {t.cases} tuned
-			questions: {t.pass} of {t.cases}, the same {t.pass_all_runs} on each run.
+	{#if sb.comparison?.length}
+		<p class="lede">
+			43 test questions, each with facts checked against SQL on the raw tables, never against the model: 14 tuned
+			on, 14 first held out (now contaminated), and 15 fresh held-out questions written and committed before the
+			latest fixes.
 		</p>
-		<p class="small">Model: {sb.after.model.replace(/^ollama\//, '')}.</p>
-	</section>
+	{:else}
+		<p class="lede">
+			28 test questions, each with facts checked against SQL on the raw tables, never against the model. Half of them
+			were set aside and not tuned against.
+		</p>
+	{/if}
+
+	{#if sb.headline_note && sb.headline}
+		<section class="panel headline">
+			<p class="big">{sb.headline}</p>
+			<p class="small">{sb.headline_note}</p>
+		</section>
+	{:else}
+		<section class="panel headline">
+			<p class="big">{h.pass} of {h.cases}</p>
+			<p>
+				held-out questions passed, the same {h.pass_all_runs} on each of {h.runs_per_case} runs. On the {t.cases} tuned
+				questions: {t.pass} of {t.cases}, the same {t.pass_all_runs} on each run.
+			</p>
+			<p class="small">Model: {sb.after.model.replace(/^ollama\//, '')}.</p>
+		</section>
+	{/if}
+
+	{#if sb.comparison?.length}
+		<h2>Models compared</h2>
+		<p class="small">
+			Cases passed, then pass^3: the cases passed on all 3 runs. "Before" and "after" are the code before and after the
+			latest fixes, on the same model.
+		</p>
+		<div class="scroll">
+			<table class="compare">
+				<thead>
+					<tr>
+						<th scope="col">Model</th>
+						<th scope="col">Code</th>
+						{#each COMPARE_GROUPS as [, label] (label)}<th scope="col">{label}</th>{/each}
+					</tr>
+				</thead>
+				<tbody>
+					{#each sb.comparison as row (row.model + row.code)}
+						<tr>
+							<th scope="row">{row.model}</th>
+							<td>{row.code}</td>
+							{#each COMPARE_GROUPS as [key] (key)}
+								{@const g = row.groups[key]}
+								<td>
+									{#if row.status === 'running'}running
+									{:else if g}{g.pass} of {g.cases}<span class="help">pass^3 {g.pass_all_runs}</span>
+									{:else}<span class="muted">not run</span>{/if}
+								</td>
+							{/each}
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
+		{#if sb.comparison_note}<p class="note">{sb.comparison_note}</p>{/if}
+		{#if sb.shown_run_note}
+			<h2>The shown answers</h2>
+			<p class="small">{sb.shown_run_note}</p>
+		{/if}
+	{/if}
 
 	{#if sb.split_note}
 		<p class="note">{sb.split_note}</p>
 	{/if}
 
-	<h2>Scores by half</h2>
+	<h2>Scores by half{#if sb.comparison?.length}, {sb.after.model.replace(/^ollama\//, '')}{/if}</h2>
 	<div class="scroll scores-wrap">
 		<table class="scores">
 			<thead>
 				<tr>
 					<th scope="col">Metric</th>
-					<th scope="col">Held out, now</th>
+					<th scope="col">Old held-out, now</th>
 					<th scope="col">Tuned, now</th>
-					{#if sb.before.heldout}<th scope="col">Held out, baseline</th>{/if}
+					{#if sb.before.heldout}<th scope="col">Old held-out, baseline</th>{/if}
 					{#if sb.before.tuned}<th scope="col">Tuned, baseline</th>{/if}
 				</tr>
 			</thead>
@@ -92,12 +153,12 @@
 			<div class="metric panel">
 				<p class="mlabel">{label}{#if help}<span class="help">{help}</span>{/if}</p>
 				<dl>
-					<dt>Held out, now</dt>
+					<dt>Old held-out, now</dt>
 					<dd>{key === null ? `${h.pass} of ${h.cases}` : pct(h[key] as number | null)}</dd>
 					<dt>Tuned, now</dt>
 					<dd>{key === null ? `${t.pass} of ${t.cases}` : pct(t[key] as number | null)}</dd>
 					{#if sb.before.heldout}
-						<dt>Held out, baseline</dt>
+						<dt>Old held-out, baseline</dt>
 						<dd>{key === null ? `${sb.before.heldout.pass} of ${sb.before.heldout.cases}` : pct(sb.before.heldout[key] as number | null)}</dd>
 					{/if}
 					{#if sb.before.tuned}
@@ -280,6 +341,13 @@
 	}
 	.id {
 		font: 0.75rem var(--mono);
+		color: var(--ink-soft);
+	}
+	.compare td,
+	.compare th[scope='row'] {
+		min-width: 6.5rem;
+	}
+	.muted {
 		color: var(--ink-soft);
 	}
 	.qnote {
