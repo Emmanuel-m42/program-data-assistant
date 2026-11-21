@@ -86,3 +86,14 @@ def test_evals_entry_point_dispatches(tmp_path, capsys, monkeypatch):
                                       "--only", "q01", "--out", str(out), "--label", "cli"])
     evals.main()
     assert json.loads((out / "cli.json").read_text())["summary"]["pass"] == 1.0
+
+
+def test_calls_under_unknown_case_ids_are_ignored(tmp_path, capsys):
+    t1, a1 = q01_run(tmp_path, capsys, "r1", GOOD)
+    clean = agent_trace.run("clean", [t1], [a1], tmp_path / "rep", only=["q01"])
+    stray = {"case": "n05x", "tool": "get_view", "args": {"view": "v_site_options"}, "result": "discarded", "ok": True}
+    with open(t1, "a") as fh:
+        fh.write(json.dumps(stray) + "\n")
+    report = agent_trace.run("stray", [t1], [a1], tmp_path / "rep", only=["q01"])
+    assert [r["id"] for r in report["cases"]] == ["q01"] and report["integrity_problems"] == []
+    assert report["cases"][0]["scores"] == clean["cases"][0]["scores"]

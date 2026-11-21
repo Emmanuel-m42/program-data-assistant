@@ -29,8 +29,8 @@ from pathlib import Path
 from . import agent, db, prompts
 from .tools import TOOL_SPECS, Toolbox
 
-AGENT_LABEL = ("Claude Opus 5.5 as the agent through the tool CLI (OpenCode subagent; same tools and prompt, "
-               "not the app's own agent loop)")
+AGENT_LABEL = ("Claude Opus 5.5 as the agent through the tool CLI (same tools and prompt, not the app's own agent "
+               "loop; the in-loop guardrail rewrites don't apply)")
 NOT_APPLIED = ("The app's in-loop guardrail rewrites (retry nudge, grounding, look-first and citation nudges) and its "
                "7-step cap don't apply in this mode; the after-answer steps (dropping unknown citations, withholding "
                "a draft with unsupported numbers) do. Latency is not measured.")
