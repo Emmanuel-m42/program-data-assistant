@@ -105,6 +105,7 @@ class ToolResult:
     columns: list[str] = field(default_factory=list)
     rows: list[list[Any]] = field(default_factory=list)
     passages: list[dict] = field(default_factory=list)
+    mcp: dict | None = None  # VAN tool calls: server, tool, args, the masked result, the server's audit line
 
 
 def _plain(v):
@@ -120,10 +121,16 @@ def _fmt(v) -> str:
 
 
 class Toolbox:
-    def __init__(self, reader_conn: psycopg.Connection | None = None, docs_conn: psycopg.Connection | None = None):
+    def __init__(self, reader_conn: psycopg.Connection | None = None, docs_conn: psycopg.Connection | None = None,
+                 van=None):
         self._reader = reader_conn
         self._docs = docs_conn
+        self.van = van  # a van_mcp.VanMcp, or None when VAN tools are off
         self.seen_sql: set[str] = set()  # per question; reset by the agent
+
+    def specs(self) -> list[dict]:
+        """The tools offered to the model: the program tools, plus the VAN read tools when VAN is on."""
+        return TOOL_SPECS + (self.van.specs() if self.van else [])
 
     def reset(self):
         self.seen_sql = set()
@@ -147,7 +154,22 @@ class Toolbox:
             return self.search_documents(str(args.get("query", "")))
         if name == "get_view":
             return self.get_view(args)
+        if self.van and self.van.has(name):
+            return self.van_call(name, args)
         return ToolResult(name, args, False, f"Unknown tool '{name}'.", "unknown tool")
+
+    def van_call(self, name: str, args: dict) -> ToolResult:
+        from .van_mcp import SERVER_NAME
+
+        call = self.van.call(name, args)
+        record = {"server": SERVER_NAME, "tool": call.tool, "args": call.args, "result": call.text,
+                  "audit": call.audit}
+        cite = f"[van:{call.tool}]"
+        if not call.ok:
+            return ToolResult(name, args, False, f"VAN tool error: {call.text}", f"error: {call.text[:120]}", mcp=record)
+        items = call.audit.get("items") if call.audit else None
+        summary = f"{call.tool} returned {items} items" if items is not None else f"{call.tool} returned a result"
+        return ToolResult(name, args, True, f"source: {cite}\n{call.text}", summary, mcp=record)
 
     def query_program_data(self, sql: str) -> ToolResult:
         args = {"sql": sql}

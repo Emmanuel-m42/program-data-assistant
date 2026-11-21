@@ -10,12 +10,12 @@ from dataclasses import asdict, dataclass, field
 
 from . import prompts
 from .llm import Provider, Reply, ToolCall
-from .tools import TOOL_SPECS, Toolbox, ToolResult
+from .tools import Toolbox, ToolResult
 
 MAX_STEPS = 7
 SOURCE_ROWS = 8
 REFUSAL = re.compile(r"\bcan(?:'|no|’)?t confirm\b|\bcannot confirm\b|\bcan not confirm\b", re.IGNORECASE)
-CITATION = re.compile(r"\b(table|doc)\s*:\s*([A-Za-z0-9_#\-]+)")
+CITATION = re.compile(r"\b(table|doc|van)\s*:\s*([A-Za-z0-9_#\-]+)")
 RETRY_NUDGE = ("Your last query failed because of the SQL, not because the data is missing. "
                "Fix the query using the listed columns and run it again before answering.")
 NUMBER = re.compile(r"(?<![\w.])-?\$?((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)")
@@ -79,26 +79,42 @@ def inline_tool_calls(content: str) -> list[ToolCall]:
     return [ToolCall("inline_0", obj["name"], args if isinstance(args, dict) else {})]
 
 
+def result_ids(r: ToolResult) -> list[str]:
+    """The citation ids a successful tool result can be cited by: table:<name>, doc:<passage id>, van:<tool>."""
+    if not r.ok:
+        return []
+    ids = [f"table:{t}" for t in r.tables] + [f"doc:{p['chunk_id']}" for p in r.passages]
+    mcp = getattr(r, "mcp", None)
+    if mcp:
+        ids.append(f"van:{mcp['tool']}")
+    return ids
+
+
 def build_sources(results: list[ToolResult], citations: list[dict]) -> list[dict]:
     cited_tables = {c["id"] for c in citations if c["type"] == "table"}
     cited_docs = {c["id"] for c in citations if c["type"] == "doc"}
-    rows, passages = [], []
+    cited_van = {c["id"] for c in citations if c["type"] == "van"}
+    rows, passages, van = [], [], []
     for r in results:
         if not r.ok:
             continue
-        if r.name != "search_documents":
+        if r.mcp:
+            m = r.mcp
+            van.append((m["tool"] in cited_van, {"type": "mcp", "server": m["server"], "tool": m["tool"], "args": m["args"],
+                                                 "result": m["result"], "audit": m["audit"]}))
+        elif r.name != "search_documents":
             rows.append((bool(cited_tables & set(r.tables)),
                          {"type": "rows", "table": ", ".join(r.tables), "columns": r.columns, "rows": r.rows[:SOURCE_ROWS],
                           "row_count": len(r.rows), "sql": r.args.get("sql", "")}))
         else:
             for p in r.passages:
                 passages.append((p["chunk_id"] in cited_docs, {"type": "passage", "doc": p["chunk_id"], "text": p["text"]}))
-    picked = [s for cited, s in rows + passages if cited]
+    picked = [s for cited, s in rows + passages + van if cited]
     if not picked:  # nothing cited: show what the answer was built from
-        picked = [s for _, s in rows] + [s for _, s in passages[:2]]
+        picked = [s for _, s in rows] + [s for _, s in passages[:2]] + [s for _, s in van]
     out, seen = [], set()
     for s in picked:
-        key = (s["type"], s.get("doc") or s.get("sql"))
+        key = (s["type"], s.get("doc") or s.get("sql") or (s.get("tool"), json.dumps(s.get("args"), sort_keys=True)))
         if key not in seen:
             seen.add(key)
             out.append(s)
@@ -137,27 +153,18 @@ def ungrounded_numbers(answer: str, question: str, results: list[ToolResult]) ->
 
 
 def valid_citation_ids(results: list[ToolResult]) -> str:
-    ids = []
-    for r in results:
-        if r.ok:
-            ids += [f"[table:{t}]" for t in r.tables] + [f"[doc:{p['chunk_id']}]" for p in r.passages]
-    return ", ".join(dict.fromkeys(ids))
+    return ", ".join(f"[{i}]" for i in source_ids(results))
 
 
 def citations_valid(results: list[ToolResult], citations: list[dict]) -> bool:
     if not citations:
         return False
-    tables = {t for r in results if r.ok for t in r.tables}
-    docs = {p["chunk_id"] for r in results if r.ok for p in r.passages}
-    return all((c["id"] in tables) if c["type"] == "table" else (c["id"] in docs) for c in citations)
+    valid = set(source_ids(results))
+    return all(f"{c['type']}:{c['id']}" in valid for c in citations)
 
 
 def source_ids(results: list[ToolResult]) -> list[str]:
-    ids = []
-    for r in results:
-        if r.ok:
-            ids += [f"table:{t}" for t in r.tables] + [f"doc:{p['chunk_id']}" for p in r.passages]
-    return list(dict.fromkeys(ids))
+    return list(dict.fromkeys(i for r in results for i in result_ids(r)))
 
 
 def drop_unknown_citations(text: str, results: list[ToolResult]) -> tuple[str, list[str]]:
@@ -188,7 +195,8 @@ def source_for_numbers(body: str, results: list[ToolResult]) -> str | None:
             continue
         have = _numbers(r.content)
         if all(any(abs(n - v) <= max(0.051, 0.006 * abs(v)) for v in have) for n in nums):
-            return f"table:{r.tables[0]}" if r.tables else (f"doc:{r.passages[0]['chunk_id']}" if r.passages else None)
+            ids = result_ids(r)
+            return ids[0] if ids else None
     return None
 
 
@@ -236,7 +244,7 @@ class Assistant:
     def __init__(self, provider: Provider, toolbox: Toolbox | None = None, system: str | None = None):
         self.provider = provider
         self.toolbox = toolbox or Toolbox()
-        self.system = system or prompts.system_prompt()
+        self.system = system or prompts.system_prompt(van=self.toolbox.van)
         # Off by default: on the dev split it scored below typed citations plus the citation check (README).
         self.structured_citations = (os.environ.get("PDA_STRUCTURED_CITATIONS") == "1"
                                      and getattr(provider, "supports_format", False))
@@ -251,7 +259,7 @@ class Assistant:
         nudged = revised = looked = cite_fixed = False
         self.toolbox.reset()
         for steps in range(1, MAX_STEPS + 1):
-            reply = self.provider.chat(messages, TOOL_SPECS)
+            reply = self.provider.chat(messages, self.toolbox.specs())
             calls = reply.tool_calls or inline_tool_calls(reply.content)
             if not calls:
                 # Giving up right after a failed query usually means a fixable SQL mistake, not missing data.

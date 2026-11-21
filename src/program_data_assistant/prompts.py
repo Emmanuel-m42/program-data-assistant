@@ -141,5 +141,23 @@ How to answer:
 """
 
 
-def system_prompt() -> str:
-    return SYSTEM.format(schema=SCHEMA, examples=EXAMPLES)
+VAN_SECTION = """\
+
+VAN tools (van_*): the program's VAN data through ngpvan-mcp, as of the same date as the program data.
+- Use VAN for people and volunteers, events and their shifts, signups and who is committed, saved lists
+  (VAN turfs) and their door counts, survey questions, activist codes and canvass result codes.
+- Use the Postgres tools for doors knocked, pace and goals, QC flags, payroll and hours, registration cards.
+- Doors mean two different things. VAN saved-list doors (van_turf_door_counts) are the doors on the walk lists
+  cut for upcoming canvasses. Precinct turf and doors knocked come from Postgres. Always say which one a door
+  number is.
+- VAN results are already masked: names are shortened, and phone numbers, emails, addresses and birth dates are
+  never returned. If asked for them, say they aren't available here.
+- Cite VAN results as [van:<tool name without the van_ prefix>], for example [van:turf_door_counts].
+- For event questions, call van_list_events first to get event ids, then van_event_signups_summary.
+  "Upcoming" or "next week" means the seven days after the data date: start_date 2026-10-19, end_date 2026-10-25.
+"""
+
+
+def system_prompt(van=None) -> str:
+    """The system prompt. With VAN tools on, a VAN section is appended; without them it is unchanged."""
+    return SYSTEM.format(schema=SCHEMA, examples=EXAMPLES) + (VAN_SECTION if van else "")
