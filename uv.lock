@@ -926,7 +926,7 @@ wheels = [
 [[package]]
 name = "ngpvan-mcp"
 version = "0.1.0"
-source = { git = "https://github.com/Emmanuel-m42/ngpvan-mcp?rev=0f9ac30df93eb0c620462e5dc7953015bfd9cecd#0f9ac30df93eb0c620462e5dc7953015bfd9cecd" }
+source = { git = "https://github.com/Emmanuel-m42/ngpvan-mcp?rev=e5be2277362fbfc6844b601994e7385b63ce1b85#e5be2277362fbfc6844b601994e7385b63ce1b85" }
 dependencies = [
     { name = "httpx" },
     { name = "mcp" },
@@ -1207,7 +1207,7 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.165.0" },
     { name = "fastembed", specifier = ">=0.9.1" },
     { name = "httpx", specifier = ">=0.28.1" },
-    { name = "ngpvan-mcp", marker = "extra == 'van'", git = "https://github.com/Emmanuel-m42/ngpvan-mcp?rev=0f9ac30df93eb0c620462e5dc7953015bfd9cecd" },
+    { name = "ngpvan-mcp", marker = "extra == 'van'", git = "https://github.com/Emmanuel-m42/ngpvan-mcp?rev=e5be2277362fbfc6844b601994e7385b63ce1b85" },
     { name = "pgserver", specifier = ">=0.1.4" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.9" },
     { name = "pyyaml", specifier = ">=6.0.3" },

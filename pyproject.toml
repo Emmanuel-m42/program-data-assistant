@@ -50,4 +50,4 @@ pda-offices = "program_data_assistant.overview:main"
 testpaths = ["tests"]
 
 [tool.uv.sources]
-ngpvan-mcp = { git = "https://github.com/Emmanuel-m42/ngpvan-mcp", rev = "0f9ac30df93eb0c620462e5dc7953015bfd9cecd" }
+ngpvan-mcp = { git = "https://github.com/Emmanuel-m42/ngpvan-mcp", rev = "e5be2277362fbfc6844b601994e7385b63ce1b85" }
