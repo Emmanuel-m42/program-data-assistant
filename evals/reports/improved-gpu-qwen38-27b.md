@@ -1,6 +1,6 @@
 # Eval report: improved-gpu-qwen38-27b
 
-Model `ollama/qwen3.8:27b`, commit `8f3bd66`, 2026-11-20T02:53:24+00:00, 28 cases.
+Model `ollama/qwen3.8:27b`, commit `8f3bd66`, 2026-11-20T02:53:24+00:00, 28 cases (split all, 1 run(s) per case; pass_all is pass^k).
 
 | metric | score | cases scored |
 | --- | --- | --- |
@@ -10,6 +10,7 @@ Model `ollama/qwen3.8:27b`, commit `8f3bd66`, 2026-11-20T02:53:24+00:00, 28 case
 | citation | 1.00 | 25 |
 | refusal | 1.00 | 28 |
 | pass | 0.89 | 28 |
+| pass_all | 0.89 | 28 |
 
 Average latency 52.1 s per question.
 

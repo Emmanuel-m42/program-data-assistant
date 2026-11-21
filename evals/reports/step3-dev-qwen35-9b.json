@@ -11,15 +11,15 @@
     "tool_choice_n": 12,
     "retrieval": 0.958,
     "retrieval_n": 12,
-    "facts": 0.865,
+    "facts": 0.838,
     "facts_n": 12,
     "citation": 1.0,
     "citation_n": 12,
     "refusal": 1.0,
     "refusal_n": 14,
-    "pass": 0.786,
+    "pass": 0.714,
     "pass_n": 14,
-    "pass_all": 0.786,
+    "pass_all": 0.714,
     "pass_all_n": 14,
     "avg_latency_ms": 5279
   },
@@ -1057,11 +1057,11 @@
       "scores": {
         "tool_choice": 1.0,
         "retrieval": 1.0,
-        "facts": 1.0,
+        "facts": 0.667,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0,
-        "pass_all": 1.0
+        "pass": 0.0,
+        "pass_all": 0.0
       },
       "facts": [
         {
@@ -1080,6 +1080,28 @@
           "name": "Harbor flags per 100 shifts last week",
           "expected": 6.153846153846154,
           "matched": true
+        },
+        {
+          "name": "program-wide QC is getting better",
+          "expected": [
+            "getting better",
+            "is better",
+            "got better",
+            "improving overall",
+            "improved overall",
+            "improving program-wide"
+          ],
+          "matched": true
+        },
+        {
+          "name": "program flags per 100 shifts this week",
+          "expected": 3.4146341463414633,
+          "matched": false
+        },
+        {
+          "name": "program flags per 100 shifts last week",
+          "expected": 4.3478260869565215,
+          "matched": false
         }
       ],
       "answer": {
@@ -2055,5 +2077,6 @@
       },
       "repeats": []
     }
-  ]
+  ],
+  "rescored_at": "2026-11-21T01:29:46+00:00"
 }

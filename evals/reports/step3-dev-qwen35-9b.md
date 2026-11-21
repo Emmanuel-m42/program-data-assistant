@@ -6,11 +6,11 @@ Model `ollama/qwen3.5:9b`, commit `35a6bc5`, 2026-11-20T03:32:33+00:00, 14 cases
 | --- | --- | --- |
 | tool_choice | 0.83 | 12 |
 | retrieval | 0.96 | 12 |
-| facts | 0.86 | 12 |
+| facts | 0.84 | 12 |
 | citation | 1.00 | 12 |
 | refusal | 1.00 | 14 |
-| pass | 0.79 | 14 |
-| pass_all | 0.79 | 14 |
+| pass | 0.71 | 14 |
+| pass_all | 0.71 | 14 |
 
 Average latency 5.3 s per question.
 
@@ -22,7 +22,7 @@ Average latency 5.3 s per question.
 | q07 | client report | 0.00 | 1.00 | 0.25 | 1.00 | 1.00 | 0.00 | 4 |
 | q09 | pace | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 7 |
 | q11 | QC | 1.00 | 0.50 | 0.80 | 1.00 | 1.00 | 0.00 | 7 |
-| q13 | QC | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 8 |
+| q13 | QC | 1.00 | 1.00 | 0.67 | 1.00 | 1.00 | 0.00 | 8 |
 | q15 | VR rate | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 6 |
 | q17 | QC | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 3 |
 | q19 | client report | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 5 |
@@ -36,3 +36,4 @@ Average latency 5.3 s per question.
 - q05: untouched doors left in turf, doors we can knock in the days left
 - q07: client reported doors Oct 12, dashboard doors Oct 12, rolled-back attempts Oct 12
 - q11: Dorian's householding flags this week
+- q13: program flags per 100 shifts this week, program flags per 100 shifts last week

@@ -1,15 +1,16 @@
 # Eval report: improved
 
-Model `ollama/qwen2.5:7b`, commit `1daaefa`, 2026-11-20T00:35:15+00:00, 28 cases.
+Model `ollama/qwen2.5:7b`, commit `1daaefa`, 2026-11-20T00:35:15+00:00, 28 cases (split all, 1 run(s) per case; pass_all is pass^k).
 
 | metric | score | cases scored |
 | --- | --- | --- |
 | tool_choice | 0.76 | 25 |
 | retrieval | 0.98 | 25 |
-| facts | 0.48 | 25 |
+| facts | 0.47 | 25 |
 | citation | 0.60 | 25 |
 | refusal | 0.86 | 28 |
 | pass | 0.29 | 28 |
+| pass_all | 0.29 | 28 |
 
 Average latency 124.5 s per question.
 
@@ -27,7 +28,7 @@ Average latency 124.5 s per question.
 | q10 | payroll | 1.00 | 1.00 | 0.25 | 1.00 | 1.00 | 0.00 | 37 |
 | q11 | QC | 1.00 | 0.50 | 0.80 | 0.00 | 1.00 | 0.00 | 600 |
 | q12 | QC | 1.00 | 1.00 | 0.75 | 0.00 | 1.00 | 0.00 | 660 |
-| q13 | QC | 1.00 | 1.00 | 0.67 | 1.00 | 1.00 | 0.00 | 66 |
+| q13 | QC | 1.00 | 1.00 | 0.50 | 1.00 | 1.00 | 0.00 | 66 |
 | q14 | VR rate | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 105 |
 | q15 | VR rate | 0.00 | 1.00 | 0.00 | 0.00 | 0.00 | 0.00 | 15 |
 | q16 | QC | 1.00 | 1.00 | 0.67 | 1.00 | 1.00 | 0.00 | 184 |
@@ -55,7 +56,7 @@ Average latency 124.5 s per question.
 - q10: Northside cost per door, Eastgate cost per door, Eastgate is most expensive
 - q11: Tomas Reyes
 - q12: open flag count
-- q13: Harbor flags per 100 shifts this week
+- q13: Harbor flags per 100 shifts this week, program flags per 100 shifts this week, program flags per 100 shifts last week
 - q15: Eastgate is under, Harbor is under, Eastgate cards per hour, last 7 days
 - q16: Harbor duplicates
 - q17: confirmed share, unreachable share, wrong information share

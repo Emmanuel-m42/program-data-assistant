@@ -11,15 +11,15 @@
     "tool_choice_n": 12,
     "retrieval": 0.958,
     "retrieval_n": 12,
-    "facts": 0.958,
+    "facts": 0.917,
     "facts_n": 12,
     "citation": 1.0,
     "citation_n": 12,
     "refusal": 1.0,
     "refusal_n": 14,
-    "pass": 0.929,
+    "pass": 0.857,
     "pass_n": 14,
-    "pass_all": 0.929,
+    "pass_all": 0.857,
     "pass_all_n": 14,
     "avg_latency_ms": 57277
   },
@@ -3277,11 +3277,11 @@
       "scores": {
         "tool_choice": 1.0,
         "retrieval": 1.0,
-        "facts": 1.0,
+        "facts": 0.5,
         "citation": 1.0,
         "refusal": 1.0,
-        "pass": 1.0,
-        "pass_all": 1.0
+        "pass": 0.0,
+        "pass_all": 0.0
       },
       "facts": [
         {
@@ -3300,6 +3300,28 @@
           "name": "Harbor flags per 100 shifts last week",
           "expected": 6.153846153846154,
           "matched": true
+        },
+        {
+          "name": "program-wide QC is getting better",
+          "expected": [
+            "getting better",
+            "is better",
+            "got better",
+            "improving overall",
+            "improved overall",
+            "improving program-wide"
+          ],
+          "matched": false
+        },
+        {
+          "name": "program flags per 100 shifts this week",
+          "expected": 3.4146341463414633,
+          "matched": false
+        },
+        {
+          "name": "program flags per 100 shifts last week",
+          "expected": 4.3478260869565215,
+          "matched": false
         }
       ],
       "answer": {
@@ -3435,10 +3457,10 @@
           "scores": {
             "tool_choice": 1.0,
             "retrieval": 1.0,
-            "facts": 1.0,
+            "facts": 0.5,
             "citation": 1.0,
             "refusal": 1.0,
-            "pass": 1.0
+            "pass": 0.0
           },
           "facts": [
             {
@@ -3457,6 +3479,28 @@
               "name": "Harbor flags per 100 shifts last week",
               "expected": 6.153846153846154,
               "matched": true
+            },
+            {
+              "name": "program-wide QC is getting better",
+              "expected": [
+                "getting better",
+                "is better",
+                "got better",
+                "improving overall",
+                "improved overall",
+                "improving program-wide"
+              ],
+              "matched": false
+            },
+            {
+              "name": "program flags per 100 shifts this week",
+              "expected": 3.4146341463414633,
+              "matched": false
+            },
+            {
+              "name": "program flags per 100 shifts last week",
+              "expected": 4.3478260869565215,
+              "matched": false
             }
           ],
           "answer": {
@@ -3592,10 +3636,10 @@
           "scores": {
             "tool_choice": 1.0,
             "retrieval": 1.0,
-            "facts": 1.0,
+            "facts": 0.5,
             "citation": 1.0,
             "refusal": 1.0,
-            "pass": 1.0
+            "pass": 0.0
           },
           "facts": [
             {
@@ -3614,6 +3658,28 @@
               "name": "Harbor flags per 100 shifts last week",
               "expected": 6.153846153846154,
               "matched": true
+            },
+            {
+              "name": "program-wide QC is getting better",
+              "expected": [
+                "getting better",
+                "is better",
+                "got better",
+                "improving overall",
+                "improved overall",
+                "improving program-wide"
+              ],
+              "matched": false
+            },
+            {
+              "name": "program flags per 100 shifts this week",
+              "expected": 3.4146341463414633,
+              "matched": false
+            },
+            {
+              "name": "program flags per 100 shifts last week",
+              "expected": 4.3478260869565215,
+              "matched": false
             }
           ],
           "answer": {
@@ -6093,5 +6159,6 @@
         }
       ]
     }
-  ]
+  ],
+  "rescored_at": "2026-11-21T01:29:16+00:00"
 }

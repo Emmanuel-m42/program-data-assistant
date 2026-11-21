@@ -313,6 +313,19 @@ cases:
           SELECT 100.0 * (SELECT count(*) FROM qc_flags WHERE office = 'Harbor' AND flag_date BETWEEN '2026-10-05' AND '2026-10-11') / count(*)
           FROM shifts WHERE program = 'gotv' AND office = 'Harbor' AND shift_date BETWEEN '2026-10-05' AND '2026-10-11'
         abs: 0.2
+      # Program-wide, QC got better: 8 flags in 184 shifts last week, 7 in 205 this week.
+      - name: program-wide QC is getting better
+        any_of: [getting better, is better, got better, improving overall, improved overall, improving program-wide]
+      - name: program flags per 100 shifts this week
+        sql: |
+          SELECT 100.0 * (SELECT count(*) FROM qc_flags WHERE flag_date >= '2026-10-12') / count(*)
+          FROM shifts WHERE program = 'gotv' AND shift_date >= '2026-10-12'
+        abs: 0.1
+      - name: program flags per 100 shifts last week
+        sql: |
+          SELECT 100.0 * (SELECT count(*) FROM qc_flags WHERE flag_date BETWEEN '2026-10-05' AND '2026-10-11') / count(*)
+          FROM shifts WHERE program = 'gotv' AND shift_date BETWEEN '2026-10-05' AND '2026-10-11'
+        abs: 0.1
 
   - id: q14
     split: test
