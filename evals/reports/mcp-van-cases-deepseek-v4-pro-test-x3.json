@@ -1,0 +1,1053 @@
+{
+  "label": "mcp-van-cases-deepseek-v4-pro-test-x3",
+  "generated_at": "2026-11-21T02:59:33+00:00",
+  "model": "openai_compat/deepseek-v4-pro",
+  "commit": "6155e6e",
+  "split": "test",
+  "repeat": 3,
+  "cases_file": "evals/cases_mcp_van.yaml",
+  "tools": [
+    "get_view",
+    "query_program_data",
+    "search_documents",
+    "van_check_connection",
+    "van_search_people",
+    "van_get_person",
+    "van_person_activist_codes",
+    "van_person_signups",
+    "van_contact_history_summary",
+    "van_list_events",
+    "van_event_signups_summary",
+    "van_list_folders",
+    "van_turf_door_counts",
+    "van_list_survey_questions",
+    "van_list_activist_codes",
+    "van_canvass_codes"
+  ],
+  "summary": {
+    "cases": 4,
+    "tool_choice": 1.0,
+    "tool_choice_n": 4,
+    "retrieval": null,
+    "retrieval_n": 0,
+    "facts": 1.0,
+    "facts_n": 4,
+    "citation": 1.0,
+    "citation_n": 4,
+    "refusal": 1.0,
+    "refusal_n": 4,
+    "pass": 1.0,
+    "pass_n": 4,
+    "pass_all": 1.0,
+    "pass_all_n": 4,
+    "avg_latency_ms": 7061
+  },
+  "cases": [
+    {
+      "id": "v05",
+      "question": "Which VAN saved-list folder has the most doors, and how many?",
+      "category": "VAN",
+      "split": "test",
+      "keywords": [
+        "saved list",
+        "folder",
+        "most doors",
+        "VAN",
+        "turf"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#opening-another-office",
+        "counting-doors#doors",
+        "program-plan#more-doors-or-a-second-pass",
+        "counting-doors#attempts"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": null,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [
+        {
+          "name": "folder with the most doors",
+          "expected": "Phone Bank Lists",
+          "matched": true
+        },
+        {
+          "name": "its door count",
+          "expected": 735.0,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Which VAN saved-list folder has the most doors, and how many?",
+        "answer": "The VAN saved-list folder with the most doors is **Phone Bank Lists**, with **735 doors**.\n\n- Phone Bank Lists: 735 doors [van:turf_door_counts]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "van_turf_door_counts",
+            "args": {},
+            "ok": true,
+            "result": "turf_door_counts returned 5 items"
+          }
+        ],
+        "sources": [
+          {
+            "type": "mcp",
+            "server": "ngpvan-mcp",
+            "tool": "turf_door_counts",
+            "args": {},
+            "result": "{\n  \"folders\": [\n    {\n      \"folder_id\": 44,\n      \"folder\": \"Northside Turfs\",\n      \"lists\": 5,\n      \"doors\": 437,\n      \"people\": 641,\n      \"saved_lists\": [\n        {\n          \"saved_list_id\": 990100,\n          \"name\": \"NS Turf 01 Maple\",\n          \"doors\": 74,\n          \"people\": 116\n        },\n        {\n          \"saved_list_id\": 990101,\n          \"name\": \"NS Turf 02 Juniper\",\n          \"doors\": 88,\n          \"people\": 152\n        },\n        {\n          \"saved_list_id\": 990102,\n          \"name\": \"NS Turf 03 Willow\",\n          \"doors\": 103,\n          \"people\": 147\n        },\n        {\n          \"saved_list_id\": 990103,\n          \"name\": \"NS Turf 04 Cedar\",\n          \"doors\": 92,\n          \"people\": 120\n        },\n        {\n          \"saved_list_id\": 990104,\n          \"name\": \"NS Turf 05 Maple\",\n          \"doors\": 80,\n          \"people\": 106\n        }\n      ]\n    },\n    {\n      \"folder_id\": 45,\n      \"folder\": \"Eastgate Turfs\",\n      \"lists\": 4,\n      \"doors\": 366,\n      \"people\": 526,\n      \"saved_lists\": [\n        {\n          \"saved_list_id\": 990105,\n          \"name\": \"EG Turf 01 Larkspur\",\n          \"doors\": 93,\n          \"people\": 150\n        },\n        {\n          \"saved_list_id\": 990106,\n          \"name\": \"EG Turf 02 Foundry\",\n          \"doors\": 104,\n          \"people\": 150\n        },\n        {\n          \"saved_list_id\": 990107,\n          \"name\": \"EG Turf 03 Quarry\",\n          \"doors\": 100,\n          \"people\": 134\n        },\n        {\n          \"saved_list_id\": 990108,\n          \"name\": \"EG Turf 04 Larkspur\",\n          \"doors\": 69,\n          \"people\": 92\n        }\n      ]\n    },\n    {\n      \"folder_id\": 46,\n      \"folder\": \"Harbor Turfs\",\n      \"lists\": 4,\n      \"doors\": 378,\n      \"people\": 558,\n      \"saved_lists\": [\n        {\n          \"saved_list_id\": 990109,\n          \"name\": \"HB Turf 01 Ferry\",\n          \"doors\": 96,\n          \"people\": 170\n        },\n        {\n          \"saved_list_id\": 990110,\n          \"name\": \"HB Turf 02 Pier\",\n          \"doors\": 62,\n          \"people\": 96\n        },\n        {\n          \"saved_list_id\": 990111,\n          \"name\": \"HB Turf 03 Beacon\",\n          \"doors\": 97,\n          \"people\": 123\n        },\n        {\n          \"saved_list_id\": 990112,\n          \"name\": \"HB Turf 04 Ferry\",\n          \"doors\": 123,\n          \"people\": 169\n        }\n      ]\n    },\n    {\n      \"folder_id\": 47,\n      \"folder\": \"Phone Bank Lists\",\n      \"lists\": 2,\n      \"doors\": 735,\n      \"people\": 1050,\n      \"saved_lists\": [\n        {\n          \"saved_list_id\": 990113,\n          \"name\": \"EG Phone Bank Measure 3 IDs\",\n          \"doors\": 448,\n          \"people\": 640\n        },\n        {\n          \"saved_list_id\": 990114,\n          \"name\": \"HB Phone Bank Measure 3 IDs\",\n          \"doors\": 287,\n          \"people\": 410\n        }\n      ]\n    },\n    {\n      \"folder_id\": 48,\n      \"folder\": \"Archive\",\n      \"lists\": 1,\n      \"doors\": 150,\n      \"people\": 220,\n      \"saved_lists\": [\n        {\n          \"saved_list_id\": 990115,\n          \"name\": \"Spring Petition Followup\",\n          \"doors\": 150,\n          \"people\": 220\n        }\n      ]\n    }\n  ],\n  \"total_doors\": 2066,\n  \"total_people\": 2995,\n  \"note\": \"VAN's API has no turf endpoint. Turf here means the saved lists in a folder, with VAN's own doorCount and listCount for each.\",\n  \"source\": {\n    \"tool\": \"turf_door_counts\",\n    \"endpoints\": [\n      \"GET /folders\",\n      \"GET /savedLists?folderId=...\"\n    ]\n  }\n}",
+            "audit": {
+              "ts": "2026-11-21T02:58:10.257+00:00",
+              "tool": "turf_door_counts",
+              "args": {
+                "folder_id": null,
+                "folder_name": null
+              },
+              "status": "ok",
+              "duration_ms": 202.4,
+              "van_requests": 6,
+              "retries": 0,
+              "items": 5
+            }
+          }
+        ],
+        "citations": [
+          {
+            "type": "van",
+            "id": "turf_door_counts"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 8532,
+        "model": "openai_compat/deepseek-v4-pro",
+        "steps": 3
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": null,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "folder with the most doors",
+              "expected": "Phone Bank Lists",
+              "matched": true
+            },
+            {
+              "name": "its door count",
+              "expected": 735.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "Which VAN saved-list folder has the most doors, and how many?",
+            "answer": "The VAN saved-list folder with the most doors is **Phone Bank Lists**, with **735 doors**.\n\n- Phone Bank Lists: 735 doors [van:turf_door_counts]\n- Northside Turfs: 437 doors [van:turf_door_counts]\n- Harbor Turfs: 378 doors [van:turf_door_counts]\n- Eastgate Turfs: 366 doors [van:turf_door_counts]\n- Archive: 150 doors [van:turf_door_counts]\n\nThese are VAN saved-list doors (doors on the walk lists cut for upcoming work), not doors knocked, which come from Postgres.",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "van_list_folders",
+                "args": {},
+                "ok": true,
+                "result": "list_folders returned 5 items"
+              },
+              {
+                "name": "van_turf_door_counts",
+                "args": {},
+                "ok": true,
+                "result": "turf_door_counts returned 5 items"
+              }
+            ],
+            "sources": [
+              {
+                "type": "mcp",
+                "server": "ngpvan-mcp",
+                "tool": "turf_door_counts",
+                "args": {},
+                "result": "{\n  \"folders\": [\n    {\n      \"folder_id\": 44,\n      \"folder\": \"Northside Turfs\",\n      \"lists\": 5,\n      \"doors\": 437,\n      \"people\": 641,\n      \"saved_lists\": [\n        {\n          \"saved_list_id\": 990100,\n          \"name\": \"NS Turf 01 Maple\",\n          \"doors\": 74,\n          \"people\": 116\n        },\n        {\n          \"saved_list_id\": 990101,\n          \"name\": \"NS Turf 02 Juniper\",\n          \"doors\": 88,\n          \"people\": 152\n        },\n        {\n          \"saved_list_id\": 990102,\n          \"name\": \"NS Turf 03 Willow\",\n          \"doors\": 103,\n          \"people\": 147\n        },\n        {\n          \"saved_list_id\": 990103,\n          \"name\": \"NS Turf 04 Cedar\",\n          \"doors\": 92,\n          \"people\": 120\n        },\n        {\n          \"saved_list_id\": 990104,\n          \"name\": \"NS Turf 05 Maple\",\n          \"doors\": 80,\n          \"people\": 106\n        }\n      ]\n    },\n    {\n      \"folder_id\": 45,\n      \"folder\": \"Eastgate Turfs\",\n      \"lists\": 4,\n      \"doors\": 366,\n      \"people\": 526,\n      \"saved_lists\": [\n        {\n          \"saved_list_id\": 990105,\n          \"name\": \"EG Turf 01 Larkspur\",\n          \"doors\": 93,\n          \"people\": 150\n        },\n        {\n          \"saved_list_id\": 990106,\n          \"name\": \"EG Turf 02 Foundry\",\n          \"doors\": 104,\n          \"people\": 150\n        },\n        {\n          \"saved_list_id\": 990107,\n          \"name\": \"EG Turf 03 Quarry\",\n          \"doors\": 100,\n          \"people\": 134\n        },\n        {\n          \"saved_list_id\": 990108,\n          \"name\": \"EG Turf 04 Larkspur\",\n          \"doors\": 69,\n          \"people\": 92\n        }\n      ]\n    },\n    {\n      \"folder_id\": 46,\n      \"folder\": \"Harbor Turfs\",\n      \"lists\": 4,\n      \"doors\": 378,\n      \"people\": 558,\n      \"saved_lists\": [\n        {\n          \"saved_list_id\": 990109,\n          \"name\": \"HB Turf 01 Ferry\",\n          \"doors\": 96,\n          \"people\": 170\n        },\n        {\n          \"saved_list_id\": 990110,\n          \"name\": \"HB Turf 02 Pier\",\n          \"doors\": 62,\n          \"people\": 96\n        },\n        {\n          \"saved_list_id\": 990111,\n          \"name\": \"HB Turf 03 Beacon\",\n          \"doors\": 97,\n          \"people\": 123\n        },\n        {\n          \"saved_list_id\": 990112,\n          \"name\": \"HB Turf 04 Ferry\",\n          \"doors\": 123,\n          \"people\": 169\n        }\n      ]\n    },\n    {\n      \"folder_id\": 47,\n      \"folder\": \"Phone Bank Lists\",\n      \"lists\": 2,\n      \"doors\": 735,\n      \"people\": 1050,\n      \"saved_lists\": [\n        {\n          \"saved_list_id\": 990113,\n          \"name\": \"EG Phone Bank Measure 3 IDs\",\n          \"doors\": 448,\n          \"people\": 640\n        },\n        {\n          \"saved_list_id\": 990114,\n          \"name\": \"HB Phone Bank Measure 3 IDs\",\n          \"doors\": 287,\n          \"people\": 410\n        }\n      ]\n    },\n    {\n      \"folder_id\": 48,\n      \"folder\": \"Archive\",\n      \"lists\": 1,\n      \"doors\": 150,\n      \"people\": 220,\n      \"saved_lists\": [\n        {\n          \"saved_list_id\": 990115,\n          \"name\": \"Spring Petition Followup\",\n          \"doors\": 150,\n          \"people\": 220\n        }\n      ]\n    }\n  ],\n  \"total_doors\": 2066,\n  \"total_people\": 2995,\n  \"note\": \"VAN's API has no turf endpoint. Turf here means the saved lists in a folder, with VAN's own doorCount and listCount for each.\",\n  \"source\": {\n    \"tool\": \"turf_door_counts\",\n    \"endpoints\": [\n      \"GET /folders\",\n      \"GET /savedLists?folderId=...\"\n    ]\n  }\n}",
+                "audit": {
+                  "ts": "2026-11-21T02:58:19.557+00:00",
+                  "tool": "turf_door_counts",
+                  "args": {
+                    "folder_id": null,
+                    "folder_name": null
+                  },
+                  "status": "ok",
+                  "duration_ms": 397.5,
+                  "van_requests": 6,
+                  "retries": 0,
+                  "items": 5
+                }
+              }
+            ],
+            "citations": [
+              {
+                "type": "van",
+                "id": "turf_door_counts"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [
+              437.0
+            ],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 18143,
+            "model": "openai_compat/deepseek-v4-pro",
+            "steps": 3
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": null,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "folder with the most doors",
+              "expected": "Phone Bank Lists",
+              "matched": true
+            },
+            {
+              "name": "its door count",
+              "expected": 735.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "Which VAN saved-list folder has the most doors, and how many?",
+            "answer": "The VAN saved-list folder with the most doors is **Phone Bank Lists**, with **735 doors**.\n\n- Phone Bank Lists: 735 doors [van:turf_door_counts]\n\nFor reference, that result also listed the other folders: Northside Turfs (437 doors), Harbor Turfs (378 doors), Eastgate Turfs (366 doors), and Archive (150 doors), all from the same [van:turf_door_counts] output.",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "van_turf_door_counts",
+                "args": {},
+                "ok": true,
+                "result": "turf_door_counts returned 5 items"
+              }
+            ],
+            "sources": [
+              {
+                "type": "mcp",
+                "server": "ngpvan-mcp",
+                "tool": "turf_door_counts",
+                "args": {},
+                "result": "{\n  \"folders\": [\n    {\n      \"folder_id\": 44,\n      \"folder\": \"Northside Turfs\",\n      \"lists\": 5,\n      \"doors\": 437,\n      \"people\": 641,\n      \"saved_lists\": [\n        {\n          \"saved_list_id\": 990100,\n          \"name\": \"NS Turf 01 Maple\",\n          \"doors\": 74,\n          \"people\": 116\n        },\n        {\n          \"saved_list_id\": 990101,\n          \"name\": \"NS Turf 02 Juniper\",\n          \"doors\": 88,\n          \"people\": 152\n        },\n        {\n          \"saved_list_id\": 990102,\n          \"name\": \"NS Turf 03 Willow\",\n          \"doors\": 103,\n          \"people\": 147\n        },\n        {\n          \"saved_list_id\": 990103,\n          \"name\": \"NS Turf 04 Cedar\",\n          \"doors\": 92,\n          \"people\": 120\n        },\n        {\n          \"saved_list_id\": 990104,\n          \"name\": \"NS Turf 05 Maple\",\n          \"doors\": 80,\n          \"people\": 106\n        }\n      ]\n    },\n    {\n      \"folder_id\": 45,\n      \"folder\": \"Eastgate Turfs\",\n      \"lists\": 4,\n      \"doors\": 366,\n      \"people\": 526,\n      \"saved_lists\": [\n        {\n          \"saved_list_id\": 990105,\n          \"name\": \"EG Turf 01 Larkspur\",\n          \"doors\": 93,\n          \"people\": 150\n        },\n        {\n          \"saved_list_id\": 990106,\n          \"name\": \"EG Turf 02 Foundry\",\n          \"doors\": 104,\n          \"people\": 150\n        },\n        {\n          \"saved_list_id\": 990107,\n          \"name\": \"EG Turf 03 Quarry\",\n          \"doors\": 100,\n          \"people\": 134\n        },\n        {\n          \"saved_list_id\": 990108,\n          \"name\": \"EG Turf 04 Larkspur\",\n          \"doors\": 69,\n          \"people\": 92\n        }\n      ]\n    },\n    {\n      \"folder_id\": 46,\n      \"folder\": \"Harbor Turfs\",\n      \"lists\": 4,\n      \"doors\": 378,\n      \"people\": 558,\n      \"saved_lists\": [\n        {\n          \"saved_list_id\": 990109,\n          \"name\": \"HB Turf 01 Ferry\",\n          \"doors\": 96,\n          \"people\": 170\n        },\n        {\n          \"saved_list_id\": 990110,\n          \"name\": \"HB Turf 02 Pier\",\n          \"doors\": 62,\n          \"people\": 96\n        },\n        {\n          \"saved_list_id\": 990111,\n          \"name\": \"HB Turf 03 Beacon\",\n          \"doors\": 97,\n          \"people\": 123\n        },\n        {\n          \"saved_list_id\": 990112,\n          \"name\": \"HB Turf 04 Ferry\",\n          \"doors\": 123,\n          \"people\": 169\n        }\n      ]\n    },\n    {\n      \"folder_id\": 47,\n      \"folder\": \"Phone Bank Lists\",\n      \"lists\": 2,\n      \"doors\": 735,\n      \"people\": 1050,\n      \"saved_lists\": [\n        {\n          \"saved_list_id\": 990113,\n          \"name\": \"EG Phone Bank Measure 3 IDs\",\n          \"doors\": 448,\n          \"people\": 640\n        },\n        {\n          \"saved_list_id\": 990114,\n          \"name\": \"HB Phone Bank Measure 3 IDs\",\n          \"doors\": 287,\n          \"people\": 410\n        }\n      ]\n    },\n    {\n      \"folder_id\": 48,\n      \"folder\": \"Archive\",\n      \"lists\": 1,\n      \"doors\": 150,\n      \"people\": 220,\n      \"saved_lists\": [\n        {\n          \"saved_list_id\": 990115,\n          \"name\": \"Spring Petition Followup\",\n          \"doors\": 150,\n          \"people\": 220\n        }\n      ]\n    }\n  ],\n  \"total_doors\": 2066,\n  \"total_people\": 2995,\n  \"note\": \"VAN's API has no turf endpoint. Turf here means the saved lists in a folder, with VAN's own doorCount and listCount for each.\",\n  \"source\": {\n    \"tool\": \"turf_door_counts\",\n    \"endpoints\": [\n      \"GET /folders\",\n      \"GET /savedLists?folderId=...\"\n    ]\n  }\n}",
+                "audit": {
+                  "ts": "2026-11-21T02:58:37.178+00:00",
+                  "tool": "turf_door_counts",
+                  "args": {
+                    "folder_id": null,
+                    "folder_name": null
+                  },
+                  "status": "ok",
+                  "duration_ms": 201.4,
+                  "van_requests": 6,
+                  "retries": 0,
+                  "items": 5
+                }
+              }
+            ],
+            "citations": [
+              {
+                "type": "van",
+                "id": "turf_door_counts"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [
+              437.0
+            ],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 16115,
+            "model": "openai_compat/deepseek-v4-pro",
+            "steps": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "v06",
+      "question": "What events are on the VAN calendar for next week?",
+      "category": "VAN",
+      "split": "test",
+      "keywords": [
+        "events",
+        "calendar",
+        "next week",
+        "VAN",
+        "canvass",
+        "phone bank"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#overview",
+        "client-reporting#weekly-report-format",
+        "registration-drive#overview",
+        "payroll-rules#payroll-deadline"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": null,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [
+        {
+          "name": "next week's events",
+          "expected": [
+            "Northside GOTV Canvass",
+            "Eastgate Phone Bank",
+            "Harbor Phone Bank",
+            "Eastgate Weekend Canvass",
+            "Harbor Canvass Launch"
+          ],
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "What events are on the VAN calendar for next week?",
+        "answer": "Five events are on the VAN calendar for next week (Oct 19\u201325, 2026).\n\n- **Northside GOTV Canvass** \u2014 Mon Oct 19, 9:00 AM\u20134:00 PM, Northside Office (Morning and Afternoon shifts) [van:list_events]\n- **Eastgate Phone Bank** \u2014 Mon Oct 19, 5:00\u20138:00 PM, Eastgate Office (Evening shift) [van:list_events]\n- **Harbor Phone Bank** \u2014 Tue Oct 20, 5:30\u20138:30 PM, Harbor Office (Evening shift) [van:list_events]\n- **Eastgate Weekend Canvass** \u2014 Sat Oct 24, 9:30 AM\u201312:30 PM, Eastgate Office (Morning shift) [van:list_events]\n- **Harbor Canvass Launch** \u2014 Sun Oct 25, 10:00 AM\u20135:00 PM, Harbor Office (Morning and Afternoon shifts) [van:list_events]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "van_list_events",
+            "args": {
+              "start_date": "2026-10-19",
+              "end_date": "2026-10-25"
+            },
+            "ok": true,
+            "result": "list_events returned 5 items"
+          }
+        ],
+        "sources": [
+          {
+            "type": "mcp",
+            "server": "ngpvan-mcp",
+            "tool": "list_events",
+            "args": {
+              "start_date": "2026-10-19",
+              "end_date": "2026-10-25"
+            },
+            "result": "{\n  \"from\": \"2026-10-19\",\n  \"to\": \"2026-10-25\",\n  \"count\": 5,\n  \"events\": [\n    {\n      \"event_id\": 3001,\n      \"name\": \"Northside GOTV Canvass\",\n      \"type\": \"Canvass\",\n      \"date\": \"2026-10-19\",\n      \"start\": \"2026-10-19T09:00:00-06:00\",\n      \"end\": \"2026-10-19T16:00:00-06:00\",\n      \"location\": \"Northside Office\",\n      \"description\": \"Meet at the Northside Office. Questions? Text Dana at [phone removed].\",\n      \"shifts\": [\n        {\n          \"shift_id\": 7001,\n          \"name\": \"Morning\",\n          \"start\": \"2026-10-19T09:00:00-06:00\",\n          \"end\": \"2026-10-19T12:00:00-06:00\"\n        },\n        {\n          \"shift_id\": 7002,\n          \"name\": \"Afternoon\",\n          \"start\": \"2026-10-19T13:00:00-06:00\",\n          \"end\": \"2026-10-19T16:00:00-06:00\"\n        }\n      ]\n    },\n    {\n      \"event_id\": 3002,\n      \"name\": \"Eastgate Phone Bank\",\n      \"type\": \"Phone Bank\",\n      \"date\": \"2026-10-19\",\n      \"start\": \"2026-10-19T17:00:00-06:00\",\n      \"end\": \"2026-10-19T20:00:00-06:00\",\n      \"location\": \"Eastgate Office\",\n      \"description\": \"Bring a charged phone and headphones.\",\n      \"shifts\": [\n        {\n          \"shift_id\": 7003,\n          \"name\": \"Evening\",\n          \"start\": \"2026-10-19T17:00:00-06:00\",\n          \"end\": \"2026-10-19T20:00:00-06:00\"\n        }\n      ]\n    },\n    {\n      \"event_id\": 3006,\n      \"name\": \"Harbor Phone Bank\",\n      \"type\": \"Phone Bank\",\n      \"date\": \"2026-10-20\",\n      \"start\": \"2026-10-20T17:30:00-06:00\",\n      \"end\": \"2026-10-20T20:30:00-06:00\",\n      \"location\": \"Harbor Office\",\n      \"description\": \"Calls for the Measure 3 ID program.\",\n      \"shifts\": [\n        {\n          \"shift_id\": 7008,\n          \"name\": \"Evening\",\n          \"start\": \"2026-10-20T17:30:00-06:00\",\n          \"end\": \"2026-10-20T20:30:00-06:00\"\n        }\n      ]\n    },\n    {\n      \"event_id\": 3005,\n      \"name\": \"Eastgate Weekend Canvass\",\n      \"type\": \"Canvass\",\n      \"date\": \"2026-10-24\",\n      \"start\": \"2026-10-24T09:30:00-06:00\",\n      \"end\": \"2026-10-24T12:30:00-06:00\",\n      \"location\": \"Eastgate Office\",\n      \"description\": \"Turf packets ready at 9:15.\",\n      \"shifts\": [\n        {\n          \"shift_id\": 7007,\n          \"name\": \"Morning\",\n          \"start\": \"2026-10-24T09:30:00-06:00\",\n          \"end\": \"2026-10-24T12:30:00-06:00\"\n        }\n      ]\n    },\n    {\n      \"event_id\": 3003,\n      \"name\": \"Harbor Canvass Launch\",\n      \"type\": \"Canvass\",\n      \"date\": \"2026-10-25\",\n      \"start\": \"2026-10-25T10:00:00-06:00\",\n      \"end\": \"2026-10-25T17:00:00-06:00\",\n      \"location\": \"Harbor Office\",\n      \"description\": \"Launch at the Harbor Office, [address removed] Host contact: [email removed].\",\n      \"shifts\": [\n        {\n          \"shift_id\": 7004,\n          \"name\": \"Morning\",\n          \"start\": \"2026-10-25T10:00:00-06:00\",\n          \"end\": \"2026-10-25T13:00:00-06:00\"\n        },\n        {\n          \"shift_id\": 7005,\n          \"name\": \"Afternoon\",\n          \"start\": \"2026-10-25T14:00:00-06:00\",\n          \"end\": \"2026-10-25T17:00:00-06:00\"\n        }\n      ]\n    }\n  ],\n  \"source\": {\n    \"tool\": \"list_events\",\n    \"endpoints\": [\n      \"GET /events\"\n    ]\n  }\n}",
+            "audit": {
+              "ts": "2026-11-21T02:58:52.913+00:00",
+              "tool": "list_events",
+              "args": {
+                "start_date": "2026-10-19",
+                "end_date": "2026-10-25",
+                "event_type": null
+              },
+              "status": "ok",
+              "duration_ms": 1.1,
+              "van_requests": 1,
+              "retries": 0,
+              "items": 5
+            }
+          }
+        ],
+        "citations": [
+          {
+            "type": "van",
+            "id": "list_events"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 4426,
+        "model": "openai_compat/deepseek-v4-pro",
+        "steps": 2
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": null,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "next week's events",
+              "expected": [
+                "Northside GOTV Canvass",
+                "Eastgate Phone Bank",
+                "Harbor Phone Bank",
+                "Eastgate Weekend Canvass",
+                "Harbor Canvass Launch"
+              ],
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "What events are on the VAN calendar for next week?",
+            "answer": "There are 5 events on the VAN calendar for next week (Oct 19\u201325).\n\n- Northside GOTV Canvass \u2014 Mon Oct 19, 9:00 AM\u20134:00 PM, Northside Office [van:list_events]\n- Eastgate Phone Bank \u2014 Mon Oct 19, 5:00\u20138:00 PM, Eastgate Office [van:list_events]\n- Harbor Phone Bank \u2014 Tue Oct 20, 5:30\u20138:30 PM, Harbor Office [van:list_events]\n- Eastgate Weekend Canvass \u2014 Sat Oct 24, 9:30 AM\u201312:30 PM, Eastgate Office [van:list_events]\n- Harbor Canvass Launch \u2014 Sun Oct 25, 10:00 AM\u20135:00 PM, Harbor Office [van:list_events]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "van_list_events",
+                "args": {
+                  "start_date": "2026-10-19",
+                  "end_date": "2026-10-25"
+                },
+                "ok": true,
+                "result": "list_events returned 5 items"
+              }
+            ],
+            "sources": [
+              {
+                "type": "mcp",
+                "server": "ngpvan-mcp",
+                "tool": "list_events",
+                "args": {
+                  "start_date": "2026-10-19",
+                  "end_date": "2026-10-25"
+                },
+                "result": "{\n  \"from\": \"2026-10-19\",\n  \"to\": \"2026-10-25\",\n  \"count\": 5,\n  \"events\": [\n    {\n      \"event_id\": 3001,\n      \"name\": \"Northside GOTV Canvass\",\n      \"type\": \"Canvass\",\n      \"date\": \"2026-10-19\",\n      \"start\": \"2026-10-19T09:00:00-06:00\",\n      \"end\": \"2026-10-19T16:00:00-06:00\",\n      \"location\": \"Northside Office\",\n      \"description\": \"Meet at the Northside Office. Questions? Text Dana at [phone removed].\",\n      \"shifts\": [\n        {\n          \"shift_id\": 7001,\n          \"name\": \"Morning\",\n          \"start\": \"2026-10-19T09:00:00-06:00\",\n          \"end\": \"2026-10-19T12:00:00-06:00\"\n        },\n        {\n          \"shift_id\": 7002,\n          \"name\": \"Afternoon\",\n          \"start\": \"2026-10-19T13:00:00-06:00\",\n          \"end\": \"2026-10-19T16:00:00-06:00\"\n        }\n      ]\n    },\n    {\n      \"event_id\": 3002,\n      \"name\": \"Eastgate Phone Bank\",\n      \"type\": \"Phone Bank\",\n      \"date\": \"2026-10-19\",\n      \"start\": \"2026-10-19T17:00:00-06:00\",\n      \"end\": \"2026-10-19T20:00:00-06:00\",\n      \"location\": \"Eastgate Office\",\n      \"description\": \"Bring a charged phone and headphones.\",\n      \"shifts\": [\n        {\n          \"shift_id\": 7003,\n          \"name\": \"Evening\",\n          \"start\": \"2026-10-19T17:00:00-06:00\",\n          \"end\": \"2026-10-19T20:00:00-06:00\"\n        }\n      ]\n    },\n    {\n      \"event_id\": 3006,\n      \"name\": \"Harbor Phone Bank\",\n      \"type\": \"Phone Bank\",\n      \"date\": \"2026-10-20\",\n      \"start\": \"2026-10-20T17:30:00-06:00\",\n      \"end\": \"2026-10-20T20:30:00-06:00\",\n      \"location\": \"Harbor Office\",\n      \"description\": \"Calls for the Measure 3 ID program.\",\n      \"shifts\": [\n        {\n          \"shift_id\": 7008,\n          \"name\": \"Evening\",\n          \"start\": \"2026-10-20T17:30:00-06:00\",\n          \"end\": \"2026-10-20T20:30:00-06:00\"\n        }\n      ]\n    },\n    {\n      \"event_id\": 3005,\n      \"name\": \"Eastgate Weekend Canvass\",\n      \"type\": \"Canvass\",\n      \"date\": \"2026-10-24\",\n      \"start\": \"2026-10-24T09:30:00-06:00\",\n      \"end\": \"2026-10-24T12:30:00-06:00\",\n      \"location\": \"Eastgate Office\",\n      \"description\": \"Turf packets ready at 9:15.\",\n      \"shifts\": [\n        {\n          \"shift_id\": 7007,\n          \"name\": \"Morning\",\n          \"start\": \"2026-10-24T09:30:00-06:00\",\n          \"end\": \"2026-10-24T12:30:00-06:00\"\n        }\n      ]\n    },\n    {\n      \"event_id\": 3003,\n      \"name\": \"Harbor Canvass Launch\",\n      \"type\": \"Canvass\",\n      \"date\": \"2026-10-25\",\n      \"start\": \"2026-10-25T10:00:00-06:00\",\n      \"end\": \"2026-10-25T17:00:00-06:00\",\n      \"location\": \"Harbor Office\",\n      \"description\": \"Launch at the Harbor Office, [address removed] Host contact: [email removed].\",\n      \"shifts\": [\n        {\n          \"shift_id\": 7004,\n          \"name\": \"Morning\",\n          \"start\": \"2026-10-25T10:00:00-06:00\",\n          \"end\": \"2026-10-25T13:00:00-06:00\"\n        },\n        {\n          \"shift_id\": 7005,\n          \"name\": \"Afternoon\",\n          \"start\": \"2026-10-25T14:00:00-06:00\",\n          \"end\": \"2026-10-25T17:00:00-06:00\"\n        }\n      ]\n    }\n  ],\n  \"source\": {\n    \"tool\": \"list_events\",\n    \"endpoints\": [\n      \"GET /events\"\n    ]\n  }\n}",
+                "audit": {
+                  "ts": "2026-11-21T02:58:57.897+00:00",
+                  "tool": "list_events",
+                  "args": {
+                    "start_date": "2026-10-19",
+                    "end_date": "2026-10-25",
+                    "event_type": null
+                  },
+                  "status": "ok",
+                  "duration_ms": 1.2,
+                  "van_requests": 1,
+                  "retries": 0,
+                  "items": 5
+                }
+              }
+            ],
+            "citations": [
+              {
+                "type": "van",
+                "id": "list_events"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 4820,
+            "model": "openai_compat/deepseek-v4-pro",
+            "steps": 2
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": null,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "next week's events",
+              "expected": [
+                "Northside GOTV Canvass",
+                "Eastgate Phone Bank",
+                "Harbor Phone Bank",
+                "Eastgate Weekend Canvass",
+                "Harbor Canvass Launch"
+              ],
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "What events are on the VAN calendar for next week?",
+            "answer": "There are 5 events on the VAN calendar for next week (Oct 19\u201325, 2026).\n\n- **Northside GOTV Canvass** \u2014 Mon, Oct 19, 9:00 AM\u20134:00 PM, Northside Office (Morning + Afternoon shifts) [van:list_events]\n- **Eastgate Phone Bank** \u2014 Mon, Oct 19, 5:00\u20138:00 PM, Eastgate Office (Evening shift) [van:list_events]\n- **Harbor Phone Bank** \u2014 Tue, Oct 20, 5:30\u20138:30 PM, Harbor Office (Evening shift) [van:list_events]\n- **Eastgate Weekend Canvass** \u2014 Sat, Oct 24, 9:30 AM\u201312:30 PM, Eastgate Office (Morning shift) [van:list_events]\n- **Harbor Canvass Launch** \u2014 Sun, Oct 25, 10:00 AM\u20135:00 PM, Harbor Office (Morning + Afternoon shifts) [van:list_events]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "van_list_events",
+                "args": {
+                  "start_date": "2026-10-19",
+                  "end_date": "2026-10-25"
+                },
+                "ok": true,
+                "result": "list_events returned 5 items"
+              }
+            ],
+            "sources": [
+              {
+                "type": "mcp",
+                "server": "ngpvan-mcp",
+                "tool": "list_events",
+                "args": {
+                  "start_date": "2026-10-19",
+                  "end_date": "2026-10-25"
+                },
+                "result": "{\n  \"from\": \"2026-10-19\",\n  \"to\": \"2026-10-25\",\n  \"count\": 5,\n  \"events\": [\n    {\n      \"event_id\": 3001,\n      \"name\": \"Northside GOTV Canvass\",\n      \"type\": \"Canvass\",\n      \"date\": \"2026-10-19\",\n      \"start\": \"2026-10-19T09:00:00-06:00\",\n      \"end\": \"2026-10-19T16:00:00-06:00\",\n      \"location\": \"Northside Office\",\n      \"description\": \"Meet at the Northside Office. Questions? Text Dana at [phone removed].\",\n      \"shifts\": [\n        {\n          \"shift_id\": 7001,\n          \"name\": \"Morning\",\n          \"start\": \"2026-10-19T09:00:00-06:00\",\n          \"end\": \"2026-10-19T12:00:00-06:00\"\n        },\n        {\n          \"shift_id\": 7002,\n          \"name\": \"Afternoon\",\n          \"start\": \"2026-10-19T13:00:00-06:00\",\n          \"end\": \"2026-10-19T16:00:00-06:00\"\n        }\n      ]\n    },\n    {\n      \"event_id\": 3002,\n      \"name\": \"Eastgate Phone Bank\",\n      \"type\": \"Phone Bank\",\n      \"date\": \"2026-10-19\",\n      \"start\": \"2026-10-19T17:00:00-06:00\",\n      \"end\": \"2026-10-19T20:00:00-06:00\",\n      \"location\": \"Eastgate Office\",\n      \"description\": \"Bring a charged phone and headphones.\",\n      \"shifts\": [\n        {\n          \"shift_id\": 7003,\n          \"name\": \"Evening\",\n          \"start\": \"2026-10-19T17:00:00-06:00\",\n          \"end\": \"2026-10-19T20:00:00-06:00\"\n        }\n      ]\n    },\n    {\n      \"event_id\": 3006,\n      \"name\": \"Harbor Phone Bank\",\n      \"type\": \"Phone Bank\",\n      \"date\": \"2026-10-20\",\n      \"start\": \"2026-10-20T17:30:00-06:00\",\n      \"end\": \"2026-10-20T20:30:00-06:00\",\n      \"location\": \"Harbor Office\",\n      \"description\": \"Calls for the Measure 3 ID program.\",\n      \"shifts\": [\n        {\n          \"shift_id\": 7008,\n          \"name\": \"Evening\",\n          \"start\": \"2026-10-20T17:30:00-06:00\",\n          \"end\": \"2026-10-20T20:30:00-06:00\"\n        }\n      ]\n    },\n    {\n      \"event_id\": 3005,\n      \"name\": \"Eastgate Weekend Canvass\",\n      \"type\": \"Canvass\",\n      \"date\": \"2026-10-24\",\n      \"start\": \"2026-10-24T09:30:00-06:00\",\n      \"end\": \"2026-10-24T12:30:00-06:00\",\n      \"location\": \"Eastgate Office\",\n      \"description\": \"Turf packets ready at 9:15.\",\n      \"shifts\": [\n        {\n          \"shift_id\": 7007,\n          \"name\": \"Morning\",\n          \"start\": \"2026-10-24T09:30:00-06:00\",\n          \"end\": \"2026-10-24T12:30:00-06:00\"\n        }\n      ]\n    },\n    {\n      \"event_id\": 3003,\n      \"name\": \"Harbor Canvass Launch\",\n      \"type\": \"Canvass\",\n      \"date\": \"2026-10-25\",\n      \"start\": \"2026-10-25T10:00:00-06:00\",\n      \"end\": \"2026-10-25T17:00:00-06:00\",\n      \"location\": \"Harbor Office\",\n      \"description\": \"Launch at the Harbor Office, [address removed] Host contact: [email removed].\",\n      \"shifts\": [\n        {\n          \"shift_id\": 7004,\n          \"name\": \"Morning\",\n          \"start\": \"2026-10-25T10:00:00-06:00\",\n          \"end\": \"2026-10-25T13:00:00-06:00\"\n        },\n        {\n          \"shift_id\": 7005,\n          \"name\": \"Afternoon\",\n          \"start\": \"2026-10-25T14:00:00-06:00\",\n          \"end\": \"2026-10-25T17:00:00-06:00\"\n        }\n      ]\n    }\n  ],\n  \"source\": {\n    \"tool\": \"list_events\",\n    \"endpoints\": [\n      \"GET /events\"\n    ]\n  }\n}",
+                "audit": {
+                  "ts": "2026-11-21T02:59:02.445+00:00",
+                  "tool": "list_events",
+                  "args": {
+                    "start_date": "2026-10-19",
+                    "end_date": "2026-10-25",
+                    "event_type": null
+                  },
+                  "status": "ok",
+                  "duration_ms": 1.1,
+                  "van_requests": 1,
+                  "retries": 0,
+                  "items": 5
+                }
+              }
+            ],
+            "citations": [
+              {
+                "type": "van",
+                "id": "list_events"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 4630,
+            "model": "openai_compat/deepseek-v4-pro",
+            "steps": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "v07",
+      "question": "What survey questions are set up in VAN right now?",
+      "category": "VAN",
+      "split": "test",
+      "keywords": [
+        "survey questions",
+        "VAN",
+        "script",
+        "responses"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "qc-rules#householding",
+        "program-plan#overview",
+        "registration-drive#qc-calls",
+        "client-reporting#weekly-report-format"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": null,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [
+        {
+          "name": "active survey questions",
+          "expected": [
+            "Measure 3 Support",
+            "Volunteer Ask",
+            "Top Issue"
+          ],
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "What survey questions are set up in VAN right now?",
+        "answer": "There are 3 active survey questions set up in VAN right now.\n\n- **Measure 3 Support** (Ballot Measure, 2026) \u2014 \"Can we count on you to vote yes on Measure 3, the transit levy?\"\n  - Responses: 1 Strong Yes, 2 Lean Yes, 3 Undecided, 4 Lean No, 5 Strong No [van:list_survey_questions]\n- **Volunteer Ask** (Volunteer, 2026) \u2014 \"Would you join us for a shift this month?\"\n  - Responses: Yes, Maybe, No [van:list_survey_questions]\n- **Top Issue** (Issue, 2026) \u2014 \"What issue matters most to you this year?\"\n  - Responses: Housing, Transit, Schools, Jobs [van:list_survey_questions]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "van_list_survey_questions",
+            "args": {},
+            "ok": true,
+            "result": "list_survey_questions returned 3 items"
+          }
+        ],
+        "sources": [
+          {
+            "type": "mcp",
+            "server": "ngpvan-mcp",
+            "tool": "list_survey_questions",
+            "args": {},
+            "result": "{\n  \"count\": 3,\n  \"survey_questions\": [\n    {\n      \"id\": 5201,\n      \"name\": \"Measure 3 Support\",\n      \"type\": \"Ballot Measure\",\n      \"cycle\": 2026,\n      \"status\": \"Active\",\n      \"script\": \"Can we count on you to vote yes on Measure 3, the transit levy?\",\n      \"responses\": [\n        {\n          \"id\": 52011,\n          \"name\": \"1 Strong Yes\"\n        },\n        {\n          \"id\": 52012,\n          \"name\": \"2 Lean Yes\"\n        },\n        {\n          \"id\": 52013,\n          \"name\": \"3 Undecided\"\n        },\n        {\n          \"id\": 52014,\n          \"name\": \"4 Lean No\"\n        },\n        {\n          \"id\": 52015,\n          \"name\": \"5 Strong No\"\n        }\n      ]\n    },\n    {\n      \"id\": 5202,\n      \"name\": \"Volunteer Ask\",\n      \"type\": \"Volunteer\",\n      \"cycle\": 2026,\n      \"status\": \"Active\",\n      \"script\": \"Would you join us for a shift this month?\",\n      \"responses\": [\n        {\n          \"id\": 52021,\n          \"name\": \"Yes\"\n        },\n        {\n          \"id\": 52022,\n          \"name\": \"Maybe\"\n        },\n        {\n          \"id\": 52023,\n          \"name\": \"No\"\n        }\n      ]\n    },\n    {\n      \"id\": 5203,\n      \"name\": \"Top Issue\",\n      \"type\": \"Issue\",\n      \"cycle\": 2026,\n      \"status\": \"Active\",\n      \"script\": \"What issue matters most to you this year?\",\n      \"responses\": [\n        {\n          \"id\": 52031,\n          \"name\": \"Housing\"\n        },\n        {\n          \"id\": 52032,\n          \"name\": \"Transit\"\n        },\n        {\n          \"id\": 52033,\n          \"name\": \"Schools\"\n        },\n        {\n          \"id\": 52034,\n          \"name\": \"Jobs\"\n        }\n      ]\n    }\n  ],\n  \"source\": {\n    \"tool\": \"list_survey_questions\",\n    \"endpoints\": [\n      \"GET /surveyQuestions\"\n    ]\n  }\n}",
+            "audit": {
+              "ts": "2026-11-21T02:59:06.327+00:00",
+              "tool": "list_survey_questions",
+              "args": {
+                "include_archived": false,
+                "name": "[none]"
+              },
+              "status": "ok",
+              "duration_ms": 0.9,
+              "van_requests": 1,
+              "retries": 0,
+              "items": 3
+            }
+          }
+        ],
+        "citations": [
+          {
+            "type": "van",
+            "id": "list_survey_questions"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 3713,
+        "model": "openai_compat/deepseek-v4-pro",
+        "steps": 2
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": null,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "active survey questions",
+              "expected": [
+                "Measure 3 Support",
+                "Volunteer Ask",
+                "Top Issue"
+              ],
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "What survey questions are set up in VAN right now?",
+            "answer": "There are 3 active survey questions set up in VAN for the 2026 cycle.\n\n- **Measure 3 Support** (Ballot Measure) \u2014 \"Can we count on you to vote yes on Measure 3, the transit levy?\" with responses: 1 Strong Yes, 2 Lean Yes, 3 Undecided, 4 Lean No, 5 Strong No [van:list_survey_questions]\n- **Volunteer Ask** (Volunteer) \u2014 \"Would you join us for a shift this month?\" with responses: Yes, Maybe, No [van:list_survey_questions]\n- **Top Issue** (Issue) \u2014 \"What issue matters most to you this year?\" with responses: Housing, Transit, Schools, Jobs [van:list_survey_questions]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "van_list_survey_questions",
+                "args": {},
+                "ok": true,
+                "result": "list_survey_questions returned 3 items"
+              }
+            ],
+            "sources": [
+              {
+                "type": "mcp",
+                "server": "ngpvan-mcp",
+                "tool": "list_survey_questions",
+                "args": {},
+                "result": "{\n  \"count\": 3,\n  \"survey_questions\": [\n    {\n      \"id\": 5201,\n      \"name\": \"Measure 3 Support\",\n      \"type\": \"Ballot Measure\",\n      \"cycle\": 2026,\n      \"status\": \"Active\",\n      \"script\": \"Can we count on you to vote yes on Measure 3, the transit levy?\",\n      \"responses\": [\n        {\n          \"id\": 52011,\n          \"name\": \"1 Strong Yes\"\n        },\n        {\n          \"id\": 52012,\n          \"name\": \"2 Lean Yes\"\n        },\n        {\n          \"id\": 52013,\n          \"name\": \"3 Undecided\"\n        },\n        {\n          \"id\": 52014,\n          \"name\": \"4 Lean No\"\n        },\n        {\n          \"id\": 52015,\n          \"name\": \"5 Strong No\"\n        }\n      ]\n    },\n    {\n      \"id\": 5202,\n      \"name\": \"Volunteer Ask\",\n      \"type\": \"Volunteer\",\n      \"cycle\": 2026,\n      \"status\": \"Active\",\n      \"script\": \"Would you join us for a shift this month?\",\n      \"responses\": [\n        {\n          \"id\": 52021,\n          \"name\": \"Yes\"\n        },\n        {\n          \"id\": 52022,\n          \"name\": \"Maybe\"\n        },\n        {\n          \"id\": 52023,\n          \"name\": \"No\"\n        }\n      ]\n    },\n    {\n      \"id\": 5203,\n      \"name\": \"Top Issue\",\n      \"type\": \"Issue\",\n      \"cycle\": 2026,\n      \"status\": \"Active\",\n      \"script\": \"What issue matters most to you this year?\",\n      \"responses\": [\n        {\n          \"id\": 52031,\n          \"name\": \"Housing\"\n        },\n        {\n          \"id\": 52032,\n          \"name\": \"Transit\"\n        },\n        {\n          \"id\": 52033,\n          \"name\": \"Schools\"\n        },\n        {\n          \"id\": 52034,\n          \"name\": \"Jobs\"\n        }\n      ]\n    }\n  ],\n  \"source\": {\n    \"tool\": \"list_survey_questions\",\n    \"endpoints\": [\n      \"GET /surveyQuestions\"\n    ]\n  }\n}",
+                "audit": {
+                  "ts": "2026-11-21T02:59:10.721+00:00",
+                  "tool": "list_survey_questions",
+                  "args": {
+                    "include_archived": false,
+                    "name": "[none]"
+                  },
+                  "status": "ok",
+                  "duration_ms": 0.9,
+                  "van_requests": 1,
+                  "retries": 0,
+                  "items": 3
+                }
+              }
+            ],
+            "citations": [
+              {
+                "type": "van",
+                "id": "list_survey_questions"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 4518,
+            "model": "openai_compat/deepseek-v4-pro",
+            "steps": 2
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": null,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "active survey questions",
+              "expected": [
+                "Measure 3 Support",
+                "Volunteer Ask",
+                "Top Issue"
+              ],
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "What survey questions are set up in VAN right now?",
+            "answer": "There are 3 active survey questions set up in VAN right now.\n\n- **Measure 3 Support** (Ballot Measure, 2026) \u2014 \"Can we count on you to vote yes on Measure 3, the transit levy?\"\n  Responses: 1 Strong Yes, 2 Lean Yes, 3 Undecided, 4 Lean No, 5 Strong No [van:list_survey_questions]\n- **Volunteer Ask** (Volunteer, 2026) \u2014 \"Would you join us for a shift this month?\"\n  Responses: Yes, Maybe, No [van:list_survey_questions]\n- **Top Issue** (Issue, 2026) \u2014 \"What issue matters most to you this year?\"\n  Responses: Housing, Transit, Schools, Jobs [van:list_survey_questions]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "van_list_survey_questions",
+                "args": {},
+                "ok": true,
+                "result": "list_survey_questions returned 3 items"
+              }
+            ],
+            "sources": [
+              {
+                "type": "mcp",
+                "server": "ngpvan-mcp",
+                "tool": "list_survey_questions",
+                "args": {},
+                "result": "{\n  \"count\": 3,\n  \"survey_questions\": [\n    {\n      \"id\": 5201,\n      \"name\": \"Measure 3 Support\",\n      \"type\": \"Ballot Measure\",\n      \"cycle\": 2026,\n      \"status\": \"Active\",\n      \"script\": \"Can we count on you to vote yes on Measure 3, the transit levy?\",\n      \"responses\": [\n        {\n          \"id\": 52011,\n          \"name\": \"1 Strong Yes\"\n        },\n        {\n          \"id\": 52012,\n          \"name\": \"2 Lean Yes\"\n        },\n        {\n          \"id\": 52013,\n          \"name\": \"3 Undecided\"\n        },\n        {\n          \"id\": 52014,\n          \"name\": \"4 Lean No\"\n        },\n        {\n          \"id\": 52015,\n          \"name\": \"5 Strong No\"\n        }\n      ]\n    },\n    {\n      \"id\": 5202,\n      \"name\": \"Volunteer Ask\",\n      \"type\": \"Volunteer\",\n      \"cycle\": 2026,\n      \"status\": \"Active\",\n      \"script\": \"Would you join us for a shift this month?\",\n      \"responses\": [\n        {\n          \"id\": 52021,\n          \"name\": \"Yes\"\n        },\n        {\n          \"id\": 52022,\n          \"name\": \"Maybe\"\n        },\n        {\n          \"id\": 52023,\n          \"name\": \"No\"\n        }\n      ]\n    },\n    {\n      \"id\": 5203,\n      \"name\": \"Top Issue\",\n      \"type\": \"Issue\",\n      \"cycle\": 2026,\n      \"status\": \"Active\",\n      \"script\": \"What issue matters most to you this year?\",\n      \"responses\": [\n        {\n          \"id\": 52031,\n          \"name\": \"Housing\"\n        },\n        {\n          \"id\": 52032,\n          \"name\": \"Transit\"\n        },\n        {\n          \"id\": 52033,\n          \"name\": \"Schools\"\n        },\n        {\n          \"id\": 52034,\n          \"name\": \"Jobs\"\n        }\n      ]\n    }\n  ],\n  \"source\": {\n    \"tool\": \"list_survey_questions\",\n    \"endpoints\": [\n      \"GET /surveyQuestions\"\n    ]\n  }\n}",
+                "audit": {
+                  "ts": "2026-11-21T02:59:15.010+00:00",
+                  "tool": "list_survey_questions",
+                  "args": {
+                    "include_archived": false,
+                    "name": "[none]"
+                  },
+                  "status": "ok",
+                  "duration_ms": 1.0,
+                  "van_requests": 1,
+                  "retries": 0,
+                  "items": 3
+                }
+              }
+            ],
+            "citations": [
+              {
+                "type": "van",
+                "id": "list_survey_questions"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 4020,
+            "model": "openai_compat/deepseek-v4-pro",
+            "steps": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "v08",
+      "question": "How many contact attempts does VAN show for Maria Lopez?",
+      "category": "VAN",
+      "split": "test",
+      "keywords": [
+        "contact attempts",
+        "contact history",
+        "VAN",
+        "person"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "counting-doors#attempts",
+        "counting-doors#contacts-and-contact-rate",
+        "counting-doors#why-the-client-s-numbers-differ-from-ours",
+        "counting-doors#doors"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": null,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [
+        {
+          "name": "total contact attempts",
+          "expected": 0.0,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "How many contact attempts does VAN show for Maria Lopez?",
+        "answer": "VAN shows 0 contact attempts for Maria Lopez (matched as \"Maria L.\" in Riverbend).\n\n- Total attempts: 0 [van:contact_history_summary]\n- Last attempt: none on record [van:contact_history_summary]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "van_search_people",
+            "args": {
+              "first_name": "Maria",
+              "last_name": "Lopez"
+            },
+            "ok": true,
+            "result": "search_people returned 1 items"
+          },
+          {
+            "name": "van_contact_history_summary",
+            "args": {
+              "van_ids": [
+                100200149
+              ]
+            },
+            "ok": true,
+            "result": "contact_history_summary returned 1 items"
+          }
+        ],
+        "sources": [
+          {
+            "type": "mcp",
+            "server": "ngpvan-mcp",
+            "tool": "contact_history_summary",
+            "args": {
+              "van_ids": [
+                100200149
+              ]
+            },
+            "result": "{\n  \"people_checked\": 1,\n  \"people_reached\": 0,\n  \"total_attempts\": 0,\n  \"by_contact_type\": {},\n  \"by_result\": {},\n  \"survey_responses\": {},\n  \"per_person\": [\n    {\n      \"van_id\": 100200149,\n      \"attempts\": 0,\n      \"last_attempt\": null\n    }\n  ],\n  \"since\": null,\n  \"source\": {\n    \"tool\": \"contact_history_summary\",\n    \"endpoints\": [\n      \"GET /people/{vanId}/canvassResponses\",\n      \"GET /canvassResponses/resultCodes\",\n      \"GET /canvassResponses/contactTypes\",\n      \"GET /surveyQuestions\"\n    ]\n  }\n}",
+            "audit": {
+              "ts": "2026-11-21T02:59:20.798+00:00",
+              "tool": "contact_history_summary",
+              "args": {
+                "van_ids": [
+                  100200149
+                ],
+                "since": null
+              },
+              "status": "ok",
+              "duration_ms": 0.9,
+              "van_requests": 1,
+              "retries": 0,
+              "items": 1
+            }
+          }
+        ],
+        "citations": [
+          {
+            "type": "van",
+            "id": "contact_history_summary"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 4923,
+        "model": "openai_compat/deepseek-v4-pro",
+        "steps": 3
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": null,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "total contact attempts",
+              "expected": 0.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "How many contact attempts does VAN show for Maria Lopez?",
+            "answer": "VAN shows 0 contact attempts for Maria Lopez (the only match, \"Maria L.\" in Riverbend).\n\n- Contact attempts: 0 [van:contact_history_summary]\n- Last attempt: none on file [van:contact_history_summary]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "van_search_people",
+                "args": {
+                  "first_name": "Maria",
+                  "last_name": "Lopez"
+                },
+                "ok": true,
+                "result": "search_people returned 1 items"
+              },
+              {
+                "name": "van_contact_history_summary",
+                "args": {
+                  "van_ids": [
+                    100200149
+                  ]
+                },
+                "ok": true,
+                "result": "contact_history_summary returned 1 items"
+              }
+            ],
+            "sources": [
+              {
+                "type": "mcp",
+                "server": "ngpvan-mcp",
+                "tool": "contact_history_summary",
+                "args": {
+                  "van_ids": [
+                    100200149
+                  ]
+                },
+                "result": "{\n  \"people_checked\": 1,\n  \"people_reached\": 0,\n  \"total_attempts\": 0,\n  \"by_contact_type\": {},\n  \"by_result\": {},\n  \"survey_responses\": {},\n  \"per_person\": [\n    {\n      \"van_id\": 100200149,\n      \"attempts\": 0,\n      \"last_attempt\": null\n    }\n  ],\n  \"since\": null,\n  \"source\": {\n    \"tool\": \"contact_history_summary\",\n    \"endpoints\": [\n      \"GET /people/{vanId}/canvassResponses\",\n      \"GET /canvassResponses/resultCodes\",\n      \"GET /canvassResponses/contactTypes\",\n      \"GET /surveyQuestions\"\n    ]\n  }\n}",
+                "audit": {
+                  "ts": "2026-11-21T02:59:25.856+00:00",
+                  "tool": "contact_history_summary",
+                  "args": {
+                    "van_ids": [
+                      100200149
+                    ],
+                    "since": null
+                  },
+                  "status": "ok",
+                  "duration_ms": 0.8,
+                  "van_requests": 1,
+                  "retries": 0,
+                  "items": 1
+                }
+              }
+            ],
+            "citations": [
+              {
+                "type": "van",
+                "id": "contact_history_summary"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 5236,
+            "model": "openai_compat/deepseek-v4-pro",
+            "steps": 3
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": null,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "total contact attempts",
+              "expected": 0.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "How many contact attempts does VAN show for Maria Lopez?",
+            "answer": "VAN shows 0 contact attempts for Maria Lopez (listed in VAN as \"Maria L.\" in Riverbend).\n\n- Total contact attempts: 0 [van:contact_history_summary]\n- Last attempt: none on file [van:contact_history_summary]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "van_search_people",
+                "args": {
+                  "first_name": "Maria",
+                  "last_name": "Lopez"
+                },
+                "ok": true,
+                "result": "search_people returned 1 items"
+              },
+              {
+                "name": "van_contact_history_summary",
+                "args": {
+                  "van_ids": [
+                    100200149
+                  ]
+                },
+                "ok": true,
+                "result": "contact_history_summary returned 1 items"
+              }
+            ],
+            "sources": [
+              {
+                "type": "mcp",
+                "server": "ngpvan-mcp",
+                "tool": "contact_history_summary",
+                "args": {
+                  "van_ids": [
+                    100200149
+                  ]
+                },
+                "result": "{\n  \"people_checked\": 1,\n  \"people_reached\": 0,\n  \"total_attempts\": 0,\n  \"by_contact_type\": {},\n  \"by_result\": {},\n  \"survey_responses\": {},\n  \"per_person\": [\n    {\n      \"van_id\": 100200149,\n      \"attempts\": 0,\n      \"last_attempt\": null\n    }\n  ],\n  \"since\": null,\n  \"source\": {\n    \"tool\": \"contact_history_summary\",\n    \"endpoints\": [\n      \"GET /people/{vanId}/canvassResponses\",\n      \"GET /canvassResponses/resultCodes\",\n      \"GET /canvassResponses/contactTypes\",\n      \"GET /surveyQuestions\"\n    ]\n  }\n}",
+                "audit": {
+                  "ts": "2026-11-21T02:59:31.356+00:00",
+                  "tool": "contact_history_summary",
+                  "args": {
+                    "van_ids": [
+                      100200149
+                    ],
+                    "since": null
+                  },
+                  "status": "ok",
+                  "duration_ms": 0.8,
+                  "van_requests": 1,
+                  "retries": 0,
+                  "items": 1
+                }
+              }
+            ],
+            "citations": [
+              {
+                "type": "van",
+                "id": "contact_history_summary"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 5657,
+            "model": "openai_compat/deepseek-v4-pro",
+            "steps": 3
+          }
+        }
+      ]
+    }
+  ],
+  "api_usage": {
+    "prompt_tokens": 193290,
+    "completion_tokens": 6122,
+    "total_tokens": 199412,
+    "prompt_tokens_details.cached_tokens": 181760,
+    "completion_tokens_details.reasoning_tokens": 3425,
+    "prompt_cache_hit_tokens": 181760,
+    "prompt_cache_miss_tokens": 11530
+  },
+  "api_calls": 30
+}

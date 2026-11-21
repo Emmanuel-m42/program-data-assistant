@@ -142,6 +142,17 @@ Results for this version, measured on Nov 20, 2026: qwen3:14b (Q4_K_M) through O
 - VAN misses: v03 copied the example text in a tool's parameter description ("e.g. Volunteer") as a filter and got no codes back; v05 filtered to one folder the question didn't name; v01 gave one untouched precinct instead of Northside's untouched total.
 - Not measured yet: qwen3:14b on the original 28 without VAN tools, which is the run needed to say whether the VAN tools change the score at all on the same model.
 
+The same runs on two open-weights models through DeepSeek's hosted API, measured on Nov 20, 2026: DeepSeek-V4-Pro (`deepseek-v4-pro`, V4-Pro-0813) and DeepSeek-V4.1-Flash (`deepseek-flash`, V4.1-Flash-1017). Thinking on, effort high (the API default), temperature not applicable (DeepSeek ignores it in thinking mode, so the three runs can differ). Provider `PDA_PROVIDER=openai_compat`. These runs used the provider before commit 45b35f4, which now also sends the model's reasoning back on assistant turns without tool calls, as DeepSeek's docs ask; none of the runs hit an error.
+
+| run | split | V4-Pro pass | V4-Pro pass^3 | V4.1-Flash pass | V4.1-Flash pass^3 | s per answer (Pro / Flash) |
+| --- | --- | --- | --- | --- | --- | --- |
+| VAN cases | dev | 3.3 of 4 | 3 of 4 | 2.7 of 4 | 1 of 4 | 8 / 7 |
+| VAN cases | held out | 4 of 4 | 4 of 4 | 3 of 4 | 2 of 4 | 7 / 6 |
+| original 28, VAN tools present | dev | 13 of 14 | 13 of 14 | 13.3 of 14 | 12 of 14 | 9 / 7 |
+| original 28, VAN tools present | held out | 11.3 of 14 | 11 of 14 | 11.3 of 14 | 11 of 14 | 10 / 6 |
+
+Pass is the mean over the three runs; pass^3 counts cases that passed all three. Token use, from the API's usage fields: about 1.85 million for V4-Pro and 2.03 million for V4.1-Flash across all four runs, roughly 90% of prompt tokens served from DeepSeek's cache. On the original 28, the only VAN calls were on x08 (a staff member's phone number), where both models looked the person up in VAN and then declined; no program question was answered from VAN.
+
 ## Evals
 
 `evals/cases.yaml` has 28 cases: the 19 demo questions, three paraphrases, three questions only the documents can answer, and three the assistant should refuse (turnout, a staff member's phone number, a past cycle). Each case lists the tools it needs, the passages a retriever should find, and the facts the answer has to contain. Numeric facts are SQL against the raw tables, written separately from the views, so ground truth never comes from the model or from the views it reads.
