@@ -121,6 +121,17 @@ The first held-out half (`split: test`) is now contaminated: its misses were rea
 
 `uv run evals --rescore evals/reports/<name>.json` re-scores saved answers with the current cases without calling the model.
 
+### An outside agent as the model
+
+A coding agent (for example a Claude subagent) can be the model without an API key. `uv run pda-agent-tool setup` loads the data into `PDA_PGDATA`; `pda-agent-tool prompt` prints the system prompt and tool specs exactly as the app sends them; `pda-agent-tool <tool> '<json args>' --case <id> --trace run1.jsonl` runs the app's own Toolbox (SQL guard, read-only role, statement timeout, row caps, the repeated-query check within a case), prints exactly what the model would get back and appends the call to the trace. The agent writes its final answers to a JSON file, `{"q01": "answer", ...}`. Scoring:
+
+```bash
+uv run evals --provider agent-trace --split dev --trace run1.jsonl --answers run1.json \
+  --trace run2.jsonl --answers run2.json --label claude-agent_dev
+```
+
+Each traced call is replayed through a fresh Toolbox and has to return what the agent was shown, or the case fails. Then the app's after-answer steps run (citations to results the agent never got are dropped, a draft with two or more unsupported numbers is withheld) and the usual scorer applies; several trace and answer pairs give pass^k. What doesn't apply: the agent loop's in-loop guardrail rewrites (the retry nudge after a failed query, the grounding, look-first and citation nudges) and its 7-step cap, because the agent runs its own loop, and latency isn't measured. Reports label these runs "Claude Opus 5.5 as the agent through the tool CLI (OpenCode subagent; same tools and prompt, not the app's own agent loop)".
+
 ## Results
 
 All runs use the same 28 cases and the same scorer, at temperature 0. Every report has been rescored with the current cases (see the q13 note below). The CPU runs are on the 8-core server (shared, no GPU); the GPU runs go to Ollama on an RTX 3080 laptop GPU (16 GB) over an SSH tunnel. Per-case tables for every run are in `evals/reports/`.
