@@ -66,6 +66,8 @@ class OllamaProvider:
         else:
             self.think = False if THINKING_MODELS.match(self.model) else None
         self.client = httpx.Client(timeout=timeout)
+        self.usage: dict[str, int] = {}  # token counts, done_reason counts and thinking length, for eval reports
+        self.calls = 0
 
     def chat(self, messages, tools, format=None):
         out = []
@@ -92,8 +94,19 @@ class OllamaProvider:
             body["format"] = format
         r = self.client.post(f"{self.host}/api/chat", json=body)
         r.raise_for_status()
-        msg = r.json()["message"]
-        msg["content"] = THINK_BLOCK.sub("", msg.get("content") or "").strip()  # in case thinking text leaks into content
+        data = r.json()
+        msg = data["message"]
+        raw = msg.get("content") or ""
+        leaked = THINK_BLOCK.findall(raw)
+        msg["content"] = THINK_BLOCK.sub("", raw).strip()  # in case thinking text leaks into content
+        # Per-run counts, so a reply cut off by num_predict or num_ctx can't pass for a reasoning miss.
+        self.calls += 1
+        reason = data.get("done_reason") or "unknown"
+        self.usage[f"done_reason.{reason}"] = self.usage.get(f"done_reason.{reason}", 0) + 1
+        for k in ("prompt_eval_count", "eval_count"):
+            self.usage[k] = self.usage.get(k, 0) + int(data.get(k) or 0)
+        thinking = len(msg.get("thinking") or "") + sum(len(t) for t in leaked)
+        self.usage["thinking_chars"] = self.usage.get("thinking_chars", 0) + thinking
         calls = []
         for i, c in enumerate(msg.get("tool_calls") or []):
             fn = c.get("function", {})

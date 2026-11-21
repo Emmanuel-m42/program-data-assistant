@@ -135,6 +135,17 @@ def test_thinking_models_get_think_false_and_think_blocks_are_stripped(monkeypat
     p.client.post = lambda url, json: sent.update(json) or Resp()
     assert p.chat([{"role": "user", "content": "q"}], None).content == "Eastgate."
     assert sent["think"] is False
+    # A length cutoff and any thinking are counted, so they can't pass for a reasoning miss.
+    assert p.usage["done_reason.unknown"] == 1 and p.usage["thinking_chars"] == len("<think>reasoning</think>")
+
+    class Cut(Resp):
+        def json(self):
+            return {"message": {"content": "", "thinking": "x" * 50, "tool_calls": []}, "done_reason": "length",
+                    "prompt_eval_count": 3000, "eval_count": 900}
+
+    p.client.post = lambda url, json: Cut()
+    p.chat([{"role": "user", "content": "q"}], None)
+    assert p.usage["done_reason.length"] == 1 and p.usage["eval_count"] == 900 and p.calls == 2
 
 
 def test_split_is_even_and_keeps_refusals_on_both_sides():
