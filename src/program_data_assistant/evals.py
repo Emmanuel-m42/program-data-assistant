@@ -54,6 +54,33 @@ def compute_truth(conn, cases: list[dict]) -> dict[tuple[str, str], float]:
     return truth
 
 
+# Scorer fix (measurement only; the agent's own refusal handling is unchanged): besides the agent's
+# "I can't confirm that" sentence, count a clear decline in the answer's first sentence, such as
+# "I can't provide her phone number" or "That isn't something I can share". A first sentence that
+# carries data (a number of two or more digits) is an answer, even if it mentions a refusal word.
+DECLINE = re.compile(
+    r"\b(?:can(?:'|’)?t|cannot|can not|won(?:'|’)?t|will not|(?:am )?unable to)\s+"
+    r"(?:provide|share|give|tell you|look up|access|confirm)\b"
+    r"|\b(?:is|are)\s*(?:n(?:'|’)?t|not)\s+available\b|\bnot available\b"
+    r"|\bisn(?:'|’)?t something I can\b|\bis not something I can\b",
+    re.IGNORECASE,
+)
+FIRST_SENTENCE = re.compile(r"^\s*(.+?)(?:(?<=[.!?])\s|\n|$)", re.DOTALL)
+DATA_NUMBER = re.compile(r"\d[\d,]*\d|\d\.\d")
+
+
+def declined(text: str) -> bool:
+    from .agent import REFUSAL
+
+    if REFUSAL.search(text or ""):
+        return True
+    m = FIRST_SENTENCE.match(text or "")
+    if not m:
+        return False
+    first = CITE_MARK.sub(" ", m.group(1))
+    return bool(DECLINE.search(first)) and not DATA_NUMBER.search(first)
+
+
 def numbers_in(text: str) -> list[float]:
     plain = CITE_MARK.sub(" ", text)
     digits = [float(m.group(1).replace(",", "")) for m in NUMBER.finditer(plain)]
@@ -87,7 +114,8 @@ def score_case(case: dict, answer: dict, truth: dict, retrieved: list[str], defa
         called.add("query_program_data")
     scores: dict[str, float | None] = dict.fromkeys(METRICS)
     details = []
-    scores["refusal"] = 1.0 if answer["refused"] == should_refuse else 0.0
+    refused = answer["refused"] or declined(answer["answer"])
+    scores["refusal"] = 1.0 if refused == should_refuse else 0.0
     if case.get("expected_docs"):
         exp = case["expected_docs"]
         scores["retrieval"] = round(sum(1 for d in exp if d in retrieved) / len(exp), 3)
@@ -98,7 +126,7 @@ def score_case(case: dict, answer: dict, truth: dict, retrieved: list[str], defa
         hits = 0
         for f in facts:
             t = truth.get((case["id"], f["name"]))
-            ok = (not answer["refused"]) and fact_matches(f, t, answer["answer"], defaults)
+            ok = (not refused) and fact_matches(f, t, answer["answer"], defaults)
             hits += ok
             details.append({"name": f["name"], "expected": t if "sql" in f else f["any_of"], "matched": ok})
         scores["facts"] = round(hits / len(facts), 3) if facts else None
