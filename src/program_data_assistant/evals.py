@@ -303,7 +303,20 @@ def main() -> None:
     ap.add_argument("--rescore", help="re-score a saved report with the current cases instead of running the model")
     ap.add_argument("--groups", nargs="+", metavar="REPORT",
                     help="print the per-group table (dev, old held-out, new held-out) for one or more saved reports")
+    ap.add_argument("--trace", action="append", help="agent-trace: a JSONL trace from pda-agent-tool (repeatable)")
+    ap.add_argument("--answers", action="append", help="agent-trace: the answers JSON for the trace in the same position")
     args = ap.parse_args()
+    if args.provider == "agent-trace":  # an outside agent's tool calls and answers, replayed (agent_trace.py)
+        from . import agent_trace
+
+        if not args.answers:
+            ap.error("--provider agent-trace needs --answers (and its --trace)")
+        report = agent_trace.run(args.label, args.trace or [], args.answers, Path(args.out), args.split, args.only,
+                                 args.model or "claude-opus-5-5")
+        s = report["summary"]
+        print("\n" + "  ".join(f"{m}={fmt(s[m])}" for m in METRICS + ["pass", "pass_all"]))
+        print(f"wrote {args.out}/{args.label}.json and .md")
+        return
     if args.groups:
         reports = [json.loads(Path(p).read_text()) for p in args.groups]
         rows = [r for rep in reports for r in rep["cases"]]
