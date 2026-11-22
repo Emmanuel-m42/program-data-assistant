@@ -184,9 +184,9 @@ def summarize(rows: list[dict]) -> dict:
 
 
 # Reporting groups, in order. The first held-out half (test) and heldout_v2 are contaminated: their failures were read
-# while choosing fixes. heldout_v3 is the clean held-out set.
+# while choosing fixes. heldout_v3 and the larger heldout_v4 are clean held-out sets.
 GROUPS = {"dev": "dev (tuned)", "test": "old held-out (contaminated)", "heldout_v2": "held-out v2 (contaminated)",
-          "heldout_v3": "held-out v3"}
+          "heldout_v3": "held-out v3", "heldout_v4": "held-out v4"}
 
 
 def groups(rows: list[dict], splits: dict[str, str]) -> list[dict]:
@@ -363,7 +363,7 @@ def main() -> None:
     ap.add_argument("--out", default=str(REPORTS))
     ap.add_argument("--resume", action="store_true", help="continue from <label>.partial.json")
     ap.add_argument("--split", nargs="+", choices=list(GROUPS),
-                    help="run only these splits: dev, test (old held-out), heldout_v2 (contaminated), heldout_v3")
+                    help="run only these splits: dev, test (old held-out), heldout_v2 (contaminated), heldout_v3, heldout_v4")
     ap.add_argument("--repeat", type=int, default=1, help="runs per case; scores are means, pass_all is pass^k")
     ap.add_argument("--rescore", help="re-score a saved report with the current cases instead of running the model")
     ap.add_argument("--groups", nargs="+", metavar="REPORT",
