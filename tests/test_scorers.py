@@ -100,12 +100,17 @@ def test_refusal_detection():
 def test_every_case_is_well_formed():
     cases, _ = evals.load_cases()
     ids = [c["id"] for c in cases]
-    assert len(ids) == len(set(ids)) == 58
+    assert len(ids) == len(set(ids)) == 140
     assert [c["id"] for c in cases[:19]] == [f"q{i:02d}" for i in range(1, 20)]
     assert [c["id"] for c in cases if c["split"] == "heldout_v2"] == [f"n{i:02d}" for i in range(1, 16)]
     assert [c["id"] for c in cases if c["split"] == "heldout_v3"] == [f"v{i:02d}" for i in range(1, 16)]
+    assert [c["id"] for c in cases if c["split"] == "heldout_v4"] == [f"w{i:02d}" for i in range(1, 83)]
     for c in cases:
         assert c.get("should_refuse") or c.get("facts"), c["id"]
+    # Every heldout_v4 paraphrase points at a heldout_v3 case.
+    for c in cases:
+        if c["split"] == "heldout_v4" and "paraphrase of" in c.get("extra", ""):
+            assert c["extra"].split("paraphrase of ")[1][:3] in ids, c["id"]
 
 
 def test_ground_truth_sql_runs():

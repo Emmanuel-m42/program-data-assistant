@@ -14,7 +14,8 @@
 #                   optional: true marks context the question doesn't ask for: reported, not scored
 #   should_refuse   true when the data and documents cannot answer it
 #   split           dev (used while changing prompts and tools), test (the first held-out half), heldout_v2 (the
-#                   second held-out set) or heldout_v3 (the third, at the end of the file)
+#                   second held-out set), heldout_v3 (the third) or heldout_v4 (the fourth, at the end of the file)
+#   extra           free text on what kind of case it is; "paraphrase of <id>" links a paraphrase to its original
 #
 # The test split is contaminated. It was held out from the later tuning steps, but its misses (q04, q08, q12) were
 # read and discussed while choosing the next fixes, so a gain on it no longer says much about new questions. It
@@ -22,8 +23,9 @@
 #
 # heldout_v2 (n01 to n15) is contaminated too. Its failures in the DeepSeek runs were read case by case on
 # 2026-11-20 and quoted in the analysis that chose the next fixes, so its questions are known to whoever tuned.
-# It stays on record, labelled. heldout_v3 (v01 to v15) is the clean held-out set: written after that analysis and
-# committed before the fixes it led to.
+# It stays on record, labelled. heldout_v3 (v01 to v15) is a clean held-out set: written after that analysis and
+# committed before the fixes it led to. heldout_v4 (w01 to w82) is a larger clean set, written after the eval-v3
+# results and committed before any run on it; no code changes go with it.
 #
 # Ground truth dates: data through 2026-10-18, this week 2026-10-12..18, last week 2026-10-05..11,
 # 16 knocking days left (Oct 19 to Nov 3), 12 registration days left (Oct 19 to Oct 30).
@@ -1031,3 +1033,1250 @@ cases:
     category: payroll
     extra: refusal, rent is recorded only for candidate sites, not current offices
     should_refuse: true
+
+  # ---------- fourth held-out set (heldout_v4) ----------
+  # Written on 2026-11-21, after the eval-v3 results were published, to make the clean held-out claim rest on more
+  # than 15 questions. Measurement only: no code, prompt or data change follows it before its runs. Same fictional
+  # data; ground truth is SQL on the raw tables, never the views, and every numeric truth has an independent second
+  # query in the audit. The extra field says what kind of case it is:
+  #   new           a new question (w01 to w41), in organizer phrasing: short and casual, long and specific, typos,
+  #                 multi-part. w07 and w15 look like questions to decline but are answerable (over-refusal checks).
+  #   paraphrase    "paraphrase of vNN": the same question as a heldout_v3 case in new words, with the same truths
+  #                 (w42 to w62), to measure whether wording changes the answer
+  #   refusal       the data and documents can't answer it (w63 to w74): outside the data, personal data,
+  #                 predictions, and near-miss traps
+  #   two-step      needs two results or a comparison across views (w75 to w82)
+
+  - id: w01
+    split: heldout_v4
+    question: hows eastgate doing vs goal so far?
+    category: pace
+    extra: new, casual with typos
+    keywords: [Eastgate, goal, pace, doors to date]
+    expected_tools: [query_program_data]
+    expected_docs: [program-plan#pace-and-projection]
+    facts:
+      - name: Eastgate doors to date
+        sql: |
+          SELECT sum(n) FROM (SELECT knocked_at::date, count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS n
+                              FROM knocks WHERE office = 'Eastgate' GROUP BY 1) d
+        abs: 1
+      - name: Eastgate goal to date
+        sql: SELECT sum(door_goal) FROM daily_goals WHERE office = 'Eastgate' AND goal_date <= '2026-10-18'
+        abs: 1
+
+  - id: w02
+    split: heldout_v4
+    question: What percent of the full Election Day door goal has the whole program knocked so far?
+    category: pace
+    extra: new
+    keywords: [percent, door goal, Election Day, whole program, doors to date]
+    expected_tools: [query_program_data]
+    expected_docs: [program-plan#goals]
+    facts:
+      - name: program doors to date as a percent of the total door goal
+        sql: |
+          SELECT 100.0 * (SELECT sum(n) FROM (SELECT knocked_at::date, office, count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS n
+                                              FROM knocks GROUP BY 1, 2) d) / (SELECT sum(door_goal) FROM daily_goals)
+        abs: 0.15
+        kind: percent
+
+  - id: w03
+    split: heldout_v4
+    question: On Oct 15, how many doors did Northside knock, and did it beat its door goal for that day?
+    category: pace
+    extra: new, multi-part
+    keywords: [Northside, Oct 15, doors, daily goal]
+    expected_tools: [query_program_data]
+    expected_docs: [counting-doors#doors]
+    facts:
+      - name: Northside doors Oct 15
+        sql: |
+          SELECT count(DISTINCT door_id) FROM knocks WHERE office = 'Northside' AND NOT rolled_back AND knocked_at::date = '2026-10-15'
+        abs: 0
+      - name: Northside door goal Oct 15
+        sql: SELECT door_goal FROM daily_goals WHERE office = 'Northside' AND goal_date = '2026-10-15'
+        abs: 0
+
+  - id: w04
+    split: heldout_v4
+    question: Which day this week had the lowest program-wide contact rate, and what was the rate?
+    category: pace
+    extra: new
+    keywords: [lowest, contact rate, day, this week, program-wide]
+    expected_tools: [query_program_data]
+    expected_docs: [counting-doors#contacts-and-contact-rate]
+    facts:
+      - name: Oct 13 had the lowest rate
+        any_of: [Oct 13, October 13, 2026-10-13, 10/13]
+      - name: program contact rate Oct 13
+        sql: |
+          SELECT 100.0 * sum(c) / sum(d) FROM (SELECT office, count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS d,
+                                                      count(*) FILTER (WHERE NOT rolled_back AND result = 'canvassed') AS c
+                                               FROM knocks WHERE knocked_at::date = '2026-10-13' GROUP BY 1) x
+        abs: 0.1
+        kind: percent
+
+  - id: w05
+    split: heldout_v4
+    question: If Harbor keeps up its last-7-days pace, how many doors will it have by Election Day?
+    category: pace
+    extra: new
+    keywords: [Harbor, projection, Election Day, last 7 days, pace]
+    expected_tools: [query_program_data]
+    expected_docs: [program-plan#pace-and-projection]
+    facts:
+      - name: Harbor projected doors by Election Day
+        sql: |
+          SELECT sum(n) + sum(n) FILTER (WHERE d >= '2026-10-12') / 7.0 * 16
+          FROM (SELECT knocked_at::date AS d, count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS n
+                FROM knocks WHERE office = 'Harbor' GROUP BY 1) x
+        abs: 1
+
+  - id: w06
+    split: heldout_v4
+    question: how many doors did we knock over the weekend of oct 17 and 18? all offices
+    category: pace
+    extra: new, casual
+    keywords: [weekend, Oct 17, Oct 18, doors, all offices]
+    expected_tools: [query_program_data]
+    expected_docs: [counting-doors#doors]
+    facts:
+      - name: doors Oct 17 and 18, all offices
+        sql: |
+          SELECT sum(n) FROM (SELECT knocked_at::date, office, count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS n
+                              FROM knocks WHERE knocked_at::date IN ('2026-10-17', '2026-10-18') GROUP BY 1, 2) d
+        abs: 1
+
+  - id: w07
+    split: heldout_v4
+    question: Hey, how many supporters have we ID'd at the doors so far?
+    category: pace
+    extra: new, answerable look-alike (voter responses in aggregate are in the data)
+    keywords: [supporters, survey, ID, doors]
+    expected_tools: [query_program_data]
+    facts:
+      - name: supporter responses, rollbacks removed
+        sql: SELECT count(*) FROM knocks WHERE survey_answer = 'supporter' AND NOT rolled_back
+        tol: 0.01
+
+  - id: w08
+    split: heldout_v4
+    question: How many GOTV canvassers have only ever worked one single day?
+    category: staffing
+    extra: new
+    keywords: [one-day hires, one day, GOTV canvassers]
+    expected_tools: [query_program_data]
+    expected_docs: [program-plan#staff-definitions]
+    facts:
+      - name: GOTV one-day hires, all time
+        sql: |
+          SELECT count(*) FROM (SELECT canvasser_id FROM shifts WHERE program = 'gotv' GROUP BY canvasser_id
+                                HAVING count(DISTINCT shift_date) = 1) x
+        abs: 0
+
+  - id: w09
+    split: heldout_v4
+    question: Which office has the most active GOTV canvassers right now, and how many?
+    category: staffing
+    extra: new
+    keywords: [active canvassers, office, GOTV, most]
+    expected_tools: [query_program_data]
+    expected_docs: [program-plan#staff-definitions]
+    facts:
+      - name: Northside has the most
+        any_of: [Northside]
+      - name: Northside active GOTV canvassers
+        sql: SELECT count(DISTINCT canvasser_id) FROM shifts WHERE program = 'gotv' AND office = 'Northside' AND shift_date > '2026-10-11'
+        abs: 0
+
+  - id: w10
+    split: heldout_v4
+    question: How many people on the registration team, canvassers and leads, worked at least one shift this week?
+    category: staffing
+    extra: new
+    keywords: [registration team, worked, this week, shifts]
+    expected_tools: [query_program_data]
+    facts:
+      - name: registration staff with a shift this week
+        sql: SELECT count(DISTINCT canvasser_id) FROM shifts WHERE program = 'vr' AND shift_date >= '2026-10-12'
+        abs: 0
+
+  - id: w11
+    split: heldout_v4
+    question: Who has logged the most paid hours of anyone in either program so far, and how many hours is that?
+    category: staffing
+    extra: new
+    keywords: [most paid hours, either program, person]
+    expected_tools: [query_program_data]
+    facts:
+      - name: Emmett Delgado
+        any_of: [Emmett Delgado]
+      - name: Emmett Delgado paid hours to date
+        sql: SELECT sum(s.paid_hours) FROM shifts s JOIN canvassers c USING (canvasser_id) WHERE c.full_name = 'Emmett Delgado'
+        abs: 0.05
+
+  - id: w12
+    split: heldout_v4
+    question: How many of our GOTV canvassers worked their first shift back in September?
+    category: staffing
+    extra: new
+    keywords: [first shift, September, GOTV canvassers, start]
+    expected_tools: [query_program_data]
+    facts:
+      - name: GOTV staff whose first shift was in September
+        sql: |
+          SELECT count(*) FROM (SELECT canvasser_id FROM shifts WHERE program = 'gotv' GROUP BY canvasser_id
+                                HAVING min(shift_date) < '2026-10-01') x
+        abs: 0
+
+  - id: w13
+    split: heldout_v4
+    question: Which candidate site is cheapest to rent, and how far is it from our nearest existing office?
+    category: office siting
+    extra: new, multi-part
+    keywords: [cheapest, rent, candidate site, nearest office, distance]
+    expected_tools: [query_program_data]
+    expected_docs: [program-plan#opening-another-office]
+    facts:
+      - name: Depot Road warehouse is cheapest
+        any_of: [Depot Road]
+      - name: Depot Road rent
+        sql: SELECT min(monthly_rent) FROM candidate_office_sites
+        abs: 0
+      - name: Depot Road km to nearest office
+        sql: |
+          SELECT min(km_between(s.lat, s.lon, o.lat, o.lon)) FROM candidate_office_sites s, offices o WHERE s.name = 'Depot Road warehouse'
+        abs: 0.05
+
+  - id: w14
+    split: heldout_v4
+    question: How many untouched doors are within 3 km of the Mill Street storefront?
+    category: office siting
+    extra: new
+    keywords: [untouched doors, within 3 km, Mill Street, candidate site]
+    expected_tools: [query_program_data]
+    expected_docs: [program-plan#opening-another-office]
+    facts:
+      - name: untouched doors in precincts within 3 km of Mill Street
+        sql: |
+          SELECT sum(p.target_doors - coalesce(k.n, 0)) FROM precincts p
+          LEFT JOIN (SELECT precinct_id, count(DISTINCT door_id) AS n FROM knocks WHERE NOT rolled_back GROUP BY 1) k USING (precinct_id),
+          candidate_office_sites s
+          WHERE s.name = 'Mill Street storefront' AND km_between(s.lat, s.lon, p.lat, p.lon) <= 3
+        abs: 0
+
+  - id: w15
+    split: heldout_v4
+    question: What's the monthly rent on the Westview Plaza suite?
+    category: office siting
+    extra: new, answerable look-alike of the rent refusal (candidate sites have rent)
+    keywords: [rent, Westview Plaza, candidate site, monthly]
+    expected_tools: [query_program_data]
+    facts:
+      - name: Westview Plaza rent
+        sql: SELECT monthly_rent FROM candidate_office_sites WHERE name = 'Westview Plaza suite'
+        abs: 0
+
+  - id: w16
+    split: heldout_v4
+    question: Of the four candidate sites, which one is farthest on average from the doors we still haven't knocked, and what's that average distance?
+    category: office siting
+    extra: new, long and specific
+    keywords: [farthest, average distance, untouched doors, candidate sites]
+    expected_tools: [query_program_data]
+    expected_docs: [program-plan#opening-another-office]
+    facts:
+      - name: Depot Road warehouse is farthest on average
+        any_of: [Depot Road]
+      - name: Depot Road average km to untouched doors
+        sql: |
+          SELECT sum(u * km_between(s.lat, s.lon, p.lat, p.lon)) / sum(u)
+          FROM (SELECT p.*, p.target_doors - coalesce(k.n, 0) AS u FROM precincts p
+                LEFT JOIN (SELECT precinct_id, count(DISTINCT door_id) AS n FROM knocks WHERE NOT rolled_back GROUP BY 1) k USING (precinct_id)) p,
+               candidate_office_sites s
+          WHERE s.name = 'Depot Road warehouse'
+        abs: 0.05
+
+  - id: w17
+    split: heldout_v4
+    question: How many precincts haven't had a single door knocked yet?
+    category: door gaps
+    extra: new
+    keywords: [precincts, untouched, never knocked, no doors]
+    expected_tools: [query_program_data]
+    facts:
+      - name: precincts with no doors knocked
+        sql: |
+          SELECT count(*) FROM precincts p
+          WHERE NOT EXISTS (SELECT 1 FROM knocks k WHERE k.precinct_id = p.precinct_id AND NOT k.rolled_back)
+        abs: 0
+
+  - id: w18
+    split: heldout_v4
+    question: Which precinct has the most doors left that nobody's knocked, and how many?
+    category: door gaps
+    extra: new
+    keywords: [precinct, most untouched doors, never knocked]
+    expected_tools: [query_program_data]
+    facts:
+      - name: Precinct 40
+        any_of: [Precinct 40]
+      - name: Precinct 40 untouched doors
+        sql: |
+          SELECT target_doors - (SELECT count(DISTINCT door_id) FROM knocks k WHERE k.precinct_id = p.precinct_id AND NOT rolled_back)
+          FROM precincts p WHERE name = 'Precinct 40'
+        abs: 0
+
+  - id: w19
+    split: heldout_v4
+    question: What share of Eastgate's turf doors have been knocked at least once?
+    category: door gaps
+    extra: new
+    keywords: [Eastgate, turf, share, touched, knocked at least once]
+    expected_tools: [query_program_data]
+    facts:
+      - name: Eastgate share of turf doors touched
+        sql: |
+          SELECT 100.0 * (SELECT count(DISTINCT door_id) FROM knocks WHERE office = 'Eastgate' AND NOT rolled_back)
+                 / (SELECT sum(target_doors) FROM precincts WHERE office = 'Eastgate')
+        abs: 0.1
+        kind: percent
+
+  - id: w20
+    split: heldout_v4
+    question: Which sparse precincts, under 1,000 doors per square mile, haven't been touched at all?
+    category: door gaps
+    extra: new
+    keywords: [sparse, precincts, untouched, doors per square mile]
+    expected_tools: [query_program_data]
+    expected_docs: [program-plan#opening-another-office]
+    facts:
+      - name: Precinct 11
+        any_of: [Precinct 11]
+      - name: Precinct 24
+        any_of: [Precinct 24]
+      - name: Precinct 36
+        any_of: [Precinct 36]
+
+  - id: w21
+    split: heldout_v4
+    question: How many doors are in Northside's turf altogether, and how many of them are still untouched?
+    category: door gaps
+    extra: new, multi-part
+    keywords: [Northside, turf doors, untouched, total]
+    expected_tools: [query_program_data]
+    facts:
+      - name: Northside turf doors
+        sql: SELECT sum(target_doors) FROM precincts WHERE office = 'Northside'
+        abs: 0
+      - name: Northside untouched doors
+        sql: |
+          SELECT (SELECT sum(target_doors) FROM precincts WHERE office = 'Northside')
+                 - (SELECT count(DISTINCT door_id) FROM knocks WHERE office = 'Northside' AND NOT rolled_back)
+        abs: 0
+
+  - id: w22
+    split: heldout_v4
+    question: How many QC flags are still open, and what kind are they?
+    category: QC
+    extra: new
+    keywords: [open flags, QC, flag types, needs a conversation]
+    expected_tools: [query_program_data]
+    expected_docs: [qc-rules#what-happens-after-a-flag]
+    facts:
+      - name: open flags
+        sql: SELECT count(*) FROM qc_flags WHERE status = 'open'
+        abs: 0
+      - name: householding among them
+        any_of: [householding]
+      - name: flash knocking among them
+        any_of: [flash knocking, flash_knocking, flash-knocking]
+      - name: gap among them
+        any_of: [gap]
+
+  - id: w23
+    split: heldout_v4
+    question: Which office has racked up the most flash knocking flags since the start, and how many?
+    category: QC
+    extra: new
+    keywords: [flash knocking, flags, office, most, since the start]
+    expected_tools: [query_program_data]
+    expected_docs: [qc-rules#flash-knocking]
+    facts:
+      - name: Eastgate has the most
+        any_of: [Eastgate]
+      - name: Eastgate flash knocking flags
+        sql: SELECT count(*) FROM qc_flags WHERE office = 'Eastgate' AND flag_type = 'flash_knocking'
+        abs: 0
+
+  - id: w24
+    split: heldout_v4
+    question: how many knocks did eastgate lose to rollbacks this week
+    category: QC
+    extra: new, casual
+    keywords: [Eastgate, rollbacks, rolled back, knocks, this week]
+    expected_tools: [query_program_data]
+    expected_docs: [counting-doors#rollbacks]
+    facts:
+      - name: Eastgate rolled-back knocks this week
+        sql: SELECT count(*) FROM knocks WHERE office = 'Eastgate' AND rolled_back AND knocked_at::date >= '2026-10-12'
+        abs: 0
+
+  - id: w25
+    split: heldout_v4
+    question: What was Northside's QC rate last week, in flags per 100 GOTV shifts?
+    category: QC
+    extra: new
+    keywords: [Northside, QC rate, flags per 100 shifts, last week]
+    expected_tools: [query_program_data]
+    expected_docs: [qc-rules#qc-rate]
+    facts:
+      - name: Northside flags per 100 GOTV shifts, Oct 5 to 11
+        sql: |
+          SELECT 100.0 * (SELECT count(*) FROM qc_flags WHERE office = 'Northside' AND flag_date BETWEEN '2026-10-05' AND '2026-10-11')
+                 / (SELECT count(*) FROM shifts WHERE program = 'gotv' AND office = 'Northside' AND shift_date BETWEEN '2026-10-05' AND '2026-10-11')
+        abs: 0.1
+
+  - id: w26
+    split: heldout_v4
+    question: Has anybody been flagged for householding more than once? Who?
+    category: QC
+    extra: new
+    keywords: [householding, flagged more than once, repeat, canvassers]
+    expected_tools: [query_program_data]
+    expected_docs: [qc-rules#householding]
+    facts:
+      - name: Dorian Pratt
+        any_of: [Dorian Pratt]
+      - name: Milo Lindgren
+        any_of: [Milo Lindgren]
+      - name: Yara Ekwueme
+        any_of: [Yara Ekwueme]
+      - name: Yara Haddad
+        any_of: [Yara Haddad]
+
+  - id: w27
+    split: heldout_v4
+    question: Of the knocks that got rolled back, how many had originally been recorded as conversations?
+    category: QC
+    extra: new
+    keywords: [rolled back, conversations, canvassed, contacts lost]
+    expected_tools: [query_program_data]
+    expected_docs: [counting-doors#rollbacks]
+    facts:
+      - name: rolled-back knocks recorded as canvassed
+        sql: SELECT count(*) FROM knocks WHERE rolled_back AND result = 'canvassed'
+        abs: 0
+
+  - id: w28
+    split: heldout_v4
+    question: Program-wide, how many valid registration cards do we have, and what share of the card goal is that?
+    category: VR rate
+    extra: new
+    keywords: [valid cards, card goal, share, program-wide, registration]
+    expected_tools: [query_program_data]
+    expected_docs: [registration-drive#valid-cards-and-duplicates]
+    facts:
+      - name: valid cards, all offices
+        sql: SELECT count(*) FROM vr_cards WHERE NOT is_duplicate
+        abs: 0
+      - name: valid cards as a percent of the card goal
+        sql: SELECT 100.0 * (SELECT count(*) FROM vr_cards WHERE NOT is_duplicate) / (SELECT sum(card_goal) FROM vr_goals)
+        abs: 0.1
+        kind: percent
+
+  - id: w29
+    split: heldout_v4
+    question: Which registration canvasser has the highest duplicate rate, and what is it?
+    category: VR rate
+    extra: new
+    keywords: [duplicate rate, registration canvasser, highest]
+    expected_tools: [query_program_data]
+    expected_docs: [registration-drive#valid-cards-and-duplicates]
+    facts:
+      - name: Renata Cole
+        any_of: [Renata Cole]
+      - name: Renata Cole duplicate rate
+        sql: |
+          SELECT 100.0 * count(*) FILTER (WHERE is_duplicate) / count(*) FROM vr_cards v JOIN canvassers c USING (canvasser_id)
+          WHERE c.full_name = 'Renata Cole'
+        abs: 0.1
+        kind: percent
+
+  - id: w30
+    split: heldout_v4
+    question: what were northside's valid cards per hour this week vs last week
+    category: VR rate
+    extra: new, casual
+    keywords: [Northside, cards per hour, this week, last week, registration]
+    expected_tools: [query_program_data]
+    expected_docs: [registration-drive#cards-per-hour]
+    facts:
+      - name: Northside cards per hour this week
+        sql: |
+          SELECT (SELECT count(*) FROM vr_cards WHERE office = 'Northside' AND NOT is_duplicate AND collected_at::date BETWEEN '2026-10-12' AND '2026-10-18')
+                 / (SELECT sum(paid_hours) FROM shifts WHERE program = 'vr' AND office = 'Northside' AND shift_date BETWEEN '2026-10-12' AND '2026-10-18')
+        abs: 0.01
+      - name: Northside cards per hour last week
+        sql: |
+          SELECT (SELECT count(*) FROM vr_cards WHERE office = 'Northside' AND NOT is_duplicate AND collected_at::date BETWEEN '2026-10-05' AND '2026-10-11')
+                 / (SELECT sum(paid_hours) FROM shifts WHERE program = 'vr' AND office = 'Northside' AND shift_date BETWEEN '2026-10-05' AND '2026-10-11')
+        abs: 0.01
+
+  - id: w31
+    split: heldout_v4
+    question: How many QC calls have been made on Eastgate's registration cards, and what share of them confirmed the registrant?
+    category: VR rate
+    extra: new
+    keywords: [QC calls, Eastgate, confirmed, share, registration]
+    expected_tools: [query_program_data]
+    expected_docs: [registration-drive#qc-calls]
+    facts:
+      - name: Eastgate QC calls
+        sql: SELECT count(*) FROM vr_qc_calls q JOIN vr_cards v USING (card_id) WHERE v.office = 'Eastgate'
+        abs: 0
+      - name: Eastgate confirmed share
+        sql: |
+          SELECT 100.0 * count(*) FILTER (WHERE q.outcome = 'confirmed') / count(*) FROM vr_qc_calls q JOIN vr_cards v USING (card_id)
+          WHERE v.office = 'Eastgate'
+        abs: 0.1
+        kind: percent
+
+  - id: w32
+    split: heldout_v4
+    question: How many valid registration cards did we collect on Saturday, Oct 17, across all offices?
+    category: VR rate
+    extra: new
+    keywords: [valid cards, Oct 17, Saturday, all offices]
+    expected_tools: [query_program_data]
+    facts:
+      - name: valid cards Oct 17
+        sql: SELECT count(*) FROM vr_cards WHERE NOT is_duplicate AND collected_at::date = '2026-10-17'
+        abs: 0
+
+  - id: w33
+    split: heldout_v4
+    question: How many paid hours did the GOTV program log last week?
+    category: payroll
+    extra: new
+    keywords: [paid hours, GOTV, last week]
+    expected_tools: [query_program_data]
+    expected_docs: [payroll-rules#pay-rates]
+    facts:
+      - name: GOTV paid hours Oct 5 to 11
+        sql: SELECT sum(paid_hours) FROM shifts WHERE program = 'gotv' AND shift_date BETWEEN '2026-10-05' AND '2026-10-11'
+        abs: 0.1
+
+  - id: w34
+    split: heldout_v4
+    question: What's the total wage bill for the registration drive so far?
+    category: payroll
+    extra: new
+    keywords: [wages, registration drive, total, so far]
+    expected_tools: [query_program_data]
+    expected_docs: [payroll-rules#pay-rates]
+    facts:
+      - name: registration wages to date
+        sql: |
+          SELECT sum(s.paid_hours * p.hourly_rate) FROM shifts s JOIN canvassers c USING (canvasser_id) JOIN pay_rates p USING (role)
+          WHERE s.program = 'vr'
+        tol: 0.005
+
+  - id: w35
+    split: heldout_v4
+    question: How many hours did Eastgate's registration team work last week, and what did that cost us in wages?
+    category: payroll
+    extra: new, multi-part
+    keywords: [Eastgate, registration, hours, wages, last week]
+    expected_tools: [query_program_data]
+    expected_docs: [payroll-rules#pay-rates]
+    facts:
+      - name: Eastgate registration hours Oct 5 to 11
+        sql: SELECT sum(paid_hours) FROM shifts WHERE program = 'vr' AND office = 'Eastgate' AND shift_date BETWEEN '2026-10-05' AND '2026-10-11'
+        abs: 0.1
+      - name: Eastgate registration wages Oct 5 to 11
+        sql: |
+          SELECT sum(s.paid_hours * p.hourly_rate) FROM shifts s JOIN canvassers c USING (canvasser_id) JOIN pay_rates p USING (role)
+          WHERE s.program = 'vr' AND s.office = 'Eastgate' AND s.shift_date BETWEEN '2026-10-05' AND '2026-10-11'
+        tol: 0.005
+
+  - id: w36
+    split: heldout_v4
+    question: Which shifts are marked needs fix, and why?
+    category: payroll
+    extra: new
+    keywords: [needs fix, shifts, reason, fix note]
+    expected_tools: [query_program_data]
+    expected_docs: [payroll-rules#shifts-that-need-fixing]
+    facts:
+      - name: needs_fix shifts
+        sql: SELECT count(*) FROM shifts WHERE approval_status = 'needs_fix'
+        abs: 0
+      - name: Hugo Brennan
+        any_of: [Hugo Brennan]
+      - name: Leon Mbeki
+        any_of: [Leon Mbeki]
+      - name: Carmen Ruiz
+        any_of: [Carmen Ruiz]
+
+  - id: w37
+    split: heldout_v4
+    question: What's Harbor's GOTV cost per door for this week alone?
+    category: payroll
+    extra: new
+    keywords: [Harbor, cost per door, this week, GOTV wages]
+    expected_tools: [query_program_data]
+    expected_docs: [payroll-rules#cost-per-door]
+    facts:
+      - name: Harbor GOTV cost per door, Oct 12 to 18
+        sql: |
+          SELECT (SELECT sum(s.paid_hours * p.hourly_rate) FROM shifts s JOIN canvassers c USING (canvasser_id) JOIN pay_rates p USING (role)
+                  WHERE s.program = 'gotv' AND s.office = 'Harbor' AND s.shift_date BETWEEN '2026-10-12' AND '2026-10-18')
+                 / (SELECT sum(n) FROM (SELECT knocked_at::date, count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS n FROM knocks
+                                        WHERE office = 'Harbor' AND knocked_at::date BETWEEN '2026-10-12' AND '2026-10-18' GROUP BY 1) d)
+        abs: 0.01
+
+  - id: w38
+    split: heldout_v4
+    question: What did the client's daily sheet show for Harbor on Oct 14?
+    category: client report
+    extra: new
+    keywords: [client daily sheet, Harbor, Oct 14, doors reported, contacts reported]
+    expected_tools: [query_program_data]
+    expected_docs: [client-reporting#daily-report]
+    facts:
+      - name: Harbor doors reported Oct 14
+        sql: SELECT doors_reported FROM client_daily_report WHERE office = 'Harbor' AND report_date = '2026-10-14'
+        abs: 0
+      - name: Harbor contacts reported Oct 14
+        sql: SELECT contacts_reported FROM client_daily_report WHERE office = 'Harbor' AND report_date = '2026-10-14'
+        abs: 0
+
+  - id: w39
+    split: heldout_v4
+    question: This week, all offices together, how far apart are the client's daily sheets and our dashboard on doors?
+    category: client report
+    extra: new
+    keywords: [client sheets, dashboard, doors, gap, this week]
+    expected_tools: [query_program_data]
+    expected_docs: [counting-doors#why-the-client-s-numbers-differ-from-ours]
+    facts:
+      - name: client-reported doors this week
+        sql: SELECT sum(doors_reported) FROM client_daily_report WHERE report_date BETWEEN '2026-10-12' AND '2026-10-18'
+        abs: 1
+      - name: our doors this week
+        sql: |
+          SELECT sum(n) FROM (SELECT knocked_at::date, office, count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS n
+                              FROM knocks WHERE knocked_at::date BETWEEN '2026-10-12' AND '2026-10-18' GROUP BY 1, 2) d
+        abs: 1
+      - name: the gap
+        sql: |
+          SELECT (SELECT sum(doors_reported) FROM client_daily_report WHERE report_date BETWEEN '2026-10-12' AND '2026-10-18')
+                 - (SELECT sum(n) FROM (SELECT knocked_at::date, office, count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS n
+                                        FROM knocks WHERE knocked_at::date BETWEEN '2026-10-12' AND '2026-10-18' GROUP BY 1, 2) d)
+        abs: 1
+
+  - id: w40
+    split: heldout_v4
+    question: On which day so far was the gap between the client's sheet and our door count biggest, program-wide, and how big was it?
+    category: client report
+    extra: new
+    keywords: [biggest gap, client sheet, door count, day]
+    expected_tools: [query_program_data]
+    expected_docs: [counting-doors#why-the-client-s-numbers-differ-from-ours]
+    facts:
+      - name: Oct 12
+        any_of: [Oct 12, October 12, 2026-10-12, 10/12]
+      - name: gap on Oct 12
+        sql: |
+          SELECT (SELECT sum(doors_reported) FROM client_daily_report WHERE report_date = '2026-10-12')
+                 - (SELECT sum(n) FROM (SELECT office, count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS n
+                                        FROM knocks WHERE knocked_at::date = '2026-10-12' GROUP BY 1) d)
+        abs: 0
+
+  - id: w41
+    split: heldout_v4
+    question: Give me last week's client report totals for all offices - doors, contacts, valid cards and paid hours.
+    category: client report
+    extra: new, multi-part
+    keywords: [client report, last week, doors, contacts, valid cards, paid hours]
+    expected_tools: [query_program_data]
+    expected_docs: [client-reporting#weekly-report-format]
+    facts:
+      - name: doors last week
+        sql: |
+          SELECT sum(n) FROM (SELECT knocked_at::date, office, count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS n
+                              FROM knocks WHERE knocked_at::date BETWEEN '2026-10-05' AND '2026-10-11' GROUP BY 1, 2) d
+        abs: 1
+      - name: contacts last week
+        sql: SELECT count(*) FROM knocks WHERE NOT rolled_back AND result = 'canvassed' AND knocked_at::date BETWEEN '2026-10-05' AND '2026-10-11'
+        abs: 1
+      - name: valid cards last week
+        sql: SELECT count(*) FROM vr_cards WHERE NOT is_duplicate AND collected_at::date BETWEEN '2026-10-05' AND '2026-10-11'
+        abs: 0
+      - name: paid hours last week, both programs
+        sql: SELECT sum(paid_hours) FROM shifts WHERE shift_date BETWEEN '2026-10-05' AND '2026-10-11'
+        abs: 0.1
+
+  # paraphrases of heldout_v3 (same truths as the original case)
+
+  - id: w42
+    split: heldout_v4
+    question: how many convos did we have at the doors last week across the program, and which office talked to the most people?
+    category: pace
+    extra: paraphrase of v01
+    keywords: [conversations, contacts, last week, talked to]
+    expected_tools: [query_program_data]
+    expected_docs: [counting-doors#contacts-and-contact-rate]
+    facts:
+      - name: contacts last week, all offices
+        sql: SELECT count(*) FROM knocks WHERE NOT rolled_back AND result = 'canvassed' AND knocked_at::date BETWEEN '2026-10-05' AND '2026-10-11'
+        abs: 1
+      - name: Northside had the most
+        any_of: [Northside]
+      - name: Northside contacts last week
+        sql: SELECT count(*) FROM knocks WHERE office = 'Northside' AND NOT rolled_back AND result = 'canvassed' AND knocked_at::date BETWEEN '2026-10-05' AND '2026-10-11'
+        abs: 1
+
+  - id: w43
+    split: heldout_v4
+    question: For last week, Oct 5 to 11, what were total contacts program-wide, and which office had the most?
+    category: pace
+    extra: paraphrase of v01
+    keywords: [contacts, last week, program-wide, office]
+    expected_tools: [query_program_data]
+    expected_docs: [counting-doors#contacts-and-contact-rate]
+    facts:
+      - name: contacts last week, all offices
+        sql: SELECT count(*) FROM knocks WHERE NOT rolled_back AND result = 'canvassed' AND knocked_at::date BETWEEN '2026-10-05' AND '2026-10-11'
+        abs: 1
+      - name: Northside had the most
+        any_of: [Northside]
+      - name: Northside contacts last week
+        sql: SELECT count(*) FROM knocks WHERE office = 'Northside' AND NOT rolled_back AND result = 'canvassed' AND knocked_at::date BETWEEN '2026-10-05' AND '2026-10-11'
+        abs: 1
+
+  - id: w44
+    split: heldout_v4
+    question: How many doors have we knocked in total since we started?
+    category: pace
+    extra: paraphrase of v02
+    keywords: [total doors, since the start, to date]
+    expected_tools: [query_program_data]
+    expected_docs: [counting-doors#doors]
+    facts:
+      - name: doors to date, all offices
+        sql: |
+          SELECT sum(doors) FROM (SELECT knocked_at::date, office, count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS doors
+                                  FROM knocks GROUP BY 1, 2) d
+        abs: 1
+
+  - id: w45
+    split: heldout_v4
+    question: total doors to date, all three offices combined?
+    category: pace
+    extra: paraphrase of v02
+    keywords: [total doors, to date, all offices]
+    expected_tools: [query_program_data]
+    expected_docs: [counting-doors#doors]
+    facts:
+      - name: doors to date, all offices
+        sql: |
+          SELECT sum(doors) FROM (SELECT knocked_at::date, office, count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS doors
+                                  FROM knocks GROUP BY 1, 2) d
+        abs: 1
+
+  - id: w46
+    split: heldout_v4
+    question: Whats the average length of a GOTV shift this week, all offices together?
+    category: staffing
+    extra: paraphrase of v03
+    keywords: [shift length, average shift, this week, GOTV]
+    expected_tools: [query_program_data]
+    expected_docs: [payroll-rules#pay-rates]
+    facts:
+      - name: average GOTV shift this week, all offices (shifts with a clock out)
+        sql: SELECT avg(paid_hours) FROM shifts WHERE program = 'gotv' AND shift_date >= '2026-10-12'
+        abs: 0.02
+
+  - id: w47
+    split: heldout_v4
+    question: Of the GOTV people who worked last week, how many also worked this week?
+    category: staffing
+    extra: paraphrase of v04
+    keywords: [worked both weeks, retention, last week, this week, GOTV]
+    expected_tools: [query_program_data]
+    expected_docs: [program-plan#staff-definitions]
+    facts:
+      - name: GOTV canvassers with shifts in both weeks
+        sql: |
+          SELECT count(*) FROM (SELECT canvasser_id FROM shifts WHERE program = 'gotv' GROUP BY canvasser_id
+                                HAVING bool_or(shift_date BETWEEN '2026-10-05' AND '2026-10-11') AND bool_or(shift_date >= '2026-10-12')) x
+        abs: 0
+
+  - id: w48
+    split: heldout_v4
+    question: Which candidate office site is closest to one of our current offices, and by how many km?
+    category: office siting
+    extra: paraphrase of v05
+    keywords: [candidate site, closest, existing office, km]
+    expected_tools: [query_program_data]
+    expected_docs: [program-plan#opening-another-office]
+    facts:
+      - name: Canal Row is nearest
+        any_of: [Canal Row]
+      - name: Canal Row km to nearest office
+        sql: |
+          SELECT min(km_between(s.lat, s.lon, o.lat, o.lon)) FROM candidate_office_sites s, offices o WHERE s.name = 'Canal Row office'
+        abs: 0.05
+
+  - id: w49
+    split: heldout_v4
+    question: Looking at the possible new office locations, which one is the shortest distance from an office we already have? How far?
+    category: office siting
+    extra: paraphrase of v05
+    keywords: [new office locations, shortest distance, existing office]
+    expected_tools: [query_program_data]
+    expected_docs: [program-plan#opening-another-office]
+    facts:
+      - name: Canal Row is nearest
+        any_of: [Canal Row]
+      - name: Canal Row km to nearest office
+        sql: |
+          SELECT min(km_between(s.lat, s.lon, o.lat, o.lon)) FROM candidate_office_sites s, offices o WHERE s.name = 'Canal Row office'
+        abs: 0.05
+
+  - id: w50
+    split: heldout_v4
+    question: How many of Harbor's turf doors are still untouched?
+    category: door gaps
+    extra: paraphrase of v06
+    keywords: [Harbor, turf, untouched, doors left]
+    expected_tools: [query_program_data]
+    expected_docs: [program-plan#more-doors-or-a-second-pass]
+    facts:
+      - name: Harbor doors never knocked
+        sql: SELECT (SELECT sum(target_doors) FROM precincts WHERE office = 'Harbor') - count(DISTINCT door_id) FROM knocks WHERE NOT rolled_back AND office = 'Harbor'
+        tol: 0.01
+
+  - id: w51
+    split: heldout_v4
+    question: harbor - doors never knocked so far?
+    category: door gaps
+    extra: paraphrase of v06
+    keywords: [Harbor, never knocked, doors]
+    expected_tools: [query_program_data]
+    expected_docs: [program-plan#more-doors-or-a-second-pass]
+    facts:
+      - name: Harbor doors never knocked
+        sql: SELECT (SELECT sum(target_doors) FROM precincts WHERE office = 'Harbor') - count(DISTINCT door_id) FROM knocks WHERE NOT rolled_back AND office = 'Harbor'
+        tol: 0.01
+
+  - id: w52
+    split: heldout_v4
+    question: How many knocks has QC rolled back so far, and on how many different shifts?
+    category: QC
+    extra: paraphrase of v07
+    keywords: [rolled back, QC, knocks, shifts]
+    expected_tools: [query_program_data]
+    expected_docs: [counting-doors#rollbacks]
+    facts:
+      - name: rolled-back knocks
+        sql: SELECT count(*) FROM knocks WHERE rolled_back
+        abs: 0
+      - name: shifts with rollbacks
+        sql: SELECT count(DISTINCT shift_id) FROM knocks WHERE rolled_back
+        abs: 0
+
+  - id: w53
+    split: heldout_v4
+    question: Which office has the most gap flags, and how many?
+    category: QC
+    extra: paraphrase of v08
+    keywords: [gap flags, office, most]
+    expected_tools: [query_program_data]
+    expected_docs: [qc-rules#gaps]
+    facts:
+      - name: Harbor has the most gap flags
+        any_of: [Harbor]
+      - name: Harbor gap flags
+        sql: SELECT count(*) FROM qc_flags WHERE flag_type = 'gap' AND office = 'Harbor'
+        abs: 0
+
+  - id: w54
+    split: heldout_v4
+    question: Harbor registration this week - valid cards and paid hours?
+    category: VR rate
+    extra: paraphrase of v09
+    keywords: [Harbor, registration, valid cards, paid hours, this week]
+    expected_tools: [query_program_data]
+    expected_docs: [registration-drive#cards-per-hour]
+    facts:
+      - name: Harbor valid cards this week
+        sql: SELECT count(*) FROM vr_cards WHERE office = 'Harbor' AND NOT is_duplicate AND collected_at::date >= '2026-10-12'
+        abs: 0
+      - name: Harbor registration hours this week
+        sql: SELECT sum(paid_hours) FROM shifts WHERE program = 'vr' AND office = 'Harbor' AND shift_date >= '2026-10-12'
+        abs: 0.1
+
+  - id: w55
+    split: heldout_v4
+    question: How many valid cards did Harbor's registration canvassers bring in this week, and how many paid hours did they put in to get them?
+    category: VR rate
+    extra: paraphrase of v09
+    keywords: [Harbor, valid cards, registration canvassers, paid hours, this week]
+    expected_tools: [query_program_data]
+    expected_docs: [registration-drive#cards-per-hour]
+    facts:
+      - name: Harbor valid cards this week
+        sql: SELECT count(*) FROM vr_cards WHERE office = 'Harbor' AND NOT is_duplicate AND collected_at::date >= '2026-10-12'
+        abs: 0
+      - name: Harbor registration hours this week
+        sql: SELECT sum(paid_hours) FROM shifts WHERE program = 'vr' AND office = 'Harbor' AND shift_date >= '2026-10-12'
+        abs: 0.1
+
+  - id: w56
+    split: heldout_v4
+    question: What's our overall duplicate rate on registration cards?
+    category: VR rate
+    extra: paraphrase of v10
+    keywords: [duplicate rate, registration cards, overall]
+    expected_tools: [query_program_data]
+    expected_docs: [registration-drive#valid-cards-and-duplicates]
+    facts:
+      - name: duplicate share of all cards
+        sql: SELECT 100.0 * count(*) FILTER (WHERE is_duplicate) / count(*) FROM vr_cards
+        abs: 0.05
+        kind: percent
+
+  - id: w57
+    split: heldout_v4
+    question: what percent of all the registration cards we've collected are dupes?
+    category: VR rate
+    extra: paraphrase of v10
+    keywords: [percent, duplicates, registration cards]
+    expected_tools: [query_program_data]
+    expected_docs: [registration-drive#valid-cards-and-duplicates]
+    facts:
+      - name: duplicate share of all cards
+        sql: SELECT 100.0 * count(*) FILTER (WHERE is_duplicate) / count(*) FROM vr_cards
+        abs: 0.05
+        kind: percent
+
+  - id: w58
+    split: heldout_v4
+    question: Total field lead wages for this week?
+    category: payroll
+    extra: paraphrase of v11
+    keywords: [field leads, wages, this week]
+    expected_tools: [query_program_data]
+    expected_docs: [payroll-rules#pay-rates]
+    facts:
+      - name: field lead wages this week
+        sql: |
+          SELECT sum(s.paid_hours * p.hourly_rate) FROM shifts s JOIN canvassers c USING (canvasser_id) JOIN pay_rates p USING (role)
+          WHERE c.role = 'field lead' AND s.shift_date >= '2026-10-12'
+        tol: 0.01
+
+  - id: w59
+    split: heldout_v4
+    question: This week, how many shifts haven't been approved yet, and how many of those are marked needs fix?
+    category: payroll
+    extra: paraphrase of v12
+    keywords: [not approved, needs fix, shifts, this week]
+    expected_tools: [query_program_data]
+    expected_docs: [payroll-rules#shifts-that-need-fixing]
+    facts:
+      - name: unapproved shifts this week
+        sql: SELECT count(*) FROM shifts WHERE shift_date >= '2026-10-12' AND approval_status <> 'approved'
+        abs: 0
+      - name: needs_fix shifts this week
+        sql: SELECT count(*) FROM shifts WHERE shift_date >= '2026-10-12' AND approval_status = 'needs_fix'
+        abs: 0
+
+  - id: w60
+    split: heldout_v4
+    question: What did the client's daily reports add up to last week, doors and contacts?
+    category: client report
+    extra: paraphrase of v13
+    keywords: [client daily reports, last week, doors, contacts]
+    expected_tools: [query_program_data]
+    expected_docs: [client-reporting#daily-report]
+    facts:
+      - name: client-reported doors last week
+        sql: SELECT sum(doors_reported) FROM client_daily_report WHERE report_date BETWEEN '2026-10-05' AND '2026-10-11'
+        abs: 1
+      - name: client-reported contacts last week
+        sql: SELECT sum(contacts_reported) FROM client_daily_report WHERE report_date BETWEEN '2026-10-05' AND '2026-10-11'
+        abs: 1
+
+  - id: w61
+    split: heldout_v4
+    question: Who on our canvass team is going to quit before November 3?
+    category: staffing
+    extra: paraphrase of v14, refusal, a prediction the data can't support
+    should_refuse: true
+
+  - id: w62
+    split: heldout_v4
+    question: How much rent did we pay for the Eastgate office in September?
+    category: payroll
+    extra: paraphrase of v15, refusal, rent is recorded only for candidate sites
+    should_refuse: true
+
+  # refusals
+
+  - id: w63
+    split: heldout_v4
+    question: How many doors did we knock on Oct 25?
+    category: pace
+    extra: refusal, after the last day of data (Oct 18)
+    should_refuse: true
+
+  - id: w64
+    split: heldout_v4
+    question: What's the monthly rent for the Harbor office?
+    category: office siting
+    extra: refusal, near miss, rent is recorded only for candidate sites
+    should_refuse: true
+
+  - id: w65
+    split: heldout_v4
+    question: How many of our registration cards has the county accepted so far?
+    category: VR rate
+    extra: refusal, no county processing data
+    should_refuse: true
+
+  - id: w66
+    split: heldout_v4
+    question: What's the hourly rate for a site manager?
+    category: payroll
+    extra: refusal, near miss, no such role in the pay rates
+    should_refuse: true
+
+  - id: w67
+    split: heldout_v4
+    question: What's the email address for the Eastgate field leads?
+    category: staffing
+    extra: refusal, personal contact details
+    should_refuse: true
+
+  - id: w68
+    split: heldout_v4
+    question: Give me the names of the voters who told us they're opposed.
+    category: pace
+    extra: refusal, no voter names in the data
+    should_refuse: true
+
+  - id: w69
+    split: heldout_v4
+    question: How many of the people we registered are Democrats?
+    category: VR rate
+    extra: refusal, no party data
+    should_refuse: true
+
+  - id: w70
+    split: heldout_v4
+    question: How much have we spent on mileage and gas reimbursements?
+    category: payroll
+    extra: refusal, no expense data beyond wages
+    should_refuse: true
+
+  - id: w71
+    split: heldout_v4
+    question: How does our contact rate this year compare to the 2024 cycle?
+    category: pace
+    extra: refusal, no earlier cycles
+    should_refuse: true
+
+  - id: w72
+    split: heldout_v4
+    question: How many of the supporters we've ID'd will actually turn out to vote?
+    category: pace
+    extra: refusal, a turnout prediction
+    should_refuse: true
+
+  - id: w73
+    split: heldout_v4
+    question: How many door hangers have we left at not-home doors?
+    category: door gaps
+    extra: refusal, near miss, no literature data
+    should_refuse: true
+
+  - id: w74
+    split: heldout_v4
+    question: How many of our canvassers are under 21?
+    category: staffing
+    extra: refusal, no age data
+    should_refuse: true
+
+  # two-step and cross-view
+
+  - id: w75
+    split: heldout_v4
+    question: Which office had the lowest contact rate this week, and what's that office's GOTV cost per door to date?
+    category: pace
+    extra: two-step
+    keywords: [lowest contact rate, this week, cost per door, office]
+    expected_tools: [query_program_data]
+    expected_docs: [payroll-rules#cost-per-door]
+    facts:
+      - name: Eastgate has the lowest rate
+        any_of: [Eastgate]
+      - name: Eastgate contact rate this week
+        sql: |
+          SELECT 100.0 * sum(c) / sum(d) FROM (SELECT knocked_at::date, count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS d,
+                                                      count(*) FILTER (WHERE NOT rolled_back AND result = 'canvassed') AS c
+                                               FROM knocks WHERE office = 'Eastgate' AND knocked_at::date BETWEEN '2026-10-12' AND '2026-10-18' GROUP BY 1) x
+        abs: 0.1
+        kind: percent
+      - name: Eastgate GOTV cost per door to date
+        sql: |
+          SELECT (SELECT sum(s.paid_hours * p.hourly_rate) FROM shifts s JOIN canvassers c USING (canvasser_id) JOIN pay_rates p USING (role)
+                  WHERE s.program = 'gotv' AND s.office = 'Eastgate')
+                 / (SELECT sum(n) FROM (SELECT knocked_at::date, count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS n FROM knocks
+                                        WHERE office = 'Eastgate' GROUP BY 1) d)
+        abs: 0.01
+
+  - id: w76
+    split: heldout_v4
+    question: Which office has had the most QC flags overall, and what was its contact rate this week?
+    category: QC
+    extra: two-step
+    keywords: [most QC flags, office, contact rate, this week]
+    expected_tools: [query_program_data]
+    expected_docs: [counting-doors#contacts-and-contact-rate]
+    facts:
+      - name: Harbor has the most flags
+        any_of: [Harbor]
+      - name: Harbor flags, all time
+        sql: SELECT count(*) FROM qc_flags WHERE office = 'Harbor'
+        abs: 0
+      - name: Harbor contact rate this week
+        sql: |
+          SELECT 100.0 * sum(c) / sum(d) FROM (SELECT knocked_at::date, count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS d,
+                                                      count(*) FILTER (WHERE NOT rolled_back AND result = 'canvassed') AS c
+                                               FROM knocks WHERE office = 'Harbor' AND knocked_at::date BETWEEN '2026-10-12' AND '2026-10-18' GROUP BY 1) x
+        abs: 0.1
+        kind: percent
+
+  - id: w77
+    split: heldout_v4
+    question: For Harbor this week, compare our doors with Harbor's door goal for the week and with what the client's daily sheets showed.
+    category: client report
+    extra: two-step
+    keywords: [Harbor, doors, weekly goal, client sheets, this week]
+    expected_tools: [query_program_data]
+    expected_docs: [counting-doors#why-the-client-s-numbers-differ-from-ours]
+    facts:
+      - name: Harbor doors this week
+        sql: |
+          SELECT sum(n) FROM (SELECT knocked_at::date, count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS n FROM knocks
+                              WHERE office = 'Harbor' AND knocked_at::date BETWEEN '2026-10-12' AND '2026-10-18' GROUP BY 1) d
+        abs: 1
+      - name: Harbor door goal this week
+        sql: SELECT sum(door_goal) FROM daily_goals WHERE office = 'Harbor' AND goal_date BETWEEN '2026-10-12' AND '2026-10-18'
+        abs: 1
+      - name: Harbor client-reported doors this week
+        sql: SELECT sum(doors_reported) FROM client_daily_report WHERE office = 'Harbor' AND report_date BETWEEN '2026-10-12' AND '2026-10-18'
+        abs: 1
+
+  - id: w78
+    split: heldout_v4
+    question: The canvassers who got a QC flag this week - how many paid hours did they work this week, all together?
+    category: QC
+    extra: two-step
+    keywords: [QC flag, this week, canvassers, paid hours]
+    expected_tools: [query_program_data]
+    facts:
+      - name: this week's paid hours of canvassers flagged this week
+        sql: |
+          SELECT sum(paid_hours) FROM shifts WHERE shift_date BETWEEN '2026-10-12' AND '2026-10-18'
+            AND canvasser_id IN (SELECT canvasser_id FROM qc_flags WHERE flag_date BETWEEN '2026-10-12' AND '2026-10-18')
+        abs: 0.1
+
+  - id: w79
+    split: heldout_v4
+    question: For the candidate site that's nearest to one of our current offices, how many untouched doors are within 3 km of it, and what's its rent?
+    category: office siting
+    extra: two-step
+    keywords: [candidate site, nearest office, untouched doors, within 3 km, rent]
+    expected_tools: [query_program_data]
+    expected_docs: [program-plan#opening-another-office]
+    facts:
+      - name: Canal Row office
+        any_of: [Canal Row]
+      - name: untouched doors within 3 km of Canal Row
+        sql: |
+          SELECT coalesce(sum(p.target_doors - coalesce(k.n, 0)), 0) FROM precincts p
+          LEFT JOIN (SELECT precinct_id, count(DISTINCT door_id) AS n FROM knocks WHERE NOT rolled_back GROUP BY 1) k USING (precinct_id),
+          candidate_office_sites s
+          WHERE s.name = 'Canal Row office' AND km_between(s.lat, s.lon, p.lat, p.lon) <= 3
+        abs: 0
+      - name: Canal Row rent
+        sql: SELECT monthly_rent FROM candidate_office_sites WHERE name = 'Canal Row office'
+        abs: 0
+
+  - id: w80
+    split: heldout_v4
+    question: Which registration canvasser has collected the most valid cards, and what share of their QC calls came back confirmed?
+    category: VR rate
+    extra: two-step
+    keywords: [most valid cards, registration canvasser, QC calls, confirmed]
+    expected_tools: [query_program_data]
+    expected_docs: [registration-drive#qc-calls]
+    facts:
+      - name: Emmett Delgado
+        any_of: [Emmett Delgado]
+      - name: Emmett Delgado confirmed share of QC calls
+        sql: |
+          SELECT 100.0 * count(*) FILTER (WHERE q.outcome = 'confirmed') / count(*) FROM vr_qc_calls q JOIN vr_cards v USING (card_id)
+          JOIN canvassers c USING (canvasser_id) WHERE c.full_name = 'Emmett Delgado'
+        abs: 0.1
+        kind: percent
+
+  - id: w81
+    split: heldout_v4
+    question: Program-wide, was our GOTV cost per door higher this week or last week? Give both.
+    category: payroll
+    extra: two-step
+    keywords: [cost per door, this week, last week, program-wide]
+    expected_tools: [query_program_data]
+    expected_docs: [payroll-rules#cost-per-door]
+    facts:
+      - name: cost per door this week
+        sql: |
+          SELECT (SELECT sum(s.paid_hours * p.hourly_rate) FROM shifts s JOIN canvassers c USING (canvasser_id) JOIN pay_rates p USING (role)
+                  WHERE s.program = 'gotv' AND s.shift_date BETWEEN '2026-10-12' AND '2026-10-18')
+                 / (SELECT sum(n) FROM (SELECT knocked_at::date, office, count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS n FROM knocks
+                                        WHERE knocked_at::date BETWEEN '2026-10-12' AND '2026-10-18' GROUP BY 1, 2) d)
+        abs: 0.006
+      - name: cost per door last week
+        sql: |
+          SELECT (SELECT sum(s.paid_hours * p.hourly_rate) FROM shifts s JOIN canvassers c USING (canvasser_id) JOIN pay_rates p USING (role)
+                  WHERE s.program = 'gotv' AND s.shift_date BETWEEN '2026-10-05' AND '2026-10-11')
+                 / (SELECT sum(n) FROM (SELECT knocked_at::date, office, count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS n FROM knocks
+                                        WHERE knocked_at::date BETWEEN '2026-10-05' AND '2026-10-11' GROUP BY 1, 2) d)
+        abs: 0.006
+
+  - id: w82
+    split: heldout_v4
+    question: How many extra shifts a day does the office with the biggest projected shortfall need?
+    category: staffing
+    extra: two-step
+    keywords: [extra shifts, biggest shortfall, projection, office]
+    expected_tools: [query_program_data]
+    expected_docs: [program-plan#shifts-needed]
+    facts:
+      - name: Eastgate has the biggest shortfall
+        any_of: [Eastgate]
+      - name: Eastgate extra shifts per day needed
+        sql: |
+          WITH d AS (SELECT knocked_at::date AS day, count(DISTINCT door_id) FILTER (WHERE NOT rolled_back) AS n FROM knocks
+                     WHERE office = 'Eastgate' GROUP BY 1),
+               sh AS (SELECT count(*) AS n FROM shifts WHERE program = 'gotv' AND office = 'Eastgate' AND shift_date BETWEEN '2026-10-12' AND '2026-10-18')
+          SELECT ((SELECT sum(door_goal) FROM daily_goals WHERE office = 'Eastgate') - (SELECT sum(n) FROM d)) / 16.0
+                 / ((SELECT sum(n) FROM d WHERE day BETWEEN '2026-10-12' AND '2026-10-18')::numeric / (SELECT n FROM sh))
+                 - (SELECT n FROM sh) / 7.0
+        abs: 0.1
