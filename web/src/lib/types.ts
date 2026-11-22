@@ -67,12 +67,15 @@ export interface ComparisonCell extends SplitBlock {
 	label: string;
 }
 
-// One model and code version, scored per group: dev (tuned), test (old held-out, contaminated), heldout_v2 (fresh).
+// Question groups: dev (tuned), test (old held-out) and heldout_v2 (both contaminated), heldout_v3 (the clean one).
+export type CompareGroup = 'dev' | 'test' | 'heldout_v2' | 'heldout_v3';
+
+// One model and code version, scored per group.
 export interface ComparisonRow {
 	model: string;
 	code: string;
 	status?: 'running';
-	groups: Partial<Record<'dev' | 'test' | 'heldout_v2', ComparisonCell>>;
+	groups: Partial<Record<CompareGroup, ComparisonCell>>;
 }
 
 export interface Scoreboard {

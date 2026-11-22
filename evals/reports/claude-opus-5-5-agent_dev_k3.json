@@ -8,14 +8,14 @@
   "split": "dev",
   "repeat": 3,
   "traces": [
-    "/home/ebot/agent-evals/program-data-assistant/runs/dev-1.jsonl",
-    "/home/ebot/agent-evals/program-data-assistant/runs/dev-2.jsonl",
-    "/home/ebot/agent-evals/program-data-assistant/runs/dev-3.jsonl"
+    "evals/reports/claude-agent-runs/dev-1.jsonl",
+    "evals/reports/claude-agent-runs/dev-2.jsonl",
+    "evals/reports/claude-agent-runs/dev-3.jsonl"
   ],
   "answers": [
-    "/home/ebot/agent-evals/program-data-assistant/runs/dev-1.json",
-    "/home/ebot/agent-evals/program-data-assistant/runs/dev-2.json",
-    "/home/ebot/agent-evals/program-data-assistant/runs/dev-3.json"
+    "evals/reports/claude-agent-runs/dev-1.json",
+    "evals/reports/claude-agent-runs/dev-2.json",
+    "evals/reports/claude-agent-runs/dev-3.json"
   ],
   "integrity_problems": [],
   "summary": {

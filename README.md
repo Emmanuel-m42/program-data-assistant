@@ -10,9 +10,9 @@ What's in this repository:
 
 - **Web app**: SvelteKit and TypeScript (`web/`), a chat that shows the sources behind each number, office tabs, and a page on how it's tested.
 - **Backend**: Python and FastAPI, with read-only tools over Postgres and pgvector document search.
-- **Model**: a self-hosted open model through Ollama (qwen3.8:27b in the results below), with Claude on the Anthropic API or Vertex AI as a configuration switch.
+- **Model**: a self-hosted open model through Ollama (qwen3.8:27b in the first results below), with Claude on the Anthropic API or Vertex AI, or any OpenAI-compatible API such as DeepSeek's, as a configuration switch.
 - **Infrastructure**: Terraform for Google Cloud in `infra/` (Cloud Run, Cloud SQL Postgres with pgvector, Secret Manager, Artifact Registry, per-service accounts) and Dockerfiles. Checked with `terraform validate` and a plan against a placeholder project; never applied, so nothing is deployed.
-- **Evals**: 43 test questions scored against SQL ground truth: 14 tuned on, 14 first held out (now contaminated), and 15 fresh held-out questions written and committed before the latest fixes.
+- **Evals**: 58 test questions scored against SQL ground truth: 14 tuned on, two held-out sets of 14 and 15 that were read while choosing fixes (now contaminated), and 15 fresh held-out questions written and committed before the latest fixes.
 
 ## Why
 
@@ -40,7 +40,7 @@ flowchart LR
 - **Documents**: six short markdown files (`corpus/`) on how doors are counted, QC rules, the program plan, payroll rules, client reporting and the registration drive. Each is split on its headings, embedded with `BAAI/bge-small-en-v1.5` (local, via fastembed) and stored in pgvector.
 - **Tools**: `get_view(view, office, week_start)` returns a metric view, `query_program_data(sql)` runs read-only SQL, `search_documents(query)` searches the documents. SQL goes through a guard (sqlglot parse: exactly one SELECT, only program tables and views, no writes, locks or system functions) and then runs as a Postgres role that is read-only with a statement timeout. Results are capped at 200 rows. When a query names a column that doesn't exist, the tool returns the table's real columns so the model can fix it.
 - **Answers** cite `[table:...]` and `[doc:...]`. The API returns the tool calls, the rows and passages used, and a `refused` flag.
-- **Models**: a provider interface with three implementations, picked with `PDA_PROVIDER`: a self-hosted open model through Ollama (the default, and what every result below comes from), Claude through the Anthropic API (`anthropic`), and Claude on Google Vertex AI (`vertex`). The two Claude paths are covered by tests with mocked clients, but neither has been run against the real service. Every answer reports which model produced it.
+- **Models**: a provider interface with four implementations, picked with `PDA_PROVIDER`: a self-hosted open model through Ollama (the default), Claude through the Anthropic API (`anthropic`), Claude on Google Vertex AI (`vertex`), and any OpenAI-compatible chat API (`openai_compat`), which the DeepSeek runs in the model comparison use. The two Claude paths are covered by tests with mocked clients, but neither has been run against the real service. Every answer reports which model produced it.
 - **Web app** (`web/`): SvelteKit and TypeScript. It shows the answer with citation chips that open the rows or passage behind each number, the tools called, office tabs, and a page on how it's tested. Built as static files; it also runs with no backend in demo mode, from the recorded runs. See `web/README.md`.
 - **API** (`docs/api.md`): `POST /ask`, `GET /offices` (office summaries straight from the views), `GET /evals` and `GET /recorded` (the eval scoreboard and recorded runs), `GET /health`.
 
@@ -76,8 +76,10 @@ Claude instead of an open model: `uv sync --extra anthropic`, set `ANTHROPIC_API
 
 Claude on Google Vertex AI: `uv sync --extra vertex`, `PDA_PROVIDER=vertex`, and set `PDA_VERTEX_PROJECT`, `PDA_VERTEX_REGION` and `PDA_VERTEX_MODEL` (the model ID as Vertex names it). It signs in with the machine's Google identity, so there is no key; on Cloud Run that is the API's service account (see `infra/`). Elsewhere, `PDA_VERTEX_ACCESS_TOKEN_FILE` can point at a file holding a short-lived access token that something else keeps fresh; the provider reads it again whenever the file changes and never logs it. Untested against Vertex here.
 
+An OpenAI-compatible API, for example DeepSeek's: `PDA_PROVIDER=openai_compat`, `PDA_OPENAI_BASE_URL=https://api.deepseek.com`, `PDA_OPENAI_MODEL` (for example `deepseek-v4-pro`), and the key in the environment variable that `PDA_OPENAI_API_KEY_ENV` names (default `OPENAI_API_KEY`). `PDA_OPENAI_THINKING` (`enabled` or `disabled`), `PDA_OPENAI_REASONING_EFFORT` and `PDA_OPENAI_MAX_TOKENS` set the mode; `PDA_OPENAI_STRICT=1` sends strict tool schemas (DeepSeek beta, off by default).
+
 Settings:
-- Model: `PDA_PROVIDER` (`ollama`, `anthropic` or `vertex`), `PDA_OLLAMA_MODEL`, `OLLAMA_HOST`, `PDA_OLLAMA_CTX`, `PDA_OLLAMA_THREADS`, `PDA_OLLAMA_THINK`, `PDA_ANTHROPIC_MODEL`, `ANTHROPIC_API_KEY`, `PDA_VERTEX_PROJECT`, `PDA_VERTEX_REGION`, `PDA_VERTEX_MODEL`, `PDA_VERTEX_ACCESS_TOKEN_FILE`.
+- Model: `PDA_PROVIDER` (`ollama`, `anthropic` or `vertex`), `PDA_OLLAMA_MODEL`, `OLLAMA_HOST`, `PDA_OLLAMA_CTX`, `PDA_OLLAMA_THREADS`, `PDA_OLLAMA_THINK`, `PDA_ANTHROPIC_MODEL`, `ANTHROPIC_API_KEY`, `PDA_VERTEX_PROJECT`, `PDA_VERTEX_REGION`, `PDA_VERTEX_MODEL`, `PDA_VERTEX_ACCESS_TOKEN_FILE`, `PDA_OPENAI_BASE_URL`, `PDA_OPENAI_MODEL`, `PDA_OPENAI_API_KEY_ENV`, `PDA_OPENAI_THINKING`, `PDA_OPENAI_REASONING_EFFORT`, `PDA_OPENAI_MAX_TOKENS`, `PDA_OPENAI_STRICT`.
 - Database: `PDA_DATABASE_URL`, `PDA_READER_URL`, `PDA_PGDATA`.
 - API: `PDA_CORS_ORIGINS`.
 
@@ -88,7 +90,7 @@ Settings:
 | `src/program_data_assistant/` | FastAPI app (`api.py`), agent loop, tools, SQL guard, retrieval, model providers, eval runner, data generator and loader |
 | `src/program_data_assistant/sql/schema.sql` | tables, metric views, the read-only role |
 | `data/csv/`, `corpus/` | the fictional program data and its six documents |
-| `evals/` | `cases.yaml` (43 cases: dev, the first held-out split and the fresh `heldout_v2` set) and every report |
+| `evals/` | `cases.yaml` (58 cases: dev, the first held-out split, `heldout_v2` and the fresh `heldout_v3` set) and every report |
 | `demo/` | recorded runs the web app's demo mode uses |
 | `web/` | SvelteKit and TypeScript front end |
 | `docs/api.md` | the API contract |
@@ -104,7 +106,7 @@ Nothing has been deployed. The Terraform passes `validate`, `tflint` and `checko
 
 ## Evals
 
-`evals/cases.yaml` has 43 cases. The first 28: the 19 demo questions, three paraphrases, three questions only the documents can answer, and three the assistant should refuse (turnout, a staff member's phone number, a past cycle). Then 15 fresh held-out questions (n01 to n15), described below. Each case lists the tools it needs, the passages a retriever should find, and the facts the answer has to contain. Numeric facts are SQL against the raw tables, written separately from the views, so ground truth never comes from the model or from the views it reads.
+`evals/cases.yaml` has 58 cases. The first 28: the 19 demo questions, three paraphrases, three questions only the documents can answer, and three the assistant should refuse (turnout, a staff member's phone number, a past cycle). Then two held-out sets of 15 (n01 to n15 and v01 to v15), described below. Each case lists the tools it needs, the passages a retriever should find, and the facts the answer has to contain. Numeric facts are SQL against the raw tables, written separately from the views, so ground truth never comes from the model or from the views it reads.
 
 The first held-out half (`split: test`) is now contaminated: its misses were read and discussed while choosing the next fixes. It stays on record and is still reported, labelled that way. A fresh held-out set of 15 new questions (`split: heldout_v2`, n01 to n15: the same categories plus two refusals, ground truth by SQL on the raw tables) was written and committed before any of those fixes, so the git history shows the order.
 
@@ -128,6 +130,8 @@ Measurement fixes since the first reports, each followed by a rescore of every s
 - **q13 case fix**: q13 also checks the program-wide QC direction and rates. Answers that read their own rows backwards had passed on the Harbor numbers alone.
 - **Scorer fix, counts written as words**: the number scorer reads zero to twenty and "a dozen". Only q12 changed, in the two qwen3.8:27b runs ("Four open flags").
 - **Scorer fix, declines**: refusal also counts a clear decline in the answer's first sentence ("I can't provide...", "not available"), unless that sentence carries data. No saved report changed.
+- **Case and scorer fixes, q01, q04 and names** (2e08425): q01's not-on-pace fact also accepts "short" and "shortfall"; a plural label before a list ("Precincts 39, 37 and 40") names each one; a case's expected tools can list alternatives, so q04's definition can come from the program plan or the staff view; facts can be optional (reported, not scored), and q04's active total is optional because the question asks for one number. No published report changed; the DeepSeek v2 reports moved on q01, q04 and q08.
+- **Scorer fix, totals views** (f57db07): reading a view's `*_total` counts as reading the view for those alternatives, since the program totals moved to separate views. Only q04 moved, in V4-Pro's old held-out (12 to 13 of 14).
 
 ### An outside agent as the model
 
@@ -138,30 +142,47 @@ uv run evals --provider agent-trace --split dev --trace run1.jsonl --answers run
   --trace run2.jsonl --answers run2.json --label claude-agent_dev
 ```
 
-Each traced call is replayed through a fresh Toolbox and has to return what the agent was shown, or the case fails. Then the app's after-answer steps run (citations to results the agent never got are dropped, a draft with two or more unsupported numbers is withheld) and the usual scorer applies; several trace and answer pairs give pass^k. What doesn't apply: the agent loop's in-loop guardrail rewrites (the retry nudge after a failed query, the grounding, look-first and citation nudges) and its 7-step cap, because the agent runs its own loop, and latency isn't measured. Reports label these runs "Claude Opus 5.5 as the agent through the tool CLI (same tools and prompt, not the app's own agent loop; the in-loop guardrail rewrites don't apply)". Trace lines under a case id that isn't in `cases.yaml` are ignored. The Claude runs' traces and answers are in `evals/reports/claude-agent-runs/`, so their scores can be replayed.
+Each traced call is replayed through a fresh Toolbox and has to return what the agent was shown, or the case fails. Then the app's after-answer steps run (citations to results the agent never got are dropped, a draft with two or more unsupported numbers is withheld) and the usual scorer applies; several trace and answer pairs give pass^k. What doesn't apply: the agent loop's in-loop guardrail rewrites (the retry nudge after a failed query, the grounding, look-first and citation nudges) and its 7-step cap, because the agent runs its own loop, and latency isn't measured. Reports label these runs "Claude Opus 5.5 as the agent through the tool CLI (same tools and prompt, not the app's own agent loop; the in-loop guardrail rewrites don't apply)". Trace lines under a case id that isn't in `cases.yaml` are ignored. The Claude runs' traces and answers are in `evals/reports/claude-agent-runs/` (v2 code) and `evals/reports/claude-agent-runs-v3/` (latest code), so their scores can be replayed.
 
 ## Model comparison
 
-Three groups of questions, scored the same way:
+Four groups of questions, scored the same way against SQL on the raw tables:
 
+- **Fresh held-out, v3** (15, the clean one): new questions in the same categories plus two refusals (`heldout_v3`, v01 to v15), written and committed before the latest fixes. The git history shows that order (02cbcd5, then the fixes).
 - **Tuned** (14): the half the prompts and tools were adjusted against.
-- **Old held-out** (14, contaminated): held out from the later tuning, but its misses were read while choosing the latest fixes, so it no longer says much about new questions.
-- **Fresh held-out** (15): new questions in the same categories, plus two refusals, written and committed (`heldout_v2` in `cases.yaml`) before the latest fixes: the regulars definition in the data layer, program totals next to office comparisons, and the scorer reading counts written as words. The git history shows that order.
+- **Held-out v2** (15, contaminated): written before the previous round of fixes, but its DeepSeek failures were read case by case while choosing the latest ones.
+- **Old held-out** (14, contaminated): the first held-out half; its misses were read while choosing earlier fixes.
 
-"Before" and "after" are the code before and after those fixes, run on the same model. Each cell is cases passed, then pass^3 (cases passed on all 3 runs).
+The latest fixes, in order: a data layer with program totals in separate `*_total` views, untouched doors as one number, and weekly goal, shift and registration views (52b0ed2); a prompt with each view's grain, the `*_total` convention and a glossary for this week, last week, untouched doors, shift length and wages (cd3f061); Ollama run logging (306a6ac); and an optional strict tool-schema mode for DeepSeek (e322795, off by default).
 
-| model | code | tuned | old held-out (contaminated) | fresh held-out |
+Each cell is cases passed (the mean over 3 runs), then pass^3 (cases passed on all 3 runs). All reports are rescored with the current cases and scorer.
+
+| model and mode | code | fresh held-out v3 | tuned | held-out v2 (contaminated) | old held-out (contaminated) | s per answer |
+| --- | --- | --- | --- | --- | --- | --- |
+| Claude Opus 5.5 as the agent through the tool CLI | latest | 15 of 15, pass^3 15 | 13 of 14, pass^3 13 | not run | not run | not measured |
+| DeepSeek-V4.1-Flash (open weights), DeepSeek hosted API, thinking on, effort high | latest | 15 of 15, pass^3 15 | 14 of 14, pass^3 14 | 15 of 15, pass^3 15 | 14 of 14, pass^3 14 | 6.6 |
+| DeepSeek-V4-Pro (open weights), DeepSeek hosted API, thinking off, temperature 0 | latest | 15 of 15, pass^3 14 | 12 of 14, pass^3 11 | 15 of 15, pass^3 15 | 13 of 14, pass^3 13 | 4.4 |
+| self-hosted open model on the latest code | latest | not run yet | not run yet | not run yet | not run yet | |
+
+- **Modes.** Claude Opus 5.5 ran as the agent through the tool CLI: the same tools and prompt, but not the app's own agent loop, so the in-loop guardrail rewrites don't apply and latency isn't measured. Every tool call was replayed through the real tools and matched what the agent was shown (the traces and answers are in `evals/reports/claude-agent-runs-v3/`). The DeepSeek models ran through the app's own agent loop with the OpenAI-compatible provider. Flash used thinking mode at the API's default effort, high; temperature doesn't apply in thinking mode. V4-Pro ran with thinking off at temperature 0.
+- **Claude's tuned miss.** On q05 (more doors against a second pass), Claude gave 1,489.1 doors a day for 16 days without the 23,826 total in 2 of 3 runs. The case asks for that total, so it stays a miss; the scorer was not loosened for it.
+- **Strict mode, tried and dropped.** DeepSeek's strict tool schemas (`PDA_OPENAI_STRICT=1`, beta) on Flash, tuned set: 14 of 14, pass^3 14, the same as without it. No gain, so it stays off.
+- **Retrieval** was 96% on tuned and 92% on held-out v3 for every model: it scores the retriever on the question, so it doesn't depend on the model.
+
+Earlier rounds, kept for the record (rescored with the current scorer):
+
+| model and mode | code | tuned | held-out v2 | old held-out |
 | --- | --- | --- | --- | --- |
-| Claude Opus 5.5 as the agent through the tool CLI | after | 14 of 14, pass^3 14 | not run | 15 of 15, pass^3 15 |
-| qwen3.8:27b Q4_K_M, RTX 3080 laptop (the published run) | before | 12 of 14, pass^3 12 | 12 of 14, pass^3 12 (11 of 14 as first scored) | not run |
-| qwen3.8:27b Q4_K_M, GPD (Ryzen AI Max+ 395, Radeon 8060S) | before | running | running | running |
-| qwen3.8:27b Q4_K_M, GPD | after | running | running | running |
-| DeepSeek-V4-Pro (open weights), DeepSeek hosted API | before / after | running | running | running |
-| DeepSeek-V4.1-Flash (open weights), DeepSeek hosted API | before / after | running | running | running |
+| Claude Opus 5.5 as the agent through the tool CLI | v2 after | 14 of 14, pass^3 14 | 15 of 15, pass^3 15 | not run |
+| DeepSeek-V4.1-Flash, thinking on | v2 before | 13 of 14, pass^3 13 | 15 of 15, pass^3 14 | 13 of 14, pass^3 13 |
+| DeepSeek-V4.1-Flash, thinking on | v2 after | 13 of 14, pass^3 13 | 14 of 15, pass^3 13 | 14 of 14, pass^3 14 |
+| DeepSeek-V4-Pro, thinking off, temperature 0 | v2 before | 12 of 14, pass^3 11 | 12 of 15, pass^3 11 | 12 of 14, pass^3 12 |
+| DeepSeek-V4-Pro, thinking off, temperature 0 | v2 after | 13 of 14, pass^3 13 | 11 of 15, pass^3 10 | 14 of 14, pass^3 14 |
+| qwen3.8:27b Q4_K_M, RTX 3080 laptop (the published run) | first | 12 of 14, pass^3 12 | not run | 12 of 14, pass^3 12 |
 
-- Claude Opus 5.5 ran as the agent through the tool CLI: the same tools and prompt, but not the app's own agent loop, so the in-loop guardrail rewrites don't apply. Facts, tool choice, citation and refusal were 100% in both groups it ran; retrieval was 96% on tuned and 85% on fresh held-out (retrieval scores the retriever on the question, so it doesn't depend on the model).
-- The published qwen3.8:27b run is rescored with the current cases and scorer. Its old held-out half was first scored 11 of 14; it's 12 of 14 since the scorer reads counts written as words (q12 wrote "Four"). That is a measurement fix, not a model change. Its tuned half is 12 of 14 since q13 checks the program-wide QC direction.
-- The GPD runs use the same model and quantization as the published run on a different machine. Rows marked running are filled in when the runs finish.
+"v2 before" and "v2 after" are the code before and after the previous round of fixes (the regulars definition in the data layer, program totals next to office comparisons). The published qwen3.8:27b run's old held-out half was first scored 11 of 14; it is 12 of 14 since the scorer reads counts written as words (q12 wrote "Four"). Its tuned half is 12 of 14 since q13 checks the program-wide QC direction. The shown answers in the demo are that run's recorded answers.
+
+Rescoring with the latest measurement fixes (no model calls) moved only q04 in the latest-code reports: V4-Pro's old held-out went from 12 to 13 of 14. In the v2 reports the same fixes moved q01, q04 and q08; the table above shows the rescored numbers.
 
 ## Results
 
@@ -259,7 +280,7 @@ In `web/`, `npm test` (vitest) covers the question matcher, citation-to-source m
 ## Limits
 
 - The data is synthetic and built so each question has a clear answer. Real program data is messier: late clock-outs, turf changes, reassigned canvassers.
-- A 7B model on CPU is slow (one to two minutes per question here, sometimes ten) and still makes mistakes the evals catch; see the per-case reports. A larger hosted model through the Anthropic provider is the obvious next comparison but was not run.
+- A 7B model on CPU is slow (one to two minutes per question here, sometimes ten) and still makes mistakes the evals catch; see the per-case reports. Larger hosted models are in the model comparison; the Anthropic provider itself has not been run against the real API.
 - The metric views do much of the work. That is a deliberate choice (definitions live in SQL, where they can be tested), but it means new kinds of questions need new views or the model has to write harder SQL.
 - Fact checks look for numbers and names in the answer text. They can't tell a right number used to reach a wrong conclusion, so the per-case answers are worth reading alongside the scores. q13 is the example: it passed with a backwards conclusion until the case checked the program-wide direction too.
 - Refusal detection looks for the fixed refusal sentence the prompt asks for.

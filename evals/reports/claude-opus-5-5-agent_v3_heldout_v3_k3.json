@@ -1,0 +1,4879 @@
+{
+  "label": "claude-opus-5-5-agent_v3_heldout_v3_k3",
+  "generated_at": "2026-11-21T04:29:38+00:00",
+  "model": "agent-trace/claude-opus-5-5",
+  "model_label": "Claude Opus 5.5 as the agent through the tool CLI (same tools and prompt, not the app's own agent loop; the in-loop guardrail rewrites don't apply)",
+  "mode_note": "The app's in-loop guardrail rewrites (retry nudge, grounding, look-first and citation nudges) and its 7-step cap don't apply in this mode; the after-answer steps (dropping unknown citations, withholding a draft with unsupported numbers) do. Latency is not measured.",
+  "commit": "306a6ac",
+  "split": "heldout_v3",
+  "repeat": 3,
+  "traces": [
+    "evals/reports/claude-agent-runs-v3/heldout_v3-1.jsonl",
+    "evals/reports/claude-agent-runs-v3/heldout_v3-2.jsonl",
+    "evals/reports/claude-agent-runs-v3/heldout_v3-3.jsonl"
+  ],
+  "answers": [
+    "evals/reports/claude-agent-runs-v3/heldout_v3-1.json",
+    "evals/reports/claude-agent-runs-v3/heldout_v3-2.json",
+    "evals/reports/claude-agent-runs-v3/heldout_v3-3.json"
+  ],
+  "integrity_problems": [],
+  "summary": {
+    "cases": 15,
+    "tool_choice": 1.0,
+    "tool_choice_n": 13,
+    "retrieval": 0.923,
+    "retrieval_n": 13,
+    "facts": 1.0,
+    "facts_n": 13,
+    "citation": 1.0,
+    "citation_n": 13,
+    "refusal": 1.0,
+    "refusal_n": 15,
+    "pass": 1.0,
+    "pass_n": 15,
+    "pass_all": 1.0,
+    "pass_all_n": 15,
+    "avg_latency_ms": 0
+  },
+  "groups": [
+    {
+      "split": "heldout_v3",
+      "label": "held-out v3",
+      "cases": 15,
+      "pass": 15,
+      "pass_all": 15,
+      "tool_choice": 1.0,
+      "retrieval": 0.923,
+      "facts": 1.0,
+      "citation": 1.0,
+      "refusal": 1.0,
+      "avg_latency_ms": 0
+    }
+  ],
+  "cases": [
+    {
+      "id": "v01",
+      "question": "Program-wide, how many voters did we actually talk to last week, and which office had the most conversations?",
+      "category": "pace",
+      "split": "heldout_v3",
+      "keywords": [
+        "conversations",
+        "contacts",
+        "last week",
+        "talked to",
+        "voters"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "client-reporting#weekly-report-format",
+        "counting-doors#contacts-and-contact-rate",
+        "program-plan#pace-and-projection",
+        "program-plan#overview"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [
+        {
+          "name": "contacts last week, all offices",
+          "expected": 2384.0,
+          "matched": true
+        },
+        {
+          "name": "Northside had the most",
+          "expected": [
+            "Northside"
+          ],
+          "matched": true
+        },
+        {
+          "name": "Northside contacts last week",
+          "expected": 919.0,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Program-wide, how many voters did we actually talk to last week, and which office had the most conversations?",
+        "answer": "Last week (Oct 5 to 11) we talked to 2384 voters program-wide, and Northside had the most conversations with 919.\n- Program total: 2384 contacts from 8863 doors, a 26.9% contact rate [table:v_contact_rates_total]\n- Northside: 919 contacts from 3484 doors (26.4%) [table:v_contact_rates]\n- Harbor: 811 contacts from 3106 doors (26.1%) [table:v_contact_rates]\n- Eastgate: 654 contacts from 2273 doors (28.8%) [table:v_contact_rates]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_contact_rates",
+              "week_start": "2026-10-05"
+            },
+            "ok": true,
+            "result": "3 rows from v_contact_rates"
+          },
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_contact_rates_total",
+              "week_start": "2026-10-05"
+            },
+            "ok": true,
+            "result": "1 row from v_contact_rates_total"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_contact_rates",
+            "columns": [
+              "office",
+              "week_start",
+              "doors",
+              "contacts",
+              "contact_rate_pct"
+            ],
+            "rows": [
+              [
+                "Eastgate",
+                "2026-10-05",
+                2273,
+                654,
+                28.8
+              ],
+              [
+                "Harbor",
+                "2026-10-05",
+                3106,
+                811,
+                26.1
+              ],
+              [
+                "Northside",
+                "2026-10-05",
+                3484,
+                919,
+                26.4
+              ]
+            ],
+            "row_count": 3,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_contact_rates_total"
+          },
+          {
+            "type": "table",
+            "id": "v_contact_rates"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 0,
+        "model": "claude-opus-5-5",
+        "steps": 3
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "contacts last week, all offices",
+              "expected": 2384.0,
+              "matched": true
+            },
+            {
+              "name": "Northside had the most",
+              "expected": [
+                "Northside"
+              ],
+              "matched": true
+            },
+            {
+              "name": "Northside contacts last week",
+              "expected": 919.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "Program-wide, how many voters did we actually talk to last week, and which office had the most conversations?",
+            "answer": "Last week (Oct 5 to 11) we had 2384 conversations (contacts) program-wide, and Northside had the most with 919.\n- Program total: 2384 contacts on 8863 doors, a 26.9% contact rate [table:v_contact_rates_total]\n- Northside: 919 contacts on 3484 doors, 26.4% [table:v_contact_rates]\n- Harbor: 811 contacts on 3106 doors, 26.1% [table:v_contact_rates]\n- Eastgate: 654 contacts on 2273 doors, 28.8% [table:v_contact_rates]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_contact_rates",
+                  "week_start": "2026-10-05"
+                },
+                "ok": true,
+                "result": "3 rows from v_contact_rates"
+              },
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_contact_rates_total",
+                  "week_start": "2026-10-05"
+                },
+                "ok": true,
+                "result": "1 row from v_contact_rates_total"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_contact_rates",
+                "columns": [
+                  "office",
+                  "week_start",
+                  "doors",
+                  "contacts",
+                  "contact_rate_pct"
+                ],
+                "rows": [
+                  [
+                    "Eastgate",
+                    "2026-10-05",
+                    2273,
+                    654,
+                    28.8
+                  ],
+                  [
+                    "Harbor",
+                    "2026-10-05",
+                    3106,
+                    811,
+                    26.1
+                  ],
+                  [
+                    "Northside",
+                    "2026-10-05",
+                    3484,
+                    919,
+                    26.4
+                  ]
+                ],
+                "row_count": 3,
+                "sql": ""
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "v_contact_rates_total"
+              },
+              {
+                "type": "table",
+                "id": "v_contact_rates"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 3
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "contacts last week, all offices",
+              "expected": 2384.0,
+              "matched": true
+            },
+            {
+              "name": "Northside had the most",
+              "expected": [
+                "Northside"
+              ],
+              "matched": true
+            },
+            {
+              "name": "Northside contacts last week",
+              "expected": 919.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "Program-wide, how many voters did we actually talk to last week, and which office had the most conversations?",
+            "answer": "Last week (Oct 5 to 11) we talked to 2,384 voters program-wide, and Northside had the most conversations with 919.\n- Program total: 2384 contacts on 8863 doors, a 26.9% contact rate [table:v_contact_rates_total]\n- Northside: 919 contacts on 3484 doors (26.4%) [table:v_contact_rates]\n- Harbor: 811 contacts on 3106 doors (26.1%) [table:v_contact_rates]\n- Eastgate: 654 contacts on 2273 doors (28.8%) [table:v_contact_rates]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_contact_rates",
+                  "week_start": "2026-10-05"
+                },
+                "ok": true,
+                "result": "3 rows from v_contact_rates"
+              },
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_contact_rates_total",
+                  "week_start": "2026-10-05"
+                },
+                "ok": true,
+                "result": "1 row from v_contact_rates_total"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_contact_rates",
+                "columns": [
+                  "office",
+                  "week_start",
+                  "doors",
+                  "contacts",
+                  "contact_rate_pct"
+                ],
+                "rows": [
+                  [
+                    "Eastgate",
+                    "2026-10-05",
+                    2273,
+                    654,
+                    28.8
+                  ],
+                  [
+                    "Harbor",
+                    "2026-10-05",
+                    3106,
+                    811,
+                    26.1
+                  ],
+                  [
+                    "Northside",
+                    "2026-10-05",
+                    3484,
+                    919,
+                    26.4
+                  ]
+                ],
+                "row_count": 3,
+                "sql": ""
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "v_contact_rates_total"
+              },
+              {
+                "type": "table",
+                "id": "v_contact_rates"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "v02",
+      "question": "What's our grand total of doors since knocking began?",
+      "category": "pace",
+      "split": "heldout_v3",
+      "keywords": [
+        "total doors",
+        "since the start",
+        "to date",
+        "grand total",
+        "doors knocked"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "counting-doors#doors",
+        "counting-doors#attempts",
+        "qc-rules#flash-knocking",
+        "program-plan#opening-another-office"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [
+        {
+          "name": "doors to date, all offices",
+          "expected": 33503.0,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "What's our grand total of doors since knocking began?",
+        "answer": "We have knocked 33503 doors since knocking began (Sep 21 to Oct 18).\n- Doors to date: 33503, against a goal to date of 32431 (103.3%) [table:v_office_pace_total]\n- Full program goal: 60632 doors [table:v_office_pace_total]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_office_pace_total"
+            },
+            "ok": true,
+            "result": "1 row from v_office_pace_total"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_office_pace_total",
+            "columns": [
+              "office",
+              "goal_total",
+              "goal_to_date",
+              "doors_to_date",
+              "pct_of_goal_to_date",
+              "avg_daily_doors_last_7d",
+              "knocking_days_left",
+              "projected_total",
+              "projected_vs_goal",
+              "projected_pct_of_goal",
+              "avg_shifts_per_day_last_7d",
+              "doors_per_shift_last_7d",
+              "shifts_per_day_needed",
+              "extra_shifts_per_day_needed",
+              "turf_doors",
+              "doors_untouched"
+            ],
+            "rows": [
+              [
+                "All offices",
+                60632,
+                32431,
+                33503,
+                103.3,
+                1489.1,
+                16,
+                57329,
+                -3303,
+                94.6,
+                29.3,
+                50.8,
+                33.3,
+                4.1,
+                41853,
+                10393
+              ]
+            ],
+            "row_count": 1,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_office_pace_total"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 0,
+        "model": "claude-opus-5-5",
+        "steps": 2
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "doors to date, all offices",
+              "expected": 33503.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "What's our grand total of doors since knocking began?",
+            "answer": "We have knocked 33503 doors in total since knocking began (Sep 21 to Oct 18).\n- Doors to date: 33503, against a goal to date of 32431 (103.3% of goal to date) [table:v_office_pace_total]\n- Full program goal: 60632 doors [table:v_office_pace_total]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_office_pace_total"
+                },
+                "ok": true,
+                "result": "1 row from v_office_pace_total"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_office_pace_total",
+                "columns": [
+                  "office",
+                  "goal_total",
+                  "goal_to_date",
+                  "doors_to_date",
+                  "pct_of_goal_to_date",
+                  "avg_daily_doors_last_7d",
+                  "knocking_days_left",
+                  "projected_total",
+                  "projected_vs_goal",
+                  "projected_pct_of_goal",
+                  "avg_shifts_per_day_last_7d",
+                  "doors_per_shift_last_7d",
+                  "shifts_per_day_needed",
+                  "extra_shifts_per_day_needed",
+                  "turf_doors",
+                  "doors_untouched"
+                ],
+                "rows": [
+                  [
+                    "All offices",
+                    60632,
+                    32431,
+                    33503,
+                    103.3,
+                    1489.1,
+                    16,
+                    57329,
+                    -3303,
+                    94.6,
+                    29.3,
+                    50.8,
+                    33.3,
+                    4.1,
+                    41853,
+                    10393
+                  ]
+                ],
+                "row_count": 1,
+                "sql": ""
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "v_office_pace_total"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 2
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "doors to date, all offices",
+              "expected": 33503.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "What's our grand total of doors since knocking began?",
+            "answer": "We have knocked 33,503 doors since knocking began on Sep 21, through Oct 18.\n- Doors to date: 33503 [table:v_office_pace_total]\n- That is 103.3% of the goal to date of 32431 [table:v_office_pace_total]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_office_pace_total"
+                },
+                "ok": true,
+                "result": "1 row from v_office_pace_total"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_office_pace_total",
+                "columns": [
+                  "office",
+                  "goal_total",
+                  "goal_to_date",
+                  "doors_to_date",
+                  "pct_of_goal_to_date",
+                  "avg_daily_doors_last_7d",
+                  "knocking_days_left",
+                  "projected_total",
+                  "projected_vs_goal",
+                  "projected_pct_of_goal",
+                  "avg_shifts_per_day_last_7d",
+                  "doors_per_shift_last_7d",
+                  "shifts_per_day_needed",
+                  "extra_shifts_per_day_needed",
+                  "turf_doors",
+                  "doors_untouched"
+                ],
+                "rows": [
+                  [
+                    "All offices",
+                    60632,
+                    32431,
+                    33503,
+                    103.3,
+                    1489.1,
+                    16,
+                    57329,
+                    -3303,
+                    94.6,
+                    29.3,
+                    50.8,
+                    33.3,
+                    4.1,
+                    41853,
+                    10393
+                  ]
+                ],
+                "row_count": 1,
+                "sql": ""
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "v_office_pace_total"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "v03",
+      "question": "Across all three offices, how long did a typical GOTV shift run this week?",
+      "category": "staffing",
+      "split": "heldout_v3",
+      "keywords": [
+        "shift length",
+        "average shift",
+        "hours",
+        "this week",
+        "GOTV"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "client-reporting#weekly-report-format",
+        "qc-rules#qc-rate",
+        "program-plan#staff-definitions",
+        "payroll-rules#cost-per-door"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 0.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [
+        {
+          "name": "average GOTV shift this week, all offices (shifts with a clock out)",
+          "expected": 4.453480392156862,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Across all three offices, how long did a typical GOTV shift run this week?",
+        "answer": "This week (Oct 12 to 18), a typical GOTV shift across all three offices ran 4.45 hours.\n- Average shift length: 4.45 hours [table:v_weekly_shifts_total]\n- 205 GOTV shifts, 204 with a clock out, 908.51 paid hours [table:v_weekly_shifts_total]\n- 1 shift is still missing a clock out and is left out of the average [table:v_weekly_shifts_total]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_weekly_shifts_total",
+              "week_start": "2026-10-12"
+            },
+            "ok": true,
+            "result": "2 rows from v_weekly_shifts_total"
+          },
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "shift length definition"
+            },
+            "ok": true,
+            "result": "4 passages: program-plan#shifts-needed, qc-rules#qc-rate, payroll-rules#shifts-that-need-fixing, qc-rules#flash-knocking"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_weekly_shifts_total",
+            "columns": [
+              "office",
+              "program",
+              "week_start",
+              "shifts",
+              "shifts_with_hours",
+              "shifts_missing_clock_out",
+              "paid_hours",
+              "avg_shift_hours",
+              "wages"
+            ],
+            "rows": [
+              [
+                "All offices",
+                "gotv",
+                "2026-10-12",
+                205,
+                204,
+                1,
+                908.51,
+                4.45,
+                18614.16
+              ],
+              [
+                "All offices",
+                "vr",
+                "2026-10-12",
+                77,
+                76,
+                1,
+                335.44,
+                4.41,
+                6448.72
+              ]
+            ],
+            "row_count": 2,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_weekly_shifts_total"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 0,
+        "model": "claude-opus-5-5",
+        "steps": 3
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 0.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "average GOTV shift this week, all offices (shifts with a clock out)",
+              "expected": 4.453480392156862,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "Across all three offices, how long did a typical GOTV shift run this week?",
+            "answer": "A typical GOTV shift ran 4.45 hours this week (Oct 12 to 18) across all three offices.\n- Average GOTV shift length: 4.45 hours [table:v_weekly_shifts_total]\n- 205 GOTV shifts, 204 with a clock out, 1 still missing a clock out [table:v_weekly_shifts_total]\n- Paid hours: 908.51 [table:v_weekly_shifts_total]\n- Shift length = paid hours / shifts with a clock out; the shift with no clock out is left out [table:v_weekly_shifts_total]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_weekly_shifts_total",
+                  "week_start": "2026-10-12"
+                },
+                "ok": true,
+                "result": "2 rows from v_weekly_shifts_total"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_weekly_shifts_total",
+                "columns": [
+                  "office",
+                  "program",
+                  "week_start",
+                  "shifts",
+                  "shifts_with_hours",
+                  "shifts_missing_clock_out",
+                  "paid_hours",
+                  "avg_shift_hours",
+                  "wages"
+                ],
+                "rows": [
+                  [
+                    "All offices",
+                    "gotv",
+                    "2026-10-12",
+                    205,
+                    204,
+                    1,
+                    908.51,
+                    4.45,
+                    18614.16
+                  ],
+                  [
+                    "All offices",
+                    "vr",
+                    "2026-10-12",
+                    77,
+                    76,
+                    1,
+                    335.44,
+                    4.41,
+                    6448.72
+                  ]
+                ],
+                "row_count": 2,
+                "sql": ""
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "v_weekly_shifts_total"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 2
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 0.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "average GOTV shift this week, all offices (shifts with a clock out)",
+              "expected": 4.453480392156862,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "Across all three offices, how long did a typical GOTV shift run this week?",
+            "answer": "A typical GOTV shift ran 4.45 hours this week (Oct 12 to 18) across all three offices.\n- Average shift length: 4.45 hours [table:v_weekly_shifts_total]\n- 908.51 paid hours over 204 shifts with a clock out [table:v_weekly_shifts_total]\n- 205 GOTV shifts in all; 1 had no clock out and is left out [table:v_weekly_shifts_total]\n- Shift length = paid hours / shifts with a clock out [table:v_weekly_shifts_total]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_weekly_shifts_total",
+                  "week_start": "2026-10-12"
+                },
+                "ok": true,
+                "result": "2 rows from v_weekly_shifts_total"
+              },
+              {
+                "name": "search_documents",
+                "args": {
+                  "query": "shift length definition"
+                },
+                "ok": true,
+                "result": "4 passages: program-plan#shifts-needed, qc-rules#qc-rate, payroll-rules#shifts-that-need-fixing, qc-rules#flash-knocking"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_weekly_shifts_total",
+                "columns": [
+                  "office",
+                  "program",
+                  "week_start",
+                  "shifts",
+                  "shifts_with_hours",
+                  "shifts_missing_clock_out",
+                  "paid_hours",
+                  "avg_shift_hours",
+                  "wages"
+                ],
+                "rows": [
+                  [
+                    "All offices",
+                    "gotv",
+                    "2026-10-12",
+                    205,
+                    204,
+                    1,
+                    908.51,
+                    4.45,
+                    18614.16
+                  ],
+                  [
+                    "All offices",
+                    "vr",
+                    "2026-10-12",
+                    77,
+                    76,
+                    1,
+                    335.44,
+                    4.41,
+                    6448.72
+                  ]
+                ],
+                "row_count": 2,
+                "sql": ""
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "v_weekly_shifts_total"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "v04",
+      "question": "How many GOTV canvassers who worked last week came back and worked again this week?",
+      "category": "staffing",
+      "split": "heldout_v3",
+      "keywords": [
+        "came back",
+        "retention",
+        "both weeks",
+        "last week",
+        "this week",
+        "canvassers"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#staff-definitions",
+        "client-reporting#daily-report",
+        "payroll-rules#pay-rates",
+        "client-reporting#weekly-report-format"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [
+        {
+          "name": "GOTV canvassers with shifts in both weeks",
+          "expected": 50.0,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "How many GOTV canvassers who worked last week came back and worked again this week?",
+        "answer": "50 GOTV canvassers who worked last week (Oct 5 to 11) also worked again this week (Oct 12 to 18).\n- Came back this week: 50 [table:shifts]\n- Worked GOTV shifts last week: 53 [table:shifts]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT count(DISTINCT a.canvasser_id) AS returned FROM shifts a JOIN shifts b ON a.canvasser_id = b.canvasser_id WHERE a.program = 'gotv' AND b.program = 'gotv' AND a.shift_date BETWEEN '2026-10-05' AND '2026-10-11' AND b.shift_date BETWEEN '2026-10-12' AND '2026-10-18'"
+            },
+            "ok": true,
+            "result": "1 row from shifts"
+          },
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT count(DISTINCT canvasser_id) AS worked_last_week FROM shifts WHERE program = 'gotv' AND shift_date BETWEEN '2026-10-05' AND '2026-10-11'"
+            },
+            "ok": true,
+            "result": "1 row from shifts"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "shifts",
+            "columns": [
+              "returned"
+            ],
+            "rows": [
+              [
+                50
+              ]
+            ],
+            "row_count": 1,
+            "sql": "SELECT count(DISTINCT a.canvasser_id) AS returned FROM shifts a JOIN shifts b ON a.canvasser_id = b.canvasser_id WHERE a.program = 'gotv' AND b.program = 'gotv' AND a.shift_date BETWEEN '2026-10-05' AND '2026-10-11' AND b.shift_date BETWEEN '2026-10-12' AND '2026-10-18'"
+          },
+          {
+            "type": "rows",
+            "table": "shifts",
+            "columns": [
+              "worked_last_week"
+            ],
+            "rows": [
+              [
+                53
+              ]
+            ],
+            "row_count": 1,
+            "sql": "SELECT count(DISTINCT canvasser_id) AS worked_last_week FROM shifts WHERE program = 'gotv' AND shift_date BETWEEN '2026-10-05' AND '2026-10-11'"
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "shifts"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 0,
+        "model": "claude-opus-5-5",
+        "steps": 3
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "GOTV canvassers with shifts in both weeks",
+              "expected": 50.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "How many GOTV canvassers who worked last week came back and worked again this week?",
+            "answer": "50 GOTV canvassers who worked last week (Oct 5 to 11) also worked again this week (Oct 12 to 18).\n- GOTV canvassers who worked last week: 53 [table:shifts]\n- Of those, worked again this week: 50 [table:shifts]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT count(DISTINCT a.canvasser_id) AS returned FROM shifts a JOIN shifts b ON a.canvasser_id=b.canvasser_id WHERE a.program='gotv' AND b.program='gotv' AND a.shift_date BETWEEN '2026-10-05' AND '2026-10-11' AND b.shift_date BETWEEN '2026-10-12' AND '2026-10-18'"
+                },
+                "ok": true,
+                "result": "1 row from shifts"
+              },
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT count(DISTINCT canvasser_id) AS worked_last_week FROM shifts WHERE program='gotv' AND shift_date BETWEEN '2026-10-05' AND '2026-10-11'"
+                },
+                "ok": true,
+                "result": "1 row from shifts"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "shifts",
+                "columns": [
+                  "returned"
+                ],
+                "rows": [
+                  [
+                    50
+                  ]
+                ],
+                "row_count": 1,
+                "sql": "SELECT count(DISTINCT a.canvasser_id) AS returned FROM shifts a JOIN shifts b ON a.canvasser_id=b.canvasser_id WHERE a.program='gotv' AND b.program='gotv' AND a.shift_date BETWEEN '2026-10-05' AND '2026-10-11' AND b.shift_date BETWEEN '2026-10-12' AND '2026-10-18'"
+              },
+              {
+                "type": "rows",
+                "table": "shifts",
+                "columns": [
+                  "worked_last_week"
+                ],
+                "rows": [
+                  [
+                    53
+                  ]
+                ],
+                "row_count": 1,
+                "sql": "SELECT count(DISTINCT canvasser_id) AS worked_last_week FROM shifts WHERE program='gotv' AND shift_date BETWEEN '2026-10-05' AND '2026-10-11'"
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "shifts"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 3
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "GOTV canvassers with shifts in both weeks",
+              "expected": 50.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "How many GOTV canvassers who worked last week came back and worked again this week?",
+            "answer": "50 GOTV canvassers who worked last week (Oct 5 to 11) worked again this week (Oct 12 to 18).\n- Came back this week: 50 [table:shifts]\n- Worked a GOTV shift last week: 53 [table:shifts]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT count(DISTINCT a.canvasser_id) AS returning_canvassers FROM shifts a JOIN shifts b ON a.canvasser_id = b.canvasser_id WHERE a.program = 'gotv' AND b.program = 'gotv' AND a.shift_date BETWEEN '2026-10-05' AND '2026-10-11' AND b.shift_date BETWEEN '2026-10-12' AND '2026-10-18'"
+                },
+                "ok": true,
+                "result": "1 row from shifts"
+              },
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT count(DISTINCT canvasser_id) AS worked_last_week FROM shifts WHERE program = 'gotv' AND shift_date BETWEEN '2026-10-05' AND '2026-10-11'"
+                },
+                "ok": true,
+                "result": "1 row from shifts"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "shifts",
+                "columns": [
+                  "returning_canvassers"
+                ],
+                "rows": [
+                  [
+                    50
+                  ]
+                ],
+                "row_count": 1,
+                "sql": "SELECT count(DISTINCT a.canvasser_id) AS returning_canvassers FROM shifts a JOIN shifts b ON a.canvasser_id = b.canvasser_id WHERE a.program = 'gotv' AND b.program = 'gotv' AND a.shift_date BETWEEN '2026-10-05' AND '2026-10-11' AND b.shift_date BETWEEN '2026-10-12' AND '2026-10-18'"
+              },
+              {
+                "type": "rows",
+                "table": "shifts",
+                "columns": [
+                  "worked_last_week"
+                ],
+                "rows": [
+                  [
+                    53
+                  ]
+                ],
+                "row_count": 1,
+                "sql": "SELECT count(DISTINCT canvasser_id) AS worked_last_week FROM shifts WHERE program = 'gotv' AND shift_date BETWEEN '2026-10-05' AND '2026-10-11'"
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "shifts"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "v05",
+      "question": "Of the places we're looking at for a new office, which one sits nearest to an office we already run, and how far away is it?",
+      "category": "office siting",
+      "split": "heldout_v3",
+      "keywords": [
+        "candidate sites",
+        "nearest",
+        "existing office",
+        "distance",
+        "km"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#opening-another-office",
+        "program-plan#pace-and-projection",
+        "program-plan#overview",
+        "program-plan#goals"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [
+        {
+          "name": "Canal Row is nearest",
+          "expected": [
+            "Canal Row"
+          ],
+          "matched": true
+        },
+        {
+          "name": "Canal Row km to nearest office",
+          "expected": 2.467666241241261,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Of the places we're looking at for a new office, which one sits nearest to an office we already run, and how far away is it?",
+        "answer": "The Canal Row office (47 Canal Row) sits nearest to an existing office, 2.47 km from Harbor.\n- Canal Row office: 2.47 km to the nearest office (Harbor), rent 2700 a month [table:v_site_options]\n- Next closest: Depot Road warehouse at 5.21 km, Westview Plaza suite at 6.98 km, Mill Street storefront at 8.01 km [table:v_site_options]\n- Canal Row to Harbor: 2.47 km; to Northside 10 km; to Eastgate 10.18 km [table:candidate_office_sites]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_site_options"
+            },
+            "ok": true,
+            "result": "4 rows from v_site_options"
+          },
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT s.name, o.office, round(km_between(s.lat, s.lon, o.lat, o.lon)::numeric, 2) AS km FROM candidate_office_sites s CROSS JOIN offices o WHERE s.site_id = 'S4' ORDER BY km"
+            },
+            "ok": true,
+            "result": "3 rows from candidate_office_sites, offices"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_site_options",
+            "columns": [
+              "site_id",
+              "name",
+              "address",
+              "monthly_rent",
+              "avg_km_to_untouched_doors",
+              "untouched_doors_within_3km",
+              "km_to_nearest_office"
+            ],
+            "rows": [
+              [
+                "S1",
+                "Mill Street storefront",
+                "215 Mill St",
+                2400,
+                6.62,
+                7118,
+                8.01
+              ],
+              [
+                "S4",
+                "Canal Row office",
+                "47 Canal Row",
+                2700,
+                8.31,
+                37,
+                2.47
+              ],
+              [
+                "S2",
+                "Westview Plaza suite",
+                "9 Westview Plaza",
+                3100,
+                10.18,
+                0,
+                6.98
+              ],
+              [
+                "S3",
+                "Depot Road warehouse",
+                "1630 Depot Rd",
+                1900,
+                11.48,
+                0,
+                5.21
+              ]
+            ],
+            "row_count": 4,
+            "sql": ""
+          },
+          {
+            "type": "rows",
+            "table": "candidate_office_sites, offices",
+            "columns": [
+              "name",
+              "office",
+              "km"
+            ],
+            "rows": [
+              [
+                "Canal Row office",
+                "Harbor",
+                2.47
+              ],
+              [
+                "Canal Row office",
+                "Northside",
+                10
+              ],
+              [
+                "Canal Row office",
+                "Eastgate",
+                10.18
+              ]
+            ],
+            "row_count": 3,
+            "sql": "SELECT s.name, o.office, round(km_between(s.lat, s.lon, o.lat, o.lon)::numeric, 2) AS km FROM candidate_office_sites s CROSS JOIN offices o WHERE s.site_id = 'S4' ORDER BY km"
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_site_options"
+          },
+          {
+            "type": "table",
+            "id": "candidate_office_sites"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 0,
+        "model": "claude-opus-5-5",
+        "steps": 3
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "Canal Row is nearest",
+              "expected": [
+                "Canal Row"
+              ],
+              "matched": true
+            },
+            {
+              "name": "Canal Row km to nearest office",
+              "expected": 2.467666241241261,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "Of the places we're looking at for a new office, which one sits nearest to an office we already run, and how far away is it?",
+            "answer": "The Canal Row office (47 Canal Row) is the candidate site nearest to an existing office, 2.47 km from Harbor.\n- Canal Row office: 2.47 km to the nearest office, Harbor [table:v_site_options]\n- Distances from Canal Row to the other offices: Northside 10 km, Eastgate 10.18 km [table:offices]\n- Other sites' distance to the nearest office: Depot Road warehouse 5.21 km, Westview Plaza suite 6.98 km, Mill Street storefront 8.01 km [table:v_site_options]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_site_options"
+                },
+                "ok": true,
+                "result": "4 rows from v_site_options"
+              },
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT s.name, o.office, round(km_between(s.lat,s.lon,o.lat,o.lon)::numeric,2) AS km FROM candidate_office_sites s CROSS JOIN offices o WHERE s.site_id = 'S4' ORDER BY km"
+                },
+                "ok": true,
+                "result": "3 rows from candidate_office_sites, offices"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_site_options",
+                "columns": [
+                  "site_id",
+                  "name",
+                  "address",
+                  "monthly_rent",
+                  "avg_km_to_untouched_doors",
+                  "untouched_doors_within_3km",
+                  "km_to_nearest_office"
+                ],
+                "rows": [
+                  [
+                    "S1",
+                    "Mill Street storefront",
+                    "215 Mill St",
+                    2400,
+                    6.62,
+                    7118,
+                    8.01
+                  ],
+                  [
+                    "S4",
+                    "Canal Row office",
+                    "47 Canal Row",
+                    2700,
+                    8.31,
+                    37,
+                    2.47
+                  ],
+                  [
+                    "S2",
+                    "Westview Plaza suite",
+                    "9 Westview Plaza",
+                    3100,
+                    10.18,
+                    0,
+                    6.98
+                  ],
+                  [
+                    "S3",
+                    "Depot Road warehouse",
+                    "1630 Depot Rd",
+                    1900,
+                    11.48,
+                    0,
+                    5.21
+                  ]
+                ],
+                "row_count": 4,
+                "sql": ""
+              },
+              {
+                "type": "rows",
+                "table": "candidate_office_sites, offices",
+                "columns": [
+                  "name",
+                  "office",
+                  "km"
+                ],
+                "rows": [
+                  [
+                    "Canal Row office",
+                    "Harbor",
+                    2.47
+                  ],
+                  [
+                    "Canal Row office",
+                    "Northside",
+                    10
+                  ],
+                  [
+                    "Canal Row office",
+                    "Eastgate",
+                    10.18
+                  ]
+                ],
+                "row_count": 3,
+                "sql": "SELECT s.name, o.office, round(km_between(s.lat,s.lon,o.lat,o.lon)::numeric,2) AS km FROM candidate_office_sites s CROSS JOIN offices o WHERE s.site_id = 'S4' ORDER BY km"
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "v_site_options"
+              },
+              {
+                "type": "table",
+                "id": "offices"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 3
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "Canal Row is nearest",
+              "expected": [
+                "Canal Row"
+              ],
+              "matched": true
+            },
+            {
+              "name": "Canal Row km to nearest office",
+              "expected": 2.467666241241261,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "Of the places we're looking at for a new office, which one sits nearest to an office we already run, and how far away is it?",
+            "answer": "The Canal Row office (47 Canal Row) is the candidate site nearest an existing office, 2.47 km from Harbor.\n- Canal Row office: 2.47 km to the nearest office [table:v_site_options], which is Harbor at 2.47 km [table:candidate_office_sites]\n- Depot Road warehouse: 5.21 km [table:v_site_options]\n- Westview Plaza suite: 6.98 km [table:v_site_options]\n- Mill Street storefront: 8.01 km [table:v_site_options]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_site_options"
+                },
+                "ok": true,
+                "result": "4 rows from v_site_options"
+              },
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT s.name, o.office, round(km_between(s.lat, s.lon, o.lat, o.lon)::numeric, 2) AS km FROM candidate_office_sites s CROSS JOIN offices o WHERE s.site_id = 'S4' ORDER BY km"
+                },
+                "ok": true,
+                "result": "3 rows from candidate_office_sites, offices"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_site_options",
+                "columns": [
+                  "site_id",
+                  "name",
+                  "address",
+                  "monthly_rent",
+                  "avg_km_to_untouched_doors",
+                  "untouched_doors_within_3km",
+                  "km_to_nearest_office"
+                ],
+                "rows": [
+                  [
+                    "S1",
+                    "Mill Street storefront",
+                    "215 Mill St",
+                    2400,
+                    6.62,
+                    7118,
+                    8.01
+                  ],
+                  [
+                    "S4",
+                    "Canal Row office",
+                    "47 Canal Row",
+                    2700,
+                    8.31,
+                    37,
+                    2.47
+                  ],
+                  [
+                    "S2",
+                    "Westview Plaza suite",
+                    "9 Westview Plaza",
+                    3100,
+                    10.18,
+                    0,
+                    6.98
+                  ],
+                  [
+                    "S3",
+                    "Depot Road warehouse",
+                    "1630 Depot Rd",
+                    1900,
+                    11.48,
+                    0,
+                    5.21
+                  ]
+                ],
+                "row_count": 4,
+                "sql": ""
+              },
+              {
+                "type": "rows",
+                "table": "candidate_office_sites, offices",
+                "columns": [
+                  "name",
+                  "office",
+                  "km"
+                ],
+                "rows": [
+                  [
+                    "Canal Row office",
+                    "Harbor",
+                    2.47
+                  ],
+                  [
+                    "Canal Row office",
+                    "Northside",
+                    10
+                  ],
+                  [
+                    "Canal Row office",
+                    "Eastgate",
+                    10.18
+                  ]
+                ],
+                "row_count": 3,
+                "sql": "SELECT s.name, o.office, round(km_between(s.lat, s.lon, o.lat, o.lon)::numeric, 2) AS km FROM candidate_office_sites s CROSS JOIN offices o WHERE s.site_id = 'S4' ORDER BY km"
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "v_site_options"
+              },
+              {
+                "type": "table",
+                "id": "candidate_office_sites"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "v06",
+      "question": "In Harbor's turf, how many doors has nobody knocked on yet?",
+      "category": "door gaps",
+      "split": "heldout_v3",
+      "keywords": [
+        "Harbor",
+        "turf",
+        "never knocked",
+        "untouched",
+        "doors left"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "program-plan#opening-another-office",
+        "program-plan#more-doors-or-a-second-pass",
+        "program-plan#overview",
+        "counting-doors#doors"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [
+        {
+          "name": "Harbor doors never knocked",
+          "expected": 8096.0,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "In Harbor's turf, how many doors has nobody knocked on yet?",
+        "answer": "Harbor has 8096 doors in its turf that nobody has knocked on yet.\n- Untouched doors: 8096 of 18741 turf doors [table:v_office_pace]\n- Harbor doors to date: 11351 [table:v_office_pace]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_office_pace",
+              "office": "Harbor"
+            },
+            "ok": true,
+            "result": "1 row from v_office_pace"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_office_pace",
+            "columns": [
+              "office",
+              "goal_total",
+              "goal_to_date",
+              "doors_to_date",
+              "pct_of_goal_to_date",
+              "avg_daily_doors_last_7d",
+              "knocking_days_left",
+              "projected_total",
+              "projected_vs_goal",
+              "projected_pct_of_goal",
+              "avg_shifts_per_day_last_7d",
+              "doors_per_shift_last_7d",
+              "shifts_per_day_needed",
+              "extra_shifts_per_day_needed",
+              "turf_doors",
+              "doors_untouched"
+            ],
+            "rows": [
+              [
+                "Harbor",
+                20157,
+                10782,
+                11351,
+                105.3,
+                487.4,
+                16,
+                19150,
+                -1007,
+                95,
+                9.9,
+                49.4,
+                11.1,
+                1.3,
+                18741,
+                8096
+              ]
+            ],
+            "row_count": 1,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_office_pace"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 0,
+        "model": "claude-opus-5-5",
+        "steps": 2
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "Harbor doors never knocked",
+              "expected": 8096.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "In Harbor's turf, how many doors has nobody knocked on yet?",
+            "answer": "Harbor's turf has 8096 doors nobody has knocked on yet.\n- Untouched doors: 8096 of 18741 turf doors [table:v_office_pace]\n- This counts every precinct, including the untouched doors of partly covered precincts [table:v_office_pace]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_office_pace",
+                  "office": "Harbor"
+                },
+                "ok": true,
+                "result": "1 row from v_office_pace"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_office_pace",
+                "columns": [
+                  "office",
+                  "goal_total",
+                  "goal_to_date",
+                  "doors_to_date",
+                  "pct_of_goal_to_date",
+                  "avg_daily_doors_last_7d",
+                  "knocking_days_left",
+                  "projected_total",
+                  "projected_vs_goal",
+                  "projected_pct_of_goal",
+                  "avg_shifts_per_day_last_7d",
+                  "doors_per_shift_last_7d",
+                  "shifts_per_day_needed",
+                  "extra_shifts_per_day_needed",
+                  "turf_doors",
+                  "doors_untouched"
+                ],
+                "rows": [
+                  [
+                    "Harbor",
+                    20157,
+                    10782,
+                    11351,
+                    105.3,
+                    487.4,
+                    16,
+                    19150,
+                    -1007,
+                    95,
+                    9.9,
+                    49.4,
+                    11.1,
+                    1.3,
+                    18741,
+                    8096
+                  ]
+                ],
+                "row_count": 1,
+                "sql": ""
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "v_office_pace"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 2
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "Harbor doors never knocked",
+              "expected": 8096.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "In Harbor's turf, how many doors has nobody knocked on yet?",
+            "answer": "Harbor has 8,096 doors in its turf that nobody has knocked yet.\n- Untouched doors: 8096 [table:v_office_pace]\n- Out of 18741 turf doors [table:v_office_pace]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_office_pace",
+                  "office": "Harbor"
+                },
+                "ok": true,
+                "result": "1 row from v_office_pace"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_office_pace",
+                "columns": [
+                  "office",
+                  "goal_total",
+                  "goal_to_date",
+                  "doors_to_date",
+                  "pct_of_goal_to_date",
+                  "avg_daily_doors_last_7d",
+                  "knocking_days_left",
+                  "projected_total",
+                  "projected_vs_goal",
+                  "projected_pct_of_goal",
+                  "avg_shifts_per_day_last_7d",
+                  "doors_per_shift_last_7d",
+                  "shifts_per_day_needed",
+                  "extra_shifts_per_day_needed",
+                  "turf_doors",
+                  "doors_untouched"
+                ],
+                "rows": [
+                  [
+                    "Harbor",
+                    20157,
+                    10782,
+                    11351,
+                    105.3,
+                    487.4,
+                    16,
+                    19150,
+                    -1007,
+                    95,
+                    9.9,
+                    49.4,
+                    11.1,
+                    1.3,
+                    18741,
+                    8096
+                  ]
+                ],
+                "row_count": 1,
+                "sql": ""
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "v_office_pace"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "v07",
+      "question": "How many knock records have been thrown out by QC rollbacks so far, and across how many shifts?",
+      "category": "QC",
+      "split": "heldout_v3",
+      "keywords": [
+        "rolled back",
+        "thrown out",
+        "QC",
+        "knocks",
+        "shifts"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "counting-doors#rollbacks",
+        "qc-rules#flash-knocking",
+        "qc-rules#qc-rate",
+        "counting-doors#why-the-client-s-numbers-differ-from-ours"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [
+        {
+          "name": "rolled-back knocks",
+          "expected": 272.0,
+          "matched": true
+        },
+        {
+          "name": "shifts with rollbacks",
+          "expected": 11.0,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "How many knock records have been thrown out by QC rollbacks so far, and across how many shifts?",
+        "answer": "So far 272 knock records have been rolled back by QC, across 11 shifts.\n- Rolled-back attempts: 272 [table:knocks]\n- Shifts with rollbacks: 11 [table:knocks]\n- Confirmed flash knocking is rolled back: the knocks stay in the data with rolled_back = true but no longer count as doors or contacts [doc:counting-doors#rollbacks]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT count(*) AS rolled_back_attempts, count(DISTINCT shift_id) AS shifts FROM knocks WHERE rolled_back"
+            },
+            "ok": true,
+            "result": "1 row from knocks"
+          },
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "rollback of knocks QC"
+            },
+            "ok": true,
+            "result": "4 passages: counting-doors#rollbacks, qc-rules#flash-knocking, counting-doors#why-the-client-s-numbers-differ-from-ours, registration-drive#qc-calls"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "knocks",
+            "columns": [
+              "rolled_back_attempts",
+              "shifts"
+            ],
+            "rows": [
+              [
+                272,
+                11
+              ]
+            ],
+            "row_count": 1,
+            "sql": "SELECT count(*) AS rolled_back_attempts, count(DISTINCT shift_id) AS shifts FROM knocks WHERE rolled_back"
+          },
+          {
+            "type": "passage",
+            "doc": "counting-doors#rollbacks",
+            "text": "When QC confirms flash knocking, the knocks in the flagged window are rolled back: they stay in the data with rolled_back = true but are removed from doors and contacts. Rollbacks happen after the day's client report has been pulled, so they never change a report that was already sent."
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "knocks"
+          },
+          {
+            "type": "doc",
+            "id": "counting-doors#rollbacks"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 0,
+        "model": "claude-opus-5-5",
+        "steps": 3
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "rolled-back knocks",
+              "expected": 272.0,
+              "matched": true
+            },
+            {
+              "name": "shifts with rollbacks",
+              "expected": 11.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "How many knock records have been thrown out by QC rollbacks so far, and across how many shifts?",
+            "answer": "QC rollbacks have thrown out 272 knock records so far, across 11 shifts.\n- Rolled-back knock records: 272 [table:knocks]\n- Shifts with rollbacks: 11 [table:knocks]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT count(*) AS rolled_back_knocks, count(DISTINCT shift_id) AS shifts FROM knocks WHERE rolled_back"
+                },
+                "ok": true,
+                "result": "1 row from knocks"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "knocks",
+                "columns": [
+                  "rolled_back_knocks",
+                  "shifts"
+                ],
+                "rows": [
+                  [
+                    272,
+                    11
+                  ]
+                ],
+                "row_count": 1,
+                "sql": "SELECT count(*) AS rolled_back_knocks, count(DISTINCT shift_id) AS shifts FROM knocks WHERE rolled_back"
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "knocks"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 2
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "rolled-back knocks",
+              "expected": 272.0,
+              "matched": true
+            },
+            {
+              "name": "shifts with rollbacks",
+              "expected": 11.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "How many knock records have been thrown out by QC rollbacks so far, and across how many shifts?",
+            "answer": "272 knock records have been rolled back by QC so far, across 11 shifts.\n- Rolled-back knocks: 272 [table:knocks]\n- Shifts with rollbacks: 11 [table:knocks]\n- Rolled-back knocks stay in the data with rolled_back = true but no longer count as doors or contacts [doc:counting-doors#rollbacks]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT count(*) AS rolled_back_knocks, count(DISTINCT shift_id) AS shifts FROM knocks WHERE rolled_back"
+                },
+                "ok": true,
+                "result": "1 row from knocks"
+              },
+              {
+                "name": "search_documents",
+                "args": {
+                  "query": "rollback flash knocking knocks rolled back"
+                },
+                "ok": true,
+                "result": "4 passages: counting-doors#rollbacks, qc-rules#flash-knocking, counting-doors#why-the-client-s-numbers-differ-from-ours, qc-rules#what-happens-after-a-flag"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "knocks",
+                "columns": [
+                  "rolled_back_knocks",
+                  "shifts"
+                ],
+                "rows": [
+                  [
+                    272,
+                    11
+                  ]
+                ],
+                "row_count": 1,
+                "sql": "SELECT count(*) AS rolled_back_knocks, count(DISTINCT shift_id) AS shifts FROM knocks WHERE rolled_back"
+              },
+              {
+                "type": "passage",
+                "doc": "counting-doors#rollbacks",
+                "text": "When QC confirms flash knocking, the knocks in the flagged window are rolled back: they stay in the data with rolled_back = true but are removed from doors and contacts. Rollbacks happen after the day's client report has been pulled, so they never change a report that was already sent."
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "knocks"
+              },
+              {
+                "type": "doc",
+                "id": "counting-doors#rollbacks"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "v08",
+      "question": "Where are canvassers going quiet on the clock most often, judging by gap flags?",
+      "category": "QC",
+      "split": "heldout_v3",
+      "keywords": [
+        "gap flags",
+        "idle",
+        "no knocks",
+        "clocked in",
+        "office"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "qc-rules#gaps",
+        "qc-rules#what-happens-after-a-flag",
+        "payroll-rules#pay-rates",
+        "counting-doors#attempts"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [
+        {
+          "name": "Harbor has the most gap flags",
+          "expected": [
+            "Harbor"
+          ],
+          "matched": true
+        },
+        {
+          "name": "Harbor gap flags",
+          "expected": 6.0,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Where are canvassers going quiet on the clock most often, judging by gap flags?",
+        "answer": "Harbor has the most gap flags, with 6 of the program's 9 to date.\n- Harbor: 6 gap flags [table:v_qc_flags_detail]\n- Northside: 2 gap flags [table:v_qc_flags_detail]\n- Eastgate: 1 gap flag [table:v_qc_flags_detail]\n- Program total: 9 gap flags [table:v_qc_flags_detail]\n- A gap flag is raised when a canvasser is clocked in but records no knocks for 60 minutes or more; the canvasser explains it before any pay adjustment [doc:qc-rules#gaps]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_qc_weekly"
+            },
+            "ok": true,
+            "result": "12 rows from v_qc_weekly"
+          },
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_qc_weekly_total"
+            },
+            "ok": true,
+            "result": "4 rows from v_qc_weekly_total"
+          },
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "gap flag definition"
+            },
+            "ok": true,
+            "result": "4 passages: qc-rules#gaps, counting-doors#why-the-client-s-numbers-differ-from-ours, qc-rules#what-happens-after-a-flag, counting-doors#contacts-and-contact-rate"
+          },
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT office, count(*) AS gap_flags FROM v_qc_flags_detail WHERE flag_type = 'gap' GROUP BY office ORDER BY gap_flags DESC"
+            },
+            "ok": true,
+            "result": "3 rows from v_qc_flags_detail"
+          },
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT count(*) AS gap_flags FROM v_qc_flags_detail WHERE flag_type = 'gap'"
+            },
+            "ok": true,
+            "result": "1 row from v_qc_flags_detail"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_qc_flags_detail",
+            "columns": [
+              "office",
+              "gap_flags"
+            ],
+            "rows": [
+              [
+                "Harbor",
+                6
+              ],
+              [
+                "Northside",
+                2
+              ],
+              [
+                "Eastgate",
+                1
+              ]
+            ],
+            "row_count": 3,
+            "sql": "SELECT office, count(*) AS gap_flags FROM v_qc_flags_detail WHERE flag_type = 'gap' GROUP BY office ORDER BY gap_flags DESC"
+          },
+          {
+            "type": "rows",
+            "table": "v_qc_flags_detail",
+            "columns": [
+              "gap_flags"
+            ],
+            "rows": [
+              [
+                9
+              ]
+            ],
+            "row_count": 1,
+            "sql": "SELECT count(*) AS gap_flags FROM v_qc_flags_detail WHERE flag_type = 'gap'"
+          },
+          {
+            "type": "passage",
+            "doc": "qc-rules#gaps",
+            "text": "A gap flag is raised when a canvasser is clocked in but records no knocks for 60 minutes or more. Gaps can be legitimate (a long conversation, a turf change, a break that was not clocked out), so the canvasser explains it before any pay adjustment."
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_qc_flags_detail"
+          },
+          {
+            "type": "doc",
+            "id": "qc-rules#gaps"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 0,
+        "model": "claude-opus-5-5",
+        "steps": 6
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "Harbor has the most gap flags",
+              "expected": [
+                "Harbor"
+              ],
+              "matched": true
+            },
+            {
+              "name": "Harbor gap flags",
+              "expected": 6.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "Where are canvassers going quiet on the clock most often, judging by gap flags?",
+            "answer": "Harbor has the most gap flags, 6 of the program's 9, so that is where canvassers most often go quiet on the clock.\n- Harbor: 6 gap flags (2 week of Sep 21, 3 week of Sep 28, 1 week of Oct 5, 0 this week) [table:qc_flags] [table:v_qc_weekly]\n- Northside: 2 gap flags [table:qc_flags]\n- Eastgate: 1 gap flag (week of Oct 12) [table:qc_flags]\n- Program by week: 3 (Sep 21), 4 (Sep 28), 1 (Oct 5), 1 (Oct 12) [table:v_qc_weekly_total]\n- A gap flag means clocked in with no knocks for 60 minutes or more; the canvasser explains it before any pay adjustment [doc:qc-rules#gaps]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_qc_weekly"
+                },
+                "ok": true,
+                "result": "12 rows from v_qc_weekly"
+              },
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_qc_weekly_total"
+                },
+                "ok": true,
+                "result": "4 rows from v_qc_weekly_total"
+              },
+              {
+                "name": "search_documents",
+                "args": {
+                  "query": "gap flag definition"
+                },
+                "ok": true,
+                "result": "4 passages: qc-rules#gaps, counting-doors#why-the-client-s-numbers-differ-from-ours, qc-rules#what-happens-after-a-flag, counting-doors#contacts-and-contact-rate"
+              },
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT office, count(*) AS gap_flags FROM qc_flags WHERE flag_type='gap' GROUP BY office ORDER BY gap_flags DESC"
+                },
+                "ok": true,
+                "result": "3 rows from qc_flags"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_qc_weekly",
+                "columns": [
+                  "office",
+                  "week_start",
+                  "shifts",
+                  "flags",
+                  "flash_knocking",
+                  "householding",
+                  "gaps",
+                  "flags_per_100_shifts"
+                ],
+                "rows": [
+                  [
+                    "Eastgate",
+                    "2026-10-12",
+                    58,
+                    5,
+                    1,
+                    3,
+                    1,
+                    8.6
+                  ],
+                  [
+                    "Harbor",
+                    "2026-10-12",
+                    69,
+                    1,
+                    1,
+                    0,
+                    0,
+                    1.4
+                  ],
+                  [
+                    "Northside",
+                    "2026-10-12",
+                    78,
+                    1,
+                    0,
+                    1,
+                    0,
+                    1.3
+                  ],
+                  [
+                    "Eastgate",
+                    "2026-10-05",
+                    52,
+                    2,
+                    2,
+                    0,
+                    0,
+                    3.8
+                  ],
+                  [
+                    "Harbor",
+                    "2026-10-05",
+                    65,
+                    4,
+                    2,
+                    1,
+                    1,
+                    6.2
+                  ],
+                  [
+                    "Northside",
+                    "2026-10-05",
+                    67,
+                    2,
+                    1,
+                    1,
+                    0,
+                    3
+                  ],
+                  [
+                    "Eastgate",
+                    "2026-09-28",
+                    47,
+                    3,
+                    2,
+                    1,
+                    0,
+                    6.4
+                  ],
+                  [
+                    "Harbor",
+                    "2026-09-28",
+                    54,
+                    5,
+                    0,
+                    2,
+                    3,
+                    9.3
+                  ]
+                ],
+                "row_count": 12,
+                "sql": ""
+              },
+              {
+                "type": "rows",
+                "table": "qc_flags",
+                "columns": [
+                  "office",
+                  "gap_flags"
+                ],
+                "rows": [
+                  [
+                    "Harbor",
+                    6
+                  ],
+                  [
+                    "Northside",
+                    2
+                  ],
+                  [
+                    "Eastgate",
+                    1
+                  ]
+                ],
+                "row_count": 3,
+                "sql": "SELECT office, count(*) AS gap_flags FROM qc_flags WHERE flag_type='gap' GROUP BY office ORDER BY gap_flags DESC"
+              },
+              {
+                "type": "passage",
+                "doc": "qc-rules#gaps",
+                "text": "A gap flag is raised when a canvasser is clocked in but records no knocks for 60 minutes or more. Gaps can be legitimate (a long conversation, a turf change, a break that was not clocked out), so the canvasser explains it before any pay adjustment."
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "qc_flags"
+              },
+              {
+                "type": "table",
+                "id": "v_qc_weekly"
+              },
+              {
+                "type": "table",
+                "id": "v_qc_weekly_total"
+              },
+              {
+                "type": "doc",
+                "id": "qc-rules#gaps"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 5
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "Harbor has the most gap flags",
+              "expected": [
+                "Harbor"
+              ],
+              "matched": true
+            },
+            {
+              "name": "Harbor gap flags",
+              "expected": 6.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "Where are canvassers going quiet on the clock most often, judging by gap flags?",
+            "answer": "Harbor has the most gap flags, with 6 of the program's 9 since Sep 21.\n- Harbor: 6 gaps (2 week of Sep 21, 3 week of Sep 28, 1 week of Oct 5, 0 this week) [table:v_qc_weekly]\n- Northside: 2 gaps (1 week of Sep 21, 1 week of Sep 28) [table:v_qc_weekly]\n- Eastgate: 1 gap (this week, Oct 12 to 18) [table:v_qc_weekly]\n- Program total: 9 gaps (3, 4, 1 and 1 by week) [table:v_qc_weekly_total]\n- A gap flag means clocked in with no knocks for 60 minutes or more [doc:qc-rules#gaps]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_qc_weekly"
+                },
+                "ok": true,
+                "result": "12 rows from v_qc_weekly"
+              },
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_qc_weekly_total"
+                },
+                "ok": true,
+                "result": "4 rows from v_qc_weekly_total"
+              },
+              {
+                "name": "search_documents",
+                "args": {
+                  "query": "gap flag definition"
+                },
+                "ok": true,
+                "result": "4 passages: qc-rules#gaps, counting-doors#why-the-client-s-numbers-differ-from-ours, qc-rules#what-happens-after-a-flag, counting-doors#contacts-and-contact-rate"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_qc_weekly",
+                "columns": [
+                  "office",
+                  "week_start",
+                  "shifts",
+                  "flags",
+                  "flash_knocking",
+                  "householding",
+                  "gaps",
+                  "flags_per_100_shifts"
+                ],
+                "rows": [
+                  [
+                    "Eastgate",
+                    "2026-10-12",
+                    58,
+                    5,
+                    1,
+                    3,
+                    1,
+                    8.6
+                  ],
+                  [
+                    "Harbor",
+                    "2026-10-12",
+                    69,
+                    1,
+                    1,
+                    0,
+                    0,
+                    1.4
+                  ],
+                  [
+                    "Northside",
+                    "2026-10-12",
+                    78,
+                    1,
+                    0,
+                    1,
+                    0,
+                    1.3
+                  ],
+                  [
+                    "Eastgate",
+                    "2026-10-05",
+                    52,
+                    2,
+                    2,
+                    0,
+                    0,
+                    3.8
+                  ],
+                  [
+                    "Harbor",
+                    "2026-10-05",
+                    65,
+                    4,
+                    2,
+                    1,
+                    1,
+                    6.2
+                  ],
+                  [
+                    "Northside",
+                    "2026-10-05",
+                    67,
+                    2,
+                    1,
+                    1,
+                    0,
+                    3
+                  ],
+                  [
+                    "Eastgate",
+                    "2026-09-28",
+                    47,
+                    3,
+                    2,
+                    1,
+                    0,
+                    6.4
+                  ],
+                  [
+                    "Harbor",
+                    "2026-09-28",
+                    54,
+                    5,
+                    0,
+                    2,
+                    3,
+                    9.3
+                  ]
+                ],
+                "row_count": 12,
+                "sql": ""
+              },
+              {
+                "type": "passage",
+                "doc": "qc-rules#gaps",
+                "text": "A gap flag is raised when a canvasser is clocked in but records no knocks for 60 minutes or more. Gaps can be legitimate (a long conversation, a turf change, a break that was not clocked out), so the canvasser explains it before any pay adjustment."
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "v_qc_weekly"
+              },
+              {
+                "type": "table",
+                "id": "v_qc_weekly_total"
+              },
+              {
+                "type": "doc",
+                "id": "qc-rules#gaps"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "v09",
+      "question": "For Harbor's registration team this week, how many valid cards came in and how many paid hours went into them?",
+      "category": "VR rate",
+      "split": "heldout_v3",
+      "keywords": [
+        "Harbor",
+        "registration",
+        "valid cards",
+        "paid hours",
+        "this week"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "registration-drive#cards-per-hour",
+        "client-reporting#weekly-report-format",
+        "registration-drive#valid-cards-and-duplicates",
+        "registration-drive#qc-calls"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [
+        {
+          "name": "Harbor valid cards this week",
+          "expected": 352.0,
+          "matched": true
+        },
+        {
+          "name": "Harbor registration hours this week",
+          "expected": 128.45,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "For Harbor's registration team this week, how many valid cards came in and how many paid hours went into them?",
+        "answer": "This week (Oct 12 to 18), Harbor's registration team brought in 352 valid cards over 128.45 paid hours.\n- Valid cards: 352 [table:v_vr_weekly]\n- Paid hours: 128.45 [table:v_vr_weekly]\n- Cards per hour: 2.74; 5 duplicate cards were left out [table:v_vr_weekly]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_vr_weekly",
+              "office": "Harbor",
+              "week_start": "2026-10-12"
+            },
+            "ok": true,
+            "result": "1 row from v_vr_weekly"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_vr_weekly",
+            "columns": [
+              "office",
+              "week_start",
+              "valid_cards",
+              "duplicate_cards",
+              "paid_hours",
+              "cards_per_hour"
+            ],
+            "rows": [
+              [
+                "Harbor",
+                "2026-10-12",
+                352,
+                5,
+                128.45,
+                2.74
+              ]
+            ],
+            "row_count": 1,
+            "sql": ""
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_vr_weekly"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 0,
+        "model": "claude-opus-5-5",
+        "steps": 2
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "Harbor valid cards this week",
+              "expected": 352.0,
+              "matched": true
+            },
+            {
+              "name": "Harbor registration hours this week",
+              "expected": 128.45,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "For Harbor's registration team this week, how many valid cards came in and how many paid hours went into them?",
+            "answer": "Harbor's registration team brought in 352 valid cards this week (Oct 12 to 18) on 128.45 paid hours.\n- Valid cards: 352 [table:v_vr_weekly]\n- Paid hours: 128.45 [table:v_vr_weekly]\n- Cards per hour: 2.74 [table:v_vr_weekly]\n- Duplicate cards (not counted as valid): 5 [table:v_vr_weekly]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_vr_weekly",
+                  "office": "Harbor",
+                  "week_start": "2026-10-12"
+                },
+                "ok": true,
+                "result": "1 row from v_vr_weekly"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_vr_weekly",
+                "columns": [
+                  "office",
+                  "week_start",
+                  "valid_cards",
+                  "duplicate_cards",
+                  "paid_hours",
+                  "cards_per_hour"
+                ],
+                "rows": [
+                  [
+                    "Harbor",
+                    "2026-10-12",
+                    352,
+                    5,
+                    128.45,
+                    2.74
+                  ]
+                ],
+                "row_count": 1,
+                "sql": ""
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "v_vr_weekly"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 2
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "Harbor valid cards this week",
+              "expected": 352.0,
+              "matched": true
+            },
+            {
+              "name": "Harbor registration hours this week",
+              "expected": 128.45,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "For Harbor's registration team this week, how many valid cards came in and how many paid hours went into them?",
+            "answer": "Harbor's registration team brought in 352 valid cards this week (Oct 12 to 18) on 128.45 paid hours.\n- Valid cards: 352 [table:v_vr_weekly]\n- Paid hours: 128.45 [table:v_vr_weekly]\n- Cards per hour: 2.74 [table:v_vr_weekly]\n- Duplicate cards (not counted): 5 [table:v_vr_weekly]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_vr_weekly",
+                  "office": "Harbor",
+                  "week_start": "2026-10-12"
+                },
+                "ok": true,
+                "result": "1 row from v_vr_weekly"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_vr_weekly",
+                "columns": [
+                  "office",
+                  "week_start",
+                  "valid_cards",
+                  "duplicate_cards",
+                  "paid_hours",
+                  "cards_per_hour"
+                ],
+                "rows": [
+                  [
+                    "Harbor",
+                    "2026-10-12",
+                    352,
+                    5,
+                    128.45,
+                    2.74
+                  ]
+                ],
+                "row_count": 1,
+                "sql": ""
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "v_vr_weekly"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "v10",
+      "question": "Out of every registration card collected so far, what percentage turned out to be duplicates?",
+      "category": "VR rate",
+      "split": "heldout_v3",
+      "keywords": [
+        "duplicates",
+        "percentage",
+        "registration cards",
+        "share"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "registration-drive#valid-cards-and-duplicates",
+        "registration-drive#cards-per-hour",
+        "registration-drive#qc-calls",
+        "client-reporting#weekly-report-format"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [
+        {
+          "name": "duplicate share of all cards",
+          "expected": 2.9621793176408358,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Out of every registration card collected so far, what percentage turned out to be duplicates?",
+        "answer": "3% of the registration cards collected so far turned out to be duplicates.\n- Cards collected: 3781 [table:vr_cards]\n- Duplicate cards: 112 [table:vr_cards]\n- Duplicate share: 3% [table:vr_cards]\n- A duplicate is a second card for a registrant who already has a card in the drive; only valid cards count toward goal [doc:registration-drive#valid-cards-and-duplicates]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_vr_pace_total"
+            },
+            "ok": true,
+            "result": "1 row from v_vr_pace_total"
+          },
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "duplicate registration cards"
+            },
+            "ok": true,
+            "result": "4 passages: registration-drive#valid-cards-and-duplicates, registration-drive#cards-per-hour, registration-drive#qc-calls, client-reporting#weekly-report-format"
+          },
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT count(*) AS cards_collected, sum(CASE WHEN is_duplicate THEN 1 ELSE 0 END) AS duplicate_cards, round(100.0 * sum(CASE WHEN is_duplicate THEN 1 ELSE 0 END) / count(*), 1) AS duplicate_pct FROM vr_cards"
+            },
+            "ok": true,
+            "result": "1 row from vr_cards"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "vr_cards",
+            "columns": [
+              "cards_collected",
+              "duplicate_cards",
+              "duplicate_pct"
+            ],
+            "rows": [
+              [
+                3781,
+                112,
+                3
+              ]
+            ],
+            "row_count": 1,
+            "sql": "SELECT count(*) AS cards_collected, sum(CASE WHEN is_duplicate THEN 1 ELSE 0 END) AS duplicate_cards, round(100.0 * sum(CASE WHEN is_duplicate THEN 1 ELSE 0 END) / count(*), 1) AS duplicate_pct FROM vr_cards"
+          },
+          {
+            "type": "passage",
+            "doc": "registration-drive#valid-cards-and-duplicates",
+            "text": "A card is one completed registration form. A duplicate is a second card for a registrant who already has a card in the drive; duplicates share a duplicate group id with the first card and are marked is_duplicate. Only valid cards (duplicates removed) count toward goal and cards per hour. A canvasser with a duplicate rate above 10 percent gets a retraining conversation."
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "vr_cards"
+          },
+          {
+            "type": "doc",
+            "id": "registration-drive#valid-cards-and-duplicates"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 0,
+        "model": "claude-opus-5-5",
+        "steps": 4
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "duplicate share of all cards",
+              "expected": 2.9621793176408358,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "Out of every registration card collected so far, what percentage turned out to be duplicates?",
+            "answer": "2.96% of all registration cards collected so far turned out to be duplicates.\n- Cards collected: 3781 [table:v_vr_pace_total]\n- Duplicates: 112 [table:v_vr_pace_total]\n- Duplicate share: 2.96% [table:vr_cards]\n- Valid cards: 3669 [table:v_vr_pace_total]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_vr_pace_total"
+                },
+                "ok": true,
+                "result": "1 row from v_vr_pace_total"
+              },
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT count(*) AS cards, sum(CASE WHEN is_duplicate THEN 1 ELSE 0 END) AS duplicates, round(100.0*sum(CASE WHEN is_duplicate THEN 1 ELSE 0 END)/count(*),1) AS duplicate_pct FROM vr_cards"
+                },
+                "ok": true,
+                "result": "1 row from vr_cards"
+              },
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT round(100.0*sum(CASE WHEN is_duplicate THEN 1 ELSE 0 END)/count(*),2) AS duplicate_pct FROM vr_cards"
+                },
+                "ok": true,
+                "result": "1 row from vr_cards"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_vr_pace_total",
+                "columns": [
+                  "office",
+                  "card_goal",
+                  "cards_collected",
+                  "duplicate_cards",
+                  "valid_cards",
+                  "cards_remaining",
+                  "hours_to_date",
+                  "cards_per_hour_to_date",
+                  "cards_per_hour_last_7d",
+                  "avg_daily_hours_last_7d",
+                  "days_left",
+                  "projected_valid_cards",
+                  "cards_per_hour_needed"
+                ],
+                "rows": [
+                  [
+                    "All offices",
+                    5370,
+                    3781,
+                    112,
+                    3669,
+                    1701,
+                    1305.41,
+                    2.81,
+                    2.86,
+                    47.9,
+                    12,
+                    5311,
+                    2.96
+                  ]
+                ],
+                "row_count": 1,
+                "sql": ""
+              },
+              {
+                "type": "rows",
+                "table": "vr_cards",
+                "columns": [
+                  "cards",
+                  "duplicates",
+                  "duplicate_pct"
+                ],
+                "rows": [
+                  [
+                    3781,
+                    112,
+                    3
+                  ]
+                ],
+                "row_count": 1,
+                "sql": "SELECT count(*) AS cards, sum(CASE WHEN is_duplicate THEN 1 ELSE 0 END) AS duplicates, round(100.0*sum(CASE WHEN is_duplicate THEN 1 ELSE 0 END)/count(*),1) AS duplicate_pct FROM vr_cards"
+              },
+              {
+                "type": "rows",
+                "table": "vr_cards",
+                "columns": [
+                  "duplicate_pct"
+                ],
+                "rows": [
+                  [
+                    2.96
+                  ]
+                ],
+                "row_count": 1,
+                "sql": "SELECT round(100.0*sum(CASE WHEN is_duplicate THEN 1 ELSE 0 END)/count(*),2) AS duplicate_pct FROM vr_cards"
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "v_vr_pace_total"
+              },
+              {
+                "type": "table",
+                "id": "vr_cards"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 4
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "duplicate share of all cards",
+              "expected": 2.9621793176408358,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "Out of every registration card collected so far, what percentage turned out to be duplicates?",
+            "answer": "3% of the registration cards collected so far are duplicates.\n- Cards collected: 3781 [table:vr_cards]\n- Duplicate cards: 112, which is 3% [table:vr_cards]\n- A duplicate is a second card for a registrant who already has one in the drive; only valid cards count toward goal [doc:registration-drive#valid-cards-and-duplicates]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_vr_pace_total"
+                },
+                "ok": true,
+                "result": "1 row from v_vr_pace_total"
+              },
+              {
+                "name": "search_documents",
+                "args": {
+                  "query": "duplicate registration card definition"
+                },
+                "ok": true,
+                "result": "4 passages: registration-drive#valid-cards-and-duplicates, registration-drive#cards-per-hour, registration-drive#qc-calls, client-reporting#weekly-report-format"
+              },
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT count(*) AS cards_collected, sum(CASE WHEN is_duplicate THEN 1 ELSE 0 END) AS duplicate_cards, round(100.0 * sum(CASE WHEN is_duplicate THEN 1 ELSE 0 END) / count(*), 1) AS duplicate_pct FROM vr_cards"
+                },
+                "ok": true,
+                "result": "1 row from vr_cards"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "vr_cards",
+                "columns": [
+                  "cards_collected",
+                  "duplicate_cards",
+                  "duplicate_pct"
+                ],
+                "rows": [
+                  [
+                    3781,
+                    112,
+                    3
+                  ]
+                ],
+                "row_count": 1,
+                "sql": "SELECT count(*) AS cards_collected, sum(CASE WHEN is_duplicate THEN 1 ELSE 0 END) AS duplicate_cards, round(100.0 * sum(CASE WHEN is_duplicate THEN 1 ELSE 0 END) / count(*), 1) AS duplicate_pct FROM vr_cards"
+              },
+              {
+                "type": "passage",
+                "doc": "registration-drive#valid-cards-and-duplicates",
+                "text": "A card is one completed registration form. A duplicate is a second card for a registrant who already has a card in the drive; duplicates share a duplicate group id with the first card and are marked is_duplicate. Only valid cards (duplicates removed) count toward goal and cards per hour. A canvasser with a duplicate rate above 10 percent gets a retraining conversation."
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "vr_cards"
+              },
+              {
+                "type": "doc",
+                "id": "registration-drive#valid-cards-and-duplicates"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "v11",
+      "question": "What did our field leads earn in total this week?",
+      "category": "payroll",
+      "split": "heldout_v3",
+      "keywords": [
+        "field leads",
+        "wages",
+        "earned",
+        "this week",
+        "pay"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "payroll-rules#pay-rates",
+        "client-reporting#weekly-report-format",
+        "program-plan#shifts-needed",
+        "payroll-rules#overtime"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [
+        {
+          "name": "field lead wages this week",
+          "expected": 2663.76,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "What did our field leads earn in total this week?",
+        "answer": "Our field leads earned 2663.76 in total this week (Oct 12 to 18).\n- Field lead wages: 2663.76 for 110.99 paid hours, 5 field leads [table:v_weekly_hours]\n- Northside: 1606.56 [table:v_weekly_hours]\n- Eastgate: 829.44 [table:v_weekly_hours]\n- Harbor: 227.76 [table:v_weekly_hours]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT sum(paid_hours) AS paid_hours, sum(wages) AS wages, count(DISTINCT canvasser_id) AS field_leads FROM v_weekly_hours WHERE role = 'field lead' AND week_start = '2026-10-12'"
+            },
+            "ok": true,
+            "result": "1 row from v_weekly_hours"
+          },
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT DISTINCT role FROM pay_rates"
+            },
+            "ok": true,
+            "result": "4 rows from pay_rates"
+          },
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT office, program, sum(paid_hours) AS paid_hours, sum(wages) AS wages FROM v_weekly_hours WHERE role = 'field lead' AND week_start = '2026-10-12' GROUP BY office, program ORDER BY office"
+            },
+            "ok": true,
+            "result": "3 rows from v_weekly_hours"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_weekly_hours",
+            "columns": [
+              "paid_hours",
+              "wages",
+              "field_leads"
+            ],
+            "rows": [
+              [
+                110.99,
+                2663.76,
+                5
+              ]
+            ],
+            "row_count": 1,
+            "sql": "SELECT sum(paid_hours) AS paid_hours, sum(wages) AS wages, count(DISTINCT canvasser_id) AS field_leads FROM v_weekly_hours WHERE role = 'field lead' AND week_start = '2026-10-12'"
+          },
+          {
+            "type": "rows",
+            "table": "v_weekly_hours",
+            "columns": [
+              "office",
+              "program",
+              "paid_hours",
+              "wages"
+            ],
+            "rows": [
+              [
+                "Eastgate",
+                "gotv",
+                34.56,
+                829.44
+              ],
+              [
+                "Harbor",
+                "gotv",
+                9.49,
+                227.76
+              ],
+              [
+                "Northside",
+                "gotv",
+                66.94,
+                1606.56
+              ]
+            ],
+            "row_count": 3,
+            "sql": "SELECT office, program, sum(paid_hours) AS paid_hours, sum(wages) AS wages FROM v_weekly_hours WHERE role = 'field lead' AND week_start = '2026-10-12' GROUP BY office, program ORDER BY office"
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_weekly_hours"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 0,
+        "model": "claude-opus-5-5",
+        "steps": 4
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "field lead wages this week",
+              "expected": 2663.76,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "What did our field leads earn in total this week?",
+            "answer": "Our field leads earned $2663.76 in total this week (Oct 12 to 18).\n- Field lead wages: 2663.76 [table:v_weekly_hours]\n- 5 field leads, 21 shifts, 110.99 paid hours [table:v_weekly_hours]\n- Field lead pay rate: 24 per hour [table:pay_rates]\n- Registration leads are a separate role (23 per hour) and earned 433.32 this week, not included above [table:v_weekly_hours]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT program, sum(shifts) AS shifts, sum(paid_hours) AS paid_hours, sum(wages) AS wages FROM v_weekly_hours WHERE role ILIKE '%lead%' AND week_start='2026-10-12' GROUP BY ROLLUP(program)"
+                },
+                "ok": true,
+                "result": "3 rows from v_weekly_hours"
+              },
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT * FROM pay_rates"
+                },
+                "ok": true,
+                "result": "4 rows from pay_rates"
+              },
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT role, count(DISTINCT canvasser_id) AS people, sum(shifts) AS shifts, sum(paid_hours) AS paid_hours, sum(wages) AS wages FROM v_weekly_hours WHERE role = 'field lead' AND week_start='2026-10-12' GROUP BY role"
+                },
+                "ok": true,
+                "result": "1 row from v_weekly_hours"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_weekly_hours",
+                "columns": [
+                  "program",
+                  "shifts",
+                  "paid_hours",
+                  "wages"
+                ],
+                "rows": [
+                  [
+                    null,
+                    25,
+                    129.83,
+                    3097.08
+                  ],
+                  [
+                    "gotv",
+                    21,
+                    110.99,
+                    2663.76
+                  ],
+                  [
+                    "vr",
+                    4,
+                    18.84,
+                    433.32
+                  ]
+                ],
+                "row_count": 3,
+                "sql": "SELECT program, sum(shifts) AS shifts, sum(paid_hours) AS paid_hours, sum(wages) AS wages FROM v_weekly_hours WHERE role ILIKE '%lead%' AND week_start='2026-10-12' GROUP BY ROLLUP(program)"
+              },
+              {
+                "type": "rows",
+                "table": "pay_rates",
+                "columns": [
+                  "role",
+                  "hourly_rate"
+                ],
+                "rows": [
+                  [
+                    "canvasser",
+                    20
+                  ],
+                  [
+                    "field lead",
+                    24
+                  ],
+                  [
+                    "registration canvasser",
+                    19
+                  ],
+                  [
+                    "registration lead",
+                    23
+                  ]
+                ],
+                "row_count": 4,
+                "sql": "SELECT * FROM pay_rates"
+              },
+              {
+                "type": "rows",
+                "table": "v_weekly_hours",
+                "columns": [
+                  "role",
+                  "people",
+                  "shifts",
+                  "paid_hours",
+                  "wages"
+                ],
+                "rows": [
+                  [
+                    "field lead",
+                    5,
+                    21,
+                    110.99,
+                    2663.76
+                  ]
+                ],
+                "row_count": 1,
+                "sql": "SELECT role, count(DISTINCT canvasser_id) AS people, sum(shifts) AS shifts, sum(paid_hours) AS paid_hours, sum(wages) AS wages FROM v_weekly_hours WHERE role = 'field lead' AND week_start='2026-10-12' GROUP BY role"
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "v_weekly_hours"
+              },
+              {
+                "type": "table",
+                "id": "pay_rates"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 4
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "field lead wages this week",
+              "expected": 2663.76,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "What did our field leads earn in total this week?",
+            "answer": "Our field leads earned $2,663.76 in total this week (Oct 12 to 18).\n- Program total: 2663.76 in wages for 110.99 paid hours, 5 field leads [table:v_weekly_hours]\n- Northside: 1606.56 (2 leads, 66.94 hours) [table:v_weekly_hours]\n- Eastgate: 829.44 (2 leads, 34.56 hours) [table:v_weekly_hours]\n- Harbor: 227.76 (1 lead, 9.49 hours) [table:v_weekly_hours]\n- Field leads are paid 24 an hour; wages are paid hours times the role's rate, without overtime premiums [table:pay_rates] [doc:payroll-rules#pay-rates]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT program, sum(wages) AS wages, sum(paid_hours) AS paid_hours, count(DISTINCT canvasser_id) AS field_leads FROM v_weekly_hours WHERE role = 'field_lead' AND week_start = '2026-10-12' GROUP BY program"
+                },
+                "ok": true,
+                "result": "0 rows from v_weekly_hours"
+              },
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT role, hourly_rate FROM pay_rates"
+                },
+                "ok": true,
+                "result": "4 rows from pay_rates"
+              },
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT office, count(DISTINCT canvasser_id) AS field_leads, sum(paid_hours) AS paid_hours, sum(wages) AS wages FROM v_weekly_hours WHERE role = 'field lead' AND week_start = '2026-10-12' GROUP BY office ORDER BY office"
+                },
+                "ok": true,
+                "result": "3 rows from v_weekly_hours"
+              },
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT count(DISTINCT canvasser_id) AS field_leads, sum(paid_hours) AS paid_hours, sum(wages) AS wages FROM v_weekly_hours WHERE role = 'field lead' AND week_start = '2026-10-12'"
+                },
+                "ok": true,
+                "result": "1 row from v_weekly_hours"
+              },
+              {
+                "name": "search_documents",
+                "args": {
+                  "query": "field lead pay rate wages"
+                },
+                "ok": true,
+                "result": "4 passages: payroll-rules#pay-rates, payroll-rules#shifts-that-need-fixing, payroll-rules#overtime, payroll-rules#cost-per-door"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_weekly_hours",
+                "columns": [
+                  "program",
+                  "wages",
+                  "paid_hours",
+                  "field_leads"
+                ],
+                "rows": [],
+                "row_count": 0,
+                "sql": "SELECT program, sum(wages) AS wages, sum(paid_hours) AS paid_hours, count(DISTINCT canvasser_id) AS field_leads FROM v_weekly_hours WHERE role = 'field_lead' AND week_start = '2026-10-12' GROUP BY program"
+              },
+              {
+                "type": "rows",
+                "table": "pay_rates",
+                "columns": [
+                  "role",
+                  "hourly_rate"
+                ],
+                "rows": [
+                  [
+                    "canvasser",
+                    20
+                  ],
+                  [
+                    "field lead",
+                    24
+                  ],
+                  [
+                    "registration canvasser",
+                    19
+                  ],
+                  [
+                    "registration lead",
+                    23
+                  ]
+                ],
+                "row_count": 4,
+                "sql": "SELECT role, hourly_rate FROM pay_rates"
+              },
+              {
+                "type": "rows",
+                "table": "v_weekly_hours",
+                "columns": [
+                  "office",
+                  "field_leads",
+                  "paid_hours",
+                  "wages"
+                ],
+                "rows": [
+                  [
+                    "Eastgate",
+                    2,
+                    34.56,
+                    829.44
+                  ],
+                  [
+                    "Harbor",
+                    1,
+                    9.49,
+                    227.76
+                  ],
+                  [
+                    "Northside",
+                    2,
+                    66.94,
+                    1606.56
+                  ]
+                ],
+                "row_count": 3,
+                "sql": "SELECT office, count(DISTINCT canvasser_id) AS field_leads, sum(paid_hours) AS paid_hours, sum(wages) AS wages FROM v_weekly_hours WHERE role = 'field lead' AND week_start = '2026-10-12' GROUP BY office ORDER BY office"
+              },
+              {
+                "type": "rows",
+                "table": "v_weekly_hours",
+                "columns": [
+                  "field_leads",
+                  "paid_hours",
+                  "wages"
+                ],
+                "rows": [
+                  [
+                    5,
+                    110.99,
+                    2663.76
+                  ]
+                ],
+                "row_count": 1,
+                "sql": "SELECT count(DISTINCT canvasser_id) AS field_leads, sum(paid_hours) AS paid_hours, sum(wages) AS wages FROM v_weekly_hours WHERE role = 'field lead' AND week_start = '2026-10-12'"
+              },
+              {
+                "type": "passage",
+                "doc": "payroll-rules#pay-rates",
+                "text": "Canvassers are paid hourly by role: canvasser, field lead, registration canvasser and registration lead. Rates are in the pay rates table. Paid hours are clock in to clock out for each shift."
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "v_weekly_hours"
+              },
+              {
+                "type": "table",
+                "id": "pay_rates"
+              },
+              {
+                "type": "doc",
+                "id": "payroll-rules#pay-rates"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "v12",
+      "question": "How many of this week's shifts are still sitting unapproved, and how many of those need fixing rather than just a sign-off?",
+      "category": "payroll",
+      "split": "heldout_v3",
+      "keywords": [
+        "unapproved",
+        "pending",
+        "needs fix",
+        "shifts",
+        "this week",
+        "payroll"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "payroll-rules#shifts-that-need-fixing",
+        "payroll-rules#payroll-deadline",
+        "program-plan#shifts-needed",
+        "client-reporting#weekly-report-format"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [
+        {
+          "name": "unapproved shifts this week",
+          "expected": 6.0,
+          "matched": true
+        },
+        {
+          "name": "needs_fix shifts this week",
+          "expected": 3.0,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "How many of this week's shifts are still sitting unapproved, and how many of those need fixing rather than just a sign-off?",
+        "answer": "6 of this week's shifts (Oct 12 to 18) are still unapproved, and 3 of them need fixing rather than just a sign-off.\n- Unapproved shifts: 6 [table:v_shifts_to_fix]\n- Needs fix: 3 [table:v_shifts_to_fix]\n- Pending sign-off: 3 [table:v_shifts_to_fix]\n- A needs_fix shift can't be paid until a field lead corrects it [doc:payroll-rules#shifts-that-need-fixing]\n- Every shift must be approved by Monday at 5 PM or it rolls to the next payroll [doc:payroll-rules#payroll-deadline]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT count(*) AS unapproved, sum(CASE WHEN approval_status = 'needs_fix' THEN 1 ELSE 0 END) AS needs_fix, sum(CASE WHEN approval_status = 'pending' THEN 1 ELSE 0 END) AS pending FROM v_shifts_to_fix WHERE week_start = '2026-10-12'"
+            },
+            "ok": true,
+            "result": "1 row from v_shifts_to_fix"
+          },
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "shift approval needs_fix pending"
+            },
+            "ok": true,
+            "result": "4 passages: payroll-rules#shifts-that-need-fixing, program-plan#shifts-needed, payroll-rules#payroll-deadline, counting-doors#rollbacks"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "v_shifts_to_fix",
+            "columns": [
+              "unapproved",
+              "needs_fix",
+              "pending"
+            ],
+            "rows": [
+              [
+                6,
+                3,
+                3
+              ]
+            ],
+            "row_count": 1,
+            "sql": "SELECT count(*) AS unapproved, sum(CASE WHEN approval_status = 'needs_fix' THEN 1 ELSE 0 END) AS needs_fix, sum(CASE WHEN approval_status = 'pending' THEN 1 ELSE 0 END) AS pending FROM v_shifts_to_fix WHERE week_start = '2026-10-12'"
+          },
+          {
+            "type": "passage",
+            "doc": "payroll-rules#shifts-that-need-fixing",
+            "text": "A shift marked needs_fix cannot be paid until a field lead corrects it. Common reasons are a missing clock out (no paid hours yet) and a shift clocked under the wrong office. Fix the record, then mark it approved."
+          },
+          {
+            "type": "passage",
+            "doc": "payroll-rules#payroll-deadline",
+            "text": "Payroll for the week that ended Sunday runs Tuesday at noon. Every shift must be approved by Monday at 5 PM; pending and needs_fix shifts left after that roll to the next payroll."
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "v_shifts_to_fix"
+          },
+          {
+            "type": "doc",
+            "id": "payroll-rules#shifts-that-need-fixing"
+          },
+          {
+            "type": "doc",
+            "id": "payroll-rules#payroll-deadline"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 0,
+        "model": "claude-opus-5-5",
+        "steps": 3
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "unapproved shifts this week",
+              "expected": 6.0,
+              "matched": true
+            },
+            {
+              "name": "needs_fix shifts this week",
+              "expected": 3.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "How many of this week's shifts are still sitting unapproved, and how many of those need fixing rather than just a sign-off?",
+            "answer": "6 of this week's shifts (Oct 12 to 18) are still unapproved, and 3 of them need fixing rather than just a sign-off.\n- Needs fix (3): R00938 Carmen Ruiz, Northside, missing clock out; G00884 Leon Mbeki, Harbor, missing clock out; G00838 Hugo Brennan, Eastgate, clocked in under Harbor but worked Eastgate turf [table:v_shifts_to_fix]\n- Pending sign-off (3): G00904 Ellis Warren, Northside; G00919 Sofia Lindqvist, Eastgate; R00945 Marcus Bell, Harbor, all overtime needing field director approval [table:v_shifts_to_fix]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_shifts_to_fix",
+                  "week_start": "2026-10-12"
+                },
+                "ok": true,
+                "result": "6 rows from v_shifts_to_fix"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_shifts_to_fix",
+                "columns": [
+                  "shift_id",
+                  "shift_date",
+                  "week_start",
+                  "full_name",
+                  "office",
+                  "program",
+                  "approval_status",
+                  "fix_note",
+                  "paid_hours"
+                ],
+                "rows": [
+                  [
+                    "G00904",
+                    "2026-10-17",
+                    "2026-10-12",
+                    "Ellis Warren",
+                    "Northside",
+                    "gotv",
+                    "pending",
+                    "overtime needs field director approval",
+                    7.5
+                  ],
+                  [
+                    "G00919",
+                    "2026-10-17",
+                    "2026-10-12",
+                    "Sofia Lindqvist",
+                    "Eastgate",
+                    "gotv",
+                    "pending",
+                    "overtime needs field director approval",
+                    8.55
+                  ],
+                  [
+                    "R00945",
+                    "2026-10-17",
+                    "2026-10-12",
+                    "Marcus Bell",
+                    "Harbor",
+                    "vr",
+                    "pending",
+                    "overtime needs field director approval",
+                    6.93
+                  ],
+                  [
+                    "R00938",
+                    "2026-10-17",
+                    "2026-10-12",
+                    "Carmen Ruiz",
+                    "Northside",
+                    "vr",
+                    "needs_fix",
+                    "missing clock out",
+                    null
+                  ],
+                  [
+                    "G00884",
+                    "2026-10-16",
+                    "2026-10-12",
+                    "Leon Mbeki",
+                    "Harbor",
+                    "gotv",
+                    "needs_fix",
+                    "missing clock out",
+                    null
+                  ],
+                  [
+                    "G00838",
+                    "2026-10-15",
+                    "2026-10-12",
+                    "Hugo Brennan",
+                    "Eastgate",
+                    "gotv",
+                    "needs_fix",
+                    "clocked in under Harbor, worked Eastgate turf",
+                    4.53
+                  ]
+                ],
+                "row_count": 6,
+                "sql": ""
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "v_shifts_to_fix"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 2
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "unapproved shifts this week",
+              "expected": 6.0,
+              "matched": true
+            },
+            {
+              "name": "needs_fix shifts this week",
+              "expected": 3.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "How many of this week's shifts are still sitting unapproved, and how many of those need fixing rather than just a sign-off?",
+            "answer": "6 of this week's shifts (Oct 12 to 18) are still unapproved, and 3 of them need fixing.\n- Needs fix: 3 (2 missing a clock out, Carmen Ruiz and Leon Mbeki; 1 clocked under the wrong office, Hugo Brennan) [table:v_shifts_to_fix]\n- Pending sign-off: 3, all overtime waiting for field director approval (Ellis Warren, Sofia Lindqvist, Marcus Bell) [table:v_shifts_to_fix]\n- A needs_fix shift can't be paid until a field lead corrects it [doc:payroll-rules#shifts-that-need-fixing]\n- Every shift must be approved by Monday at 5 PM or it rolls to the next payroll [doc:payroll-rules#payroll-deadline]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "get_view",
+                "args": {
+                  "view": "v_shifts_to_fix",
+                  "week_start": "2026-10-12"
+                },
+                "ok": true,
+                "result": "6 rows from v_shifts_to_fix"
+              },
+              {
+                "name": "search_documents",
+                "args": {
+                  "query": "shift approval pending needs fix"
+                },
+                "ok": true,
+                "result": "4 passages: payroll-rules#shifts-that-need-fixing, program-plan#shifts-needed, payroll-rules#payroll-deadline, counting-doors#rollbacks"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "v_shifts_to_fix",
+                "columns": [
+                  "shift_id",
+                  "shift_date",
+                  "week_start",
+                  "full_name",
+                  "office",
+                  "program",
+                  "approval_status",
+                  "fix_note",
+                  "paid_hours"
+                ],
+                "rows": [
+                  [
+                    "G00904",
+                    "2026-10-17",
+                    "2026-10-12",
+                    "Ellis Warren",
+                    "Northside",
+                    "gotv",
+                    "pending",
+                    "overtime needs field director approval",
+                    7.5
+                  ],
+                  [
+                    "G00919",
+                    "2026-10-17",
+                    "2026-10-12",
+                    "Sofia Lindqvist",
+                    "Eastgate",
+                    "gotv",
+                    "pending",
+                    "overtime needs field director approval",
+                    8.55
+                  ],
+                  [
+                    "R00945",
+                    "2026-10-17",
+                    "2026-10-12",
+                    "Marcus Bell",
+                    "Harbor",
+                    "vr",
+                    "pending",
+                    "overtime needs field director approval",
+                    6.93
+                  ],
+                  [
+                    "R00938",
+                    "2026-10-17",
+                    "2026-10-12",
+                    "Carmen Ruiz",
+                    "Northside",
+                    "vr",
+                    "needs_fix",
+                    "missing clock out",
+                    null
+                  ],
+                  [
+                    "G00884",
+                    "2026-10-16",
+                    "2026-10-12",
+                    "Leon Mbeki",
+                    "Harbor",
+                    "gotv",
+                    "needs_fix",
+                    "missing clock out",
+                    null
+                  ],
+                  [
+                    "G00838",
+                    "2026-10-15",
+                    "2026-10-12",
+                    "Hugo Brennan",
+                    "Eastgate",
+                    "gotv",
+                    "needs_fix",
+                    "clocked in under Harbor, worked Eastgate turf",
+                    4.53
+                  ]
+                ],
+                "row_count": 6,
+                "sql": ""
+              },
+              {
+                "type": "passage",
+                "doc": "payroll-rules#shifts-that-need-fixing",
+                "text": "A shift marked needs_fix cannot be paid until a field lead corrects it. Common reasons are a missing clock out (no paid hours yet) and a shift clocked under the wrong office. Fix the record, then mark it approved."
+              },
+              {
+                "type": "passage",
+                "doc": "payroll-rules#payroll-deadline",
+                "text": "Payroll for the week that ended Sunday runs Tuesday at noon. Every shift must be approved by Monday at 5 PM; pending and needs_fix shifts left after that roll to the next payroll."
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "v_shifts_to_fix"
+              },
+              {
+                "type": "doc",
+                "id": "payroll-rules#shifts-that-need-fixing"
+              },
+              {
+                "type": "doc",
+                "id": "payroll-rules#payroll-deadline"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "v13",
+      "question": "Add up the client's daily sheets for last week. How many doors and contacts did they show?",
+      "category": "client report",
+      "split": "heldout_v3",
+      "keywords": [
+        "client daily sheets",
+        "last week",
+        "doors reported",
+        "contacts reported"
+      ],
+      "should_refuse": false,
+      "retrieved": [
+        "client-reporting#weekly-report-format",
+        "client-reporting#daily-report",
+        "counting-doors#why-the-client-s-numbers-differ-from-ours",
+        "counting-doors#doors"
+      ],
+      "scores": {
+        "tool_choice": 1.0,
+        "retrieval": 1.0,
+        "facts": 1.0,
+        "citation": 1.0,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [
+        {
+          "name": "client-reported doors last week",
+          "expected": 9224.0,
+          "matched": true
+        },
+        {
+          "name": "client-reported contacts last week",
+          "expected": 2384.0,
+          "matched": true
+        }
+      ],
+      "answer": {
+        "question": "Add up the client's daily sheets for last week. How many doors and contacts did they show?",
+        "answer": "The client's daily sheets for last week (Oct 5 to 11) add up to 9224 doors and 2384 contacts.\n- Client sheet \"doors\": 9224 [table:client_daily_report]\n- Client sheet contacts: 2384 [table:client_daily_report]\n- Our weekly report for the same week: 8863 doors and 2384 contacts [table:v_weekly_report_total]\n- The client's \"doors\" are attempts pulled before any QC rollback, so the gap is repeat attempts plus rolled-back attempts [doc:counting-doors#why-the-client-s-numbers-differ-from-ours]",
+        "refused": false,
+        "tool_calls": [
+          {
+            "name": "query_program_data",
+            "args": {
+              "sql": "SELECT sum(doors_reported) AS doors_reported, sum(contacts_reported) AS contacts_reported FROM client_daily_report WHERE report_date BETWEEN '2026-10-05' AND '2026-10-11'"
+            },
+            "ok": true,
+            "result": "1 row from client_daily_report"
+          },
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "why client daily report differs from our doors"
+            },
+            "ok": true,
+            "result": "4 passages: client-reporting#daily-report, counting-doors#why-the-client-s-numbers-differ-from-ours, client-reporting#explaining-differences, client-reporting#weekly-report-format"
+          },
+          {
+            "name": "get_view",
+            "args": {
+              "view": "v_weekly_report_total",
+              "week_start": "2026-10-05"
+            },
+            "ok": true,
+            "result": "1 row from v_weekly_report_total"
+          }
+        ],
+        "sources": [
+          {
+            "type": "rows",
+            "table": "client_daily_report",
+            "columns": [
+              "doors_reported",
+              "contacts_reported"
+            ],
+            "rows": [
+              [
+                9224,
+                2384
+              ]
+            ],
+            "row_count": 1,
+            "sql": "SELECT sum(doors_reported) AS doors_reported, sum(contacts_reported) AS contacts_reported FROM client_daily_report WHERE report_date BETWEEN '2026-10-05' AND '2026-10-11'"
+          },
+          {
+            "type": "rows",
+            "table": "v_weekly_report_total",
+            "columns": [
+              "office",
+              "week_start",
+              "doors",
+              "contacts",
+              "valid_cards",
+              "paid_hours",
+              "shifts_missing_clock_out"
+            ],
+            "rows": [
+              [
+                "All offices",
+                "2026-10-05",
+                8863,
+                2384,
+                910,
+                1104.83,
+                0
+              ]
+            ],
+            "row_count": 1,
+            "sql": ""
+          },
+          {
+            "type": "passage",
+            "doc": "counting-doors#why-the-client-s-numbers-differ-from-ours",
+            "text": "The client daily report counts attempts, pulled at the end of each day before any QC rollback. Our dashboard counts doors with rollbacks removed. The gap on any day is the repeat attempts at the same door plus any attempts that were later rolled back. A normal day shows a gap of a few percent from repeat attempts. A larger gap almost always means a rollback."
+          }
+        ],
+        "citations": [
+          {
+            "type": "table",
+            "id": "client_daily_report"
+          },
+          {
+            "type": "table",
+            "id": "v_weekly_report_total"
+          },
+          {
+            "type": "doc",
+            "id": "counting-doors#why-the-client-s-numbers-differ-from-ours"
+          }
+        ],
+        "citations_valid": true,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 0,
+        "model": "claude-opus-5-5",
+        "steps": 4
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "client-reported doors last week",
+              "expected": 9224.0,
+              "matched": true
+            },
+            {
+              "name": "client-reported contacts last week",
+              "expected": 2384.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "Add up the client's daily sheets for last week. How many doors and contacts did they show?",
+            "answer": "The client's daily sheets for last week (Oct 5 to 11) add up to 9224 doors and 2384 contacts.\n- Total: 9224 doors, 2384 contacts [table:client_daily_report]\n- Northside: 3621 doors, 919 contacts [table:client_daily_report]\n- Harbor: 3242 doors, 811 contacts [table:client_daily_report]\n- Eastgate: 2361 doors, 654 contacts [table:client_daily_report]\n- The client's \"doors\" are attempts pulled before any QC rollback, so they run higher than our doors; the gap is repeat attempts plus rolled-back attempts [doc:counting-doors#why-the-client-s-numbers-differ-from-ours]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT office, sum(doors_reported) AS doors_reported, sum(contacts_reported) AS contacts_reported FROM client_daily_report WHERE report_date BETWEEN '2026-10-05' AND '2026-10-11' GROUP BY ROLLUP(office)"
+                },
+                "ok": true,
+                "result": "4 rows from client_daily_report"
+              },
+              {
+                "name": "search_documents",
+                "args": {
+                  "query": "why the client report differs from our doors"
+                },
+                "ok": true,
+                "result": "4 passages: counting-doors#why-the-client-s-numbers-differ-from-ours, client-reporting#explaining-differences, client-reporting#daily-report, client-reporting#weekly-report-format"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "client_daily_report",
+                "columns": [
+                  "office",
+                  "doors_reported",
+                  "contacts_reported"
+                ],
+                "rows": [
+                  [
+                    null,
+                    9224,
+                    2384
+                  ],
+                  [
+                    "Harbor",
+                    3242,
+                    811
+                  ],
+                  [
+                    "Northside",
+                    3621,
+                    919
+                  ],
+                  [
+                    "Eastgate",
+                    2361,
+                    654
+                  ]
+                ],
+                "row_count": 4,
+                "sql": "SELECT office, sum(doors_reported) AS doors_reported, sum(contacts_reported) AS contacts_reported FROM client_daily_report WHERE report_date BETWEEN '2026-10-05' AND '2026-10-11' GROUP BY ROLLUP(office)"
+              },
+              {
+                "type": "passage",
+                "doc": "counting-doors#why-the-client-s-numbers-differ-from-ours",
+                "text": "The client daily report counts attempts, pulled at the end of each day before any QC rollback. Our dashboard counts doors with rollbacks removed. The gap on any day is the repeat attempts at the same door plus any attempts that were later rolled back. A normal day shows a gap of a few percent from repeat attempts. A larger gap almost always means a rollback."
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "client_daily_report"
+              },
+              {
+                "type": "doc",
+                "id": "counting-doors#why-the-client-s-numbers-differ-from-ours"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 3
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": 1.0,
+            "retrieval": 1.0,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [
+            {
+              "name": "client-reported doors last week",
+              "expected": 9224.0,
+              "matched": true
+            },
+            {
+              "name": "client-reported contacts last week",
+              "expected": 2384.0,
+              "matched": true
+            }
+          ],
+          "answer": {
+            "question": "Add up the client's daily sheets for last week. How many doors and contacts did they show?",
+            "answer": "The client's daily sheets for last week (Oct 5 to 11) add up to 9,224 doors and 2,384 contacts.\n- Doors reported: 9224 [table:client_daily_report]\n- Contacts reported: 2384 [table:client_daily_report]\n- The client's \"doors\" are attempts pulled before any QC rollback, so they run above our door count by repeat attempts plus rolled-back attempts [doc:counting-doors#why-the-client-s-numbers-differ-from-ours]",
+            "refused": false,
+            "tool_calls": [
+              {
+                "name": "query_program_data",
+                "args": {
+                  "sql": "SELECT sum(doors_reported) AS doors_reported, sum(contacts_reported) AS contacts_reported FROM client_daily_report WHERE report_date BETWEEN '2026-10-05' AND '2026-10-11'"
+                },
+                "ok": true,
+                "result": "1 row from client_daily_report"
+              },
+              {
+                "name": "search_documents",
+                "args": {
+                  "query": "why the client report differs from our doors"
+                },
+                "ok": true,
+                "result": "4 passages: counting-doors#why-the-client-s-numbers-differ-from-ours, client-reporting#explaining-differences, client-reporting#daily-report, client-reporting#weekly-report-format"
+              }
+            ],
+            "sources": [
+              {
+                "type": "rows",
+                "table": "client_daily_report",
+                "columns": [
+                  "doors_reported",
+                  "contacts_reported"
+                ],
+                "rows": [
+                  [
+                    9224,
+                    2384
+                  ]
+                ],
+                "row_count": 1,
+                "sql": "SELECT sum(doors_reported) AS doors_reported, sum(contacts_reported) AS contacts_reported FROM client_daily_report WHERE report_date BETWEEN '2026-10-05' AND '2026-10-11'"
+              },
+              {
+                "type": "passage",
+                "doc": "counting-doors#why-the-client-s-numbers-differ-from-ours",
+                "text": "The client daily report counts attempts, pulled at the end of each day before any QC rollback. Our dashboard counts doors with rollbacks removed. The gap on any day is the repeat attempts at the same door plus any attempts that were later rolled back. A normal day shows a gap of a few percent from repeat attempts. A larger gap almost always means a rollback."
+              }
+            ],
+            "citations": [
+              {
+                "type": "table",
+                "id": "client_daily_report"
+              },
+              {
+                "type": "doc",
+                "id": "counting-doors#why-the-client-s-numbers-differ-from-ours"
+              }
+            ],
+            "citations_valid": true,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "v14",
+      "question": "Which of our canvassers are likely to quit before Election Day?",
+      "category": "staffing",
+      "split": "heldout_v3",
+      "keywords": [],
+      "should_refuse": true,
+      "retrieved": [
+        "program-plan#overview",
+        "payroll-rules#pay-rates",
+        "program-plan#staff-definitions",
+        "qc-rules#gaps"
+      ],
+      "scores": {
+        "tool_choice": null,
+        "retrieval": null,
+        "facts": null,
+        "citation": null,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [],
+      "answer": {
+        "question": "Which of our canvassers are likely to quit before Election Day?",
+        "answer": "I can't confirm that from the program data or documents. There is no data or method that predicts who will quit, only shifts already worked and who was active in the last 7 days.",
+        "refused": true,
+        "tool_calls": [
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "canvasser retention quitting attrition"
+            },
+            "ok": true,
+            "result": "4 passages: program-plan#staff-definitions, qc-rules#gaps, payroll-rules#pay-rates, qc-rules#what-happens-after-a-flag"
+          }
+        ],
+        "sources": [
+          {
+            "type": "passage",
+            "doc": "program-plan#staff-definitions",
+            "text": "A regular canvasser has worked 5 or more days in the program. A one-day hire worked exactly one day. An active canvasser worked at least one shift in the last 7 days. These definitions apply to GOTV canvassers."
+          },
+          {
+            "type": "passage",
+            "doc": "qc-rules#gaps",
+            "text": "A gap flag is raised when a canvasser is clocked in but records no knocks for 60 minutes or more. Gaps can be legitimate (a long conversation, a turf change, a break that was not clocked out), so the canvasser explains it before any pay adjustment."
+          }
+        ],
+        "citations": [],
+        "citations_valid": false,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 0,
+        "model": "claude-opus-5-5",
+        "steps": 2
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": null,
+            "retrieval": null,
+            "facts": null,
+            "citation": null,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [],
+          "answer": {
+            "question": "Which of our canvassers are likely to quit before Election Day?",
+            "answer": "I can't confirm that from the program data or documents. There is no data that predicts who will quit, only shifts already worked.",
+            "refused": true,
+            "tool_calls": [],
+            "sources": [],
+            "citations": [],
+            "citations_valid": false,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 1
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": null,
+            "retrieval": null,
+            "facts": null,
+            "citation": null,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [],
+          "answer": {
+            "question": "Which of our canvassers are likely to quit before Election Day?",
+            "answer": "I can't confirm that from the program data or documents. There is nothing that predicts who will quit, only shifts that have already been worked.",
+            "refused": true,
+            "tool_calls": [],
+            "sources": [],
+            "citations": [],
+            "citations_valid": false,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "v15",
+      "question": "What did the Eastgate office pay in rent for September?",
+      "category": "payroll",
+      "split": "heldout_v3",
+      "keywords": [],
+      "should_refuse": true,
+      "retrieved": [
+        "payroll-rules#cost-per-door",
+        "client-reporting#weekly-report-format",
+        "program-plan#opening-another-office",
+        "program-plan#overview"
+      ],
+      "scores": {
+        "tool_choice": null,
+        "retrieval": null,
+        "facts": null,
+        "citation": null,
+        "refusal": 1.0,
+        "pass": 1.0,
+        "pass_all": 1.0
+      },
+      "facts": [],
+      "answer": {
+        "question": "What did the Eastgate office pay in rent for September?",
+        "answer": "I can't confirm that from the program data or documents. The data has no rent or expense records for our existing offices; rents are listed only for candidate sites for a new office.",
+        "refused": true,
+        "tool_calls": [
+          {
+            "name": "search_documents",
+            "args": {
+              "query": "office rent Eastgate"
+            },
+            "ok": true,
+            "result": "4 passages: program-plan#opening-another-office, client-reporting#weekly-report-format, program-plan#more-doors-or-a-second-pass, program-plan#overview"
+          }
+        ],
+        "sources": [
+          {
+            "type": "passage",
+            "doc": "program-plan#opening-another-office",
+            "text": "A new office should sit closest to the doors we still need: the untouched doors in our turf, weighted by how many doors each precinct has left. Untouched or lightly touched precincts (under 25 percent of doors touched) that are dense (over 2,000 doors per square mile) are worth a new office; sparse precincts (under 1,000 doors per square mile) are slow to knock and are better handled at the end with drive-out shifts. Candidate sites are listed in the candidate office sites table."
+          },
+          {
+            "type": "passage",
+            "doc": "client-reporting#weekly-report-format",
+            "text": "Every Monday we send the client one table for the week that ended Sunday, one row per office plus a total: doors, contacts, registration cards, and paid hours. Doors and contacts use our dashboard definitions (doors once per day, rollbacks removed). Cards are valid registration cards, duplicates removed. Hours are paid hours for GOTV and registration shifts together; shifts still missing a clock out are left out and noted."
+          }
+        ],
+        "citations": [],
+        "citations_valid": false,
+        "ungrounded_numbers": [],
+        "withheld_draft": "",
+        "dropped_citations": [],
+        "latency_ms": 0,
+        "model": "claude-opus-5-5",
+        "steps": 2
+      },
+      "repeats": [
+        {
+          "scores": {
+            "tool_choice": null,
+            "retrieval": null,
+            "facts": null,
+            "citation": null,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [],
+          "answer": {
+            "question": "What did the Eastgate office pay in rent for September?",
+            "answer": "I can't confirm that from the program data or documents. There is no office rent or expense data; only candidate sites for a new office have rents listed.",
+            "refused": true,
+            "tool_calls": [],
+            "sources": [],
+            "citations": [],
+            "citations_valid": false,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 1
+          }
+        },
+        {
+          "scores": {
+            "tool_choice": null,
+            "retrieval": null,
+            "facts": null,
+            "citation": null,
+            "refusal": 1.0,
+            "pass": 1.0
+          },
+          "facts": [],
+          "answer": {
+            "question": "What did the Eastgate office pay in rent for September?",
+            "answer": "I can't confirm that from the program data or documents. There is no data on rent paid for our existing offices, only the asking rent of candidate sites for a new one.",
+            "refused": true,
+            "tool_calls": [],
+            "sources": [],
+            "citations": [],
+            "citations_valid": false,
+            "ungrounded_numbers": [],
+            "withheld_draft": "",
+            "dropped_citations": [],
+            "latency_ms": 0,
+            "model": "claude-opus-5-5",
+            "steps": 1
+          }
+        }
+      ]
+    }
+  ],
+  "rescored_at": "2026-11-21T06:07:39+00:00"
+}

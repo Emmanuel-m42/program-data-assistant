@@ -8,14 +8,14 @@
   "split": "heldout_v2",
   "repeat": 3,
   "traces": [
-    "/home/ebot/agent-evals/program-data-assistant/runs/heldout_v2-1.jsonl",
-    "/home/ebot/agent-evals/program-data-assistant/runs/heldout_v2-2.jsonl",
-    "/home/ebot/agent-evals/program-data-assistant/runs/heldout_v2-3.jsonl"
+    "evals/reports/claude-agent-runs/heldout_v2-1.jsonl",
+    "evals/reports/claude-agent-runs/heldout_v2-2.jsonl",
+    "evals/reports/claude-agent-runs/heldout_v2-3.jsonl"
   ],
   "answers": [
-    "/home/ebot/agent-evals/program-data-assistant/runs/heldout_v2-1.json",
-    "/home/ebot/agent-evals/program-data-assistant/runs/heldout_v2-2.json",
-    "/home/ebot/agent-evals/program-data-assistant/runs/heldout_v2-3.json"
+    "evals/reports/claude-agent-runs/heldout_v2-1.json",
+    "evals/reports/claude-agent-runs/heldout_v2-2.json",
+    "evals/reports/claude-agent-runs/heldout_v2-3.json"
   ],
   "integrity_problems": [],
   "summary": {

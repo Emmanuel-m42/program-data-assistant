@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { evals, formatSeconds, pct } from '#lib/api.ts';
 	import { splitChanges } from '#lib/changes.ts';
-	import type { EvalsResponse, SplitBlock } from '#lib/types.ts';
+	import type { CompareGroup, EvalsResponse, SplitBlock } from '#lib/types.ts';
 
 	let data = $state<EvalsResponse | null>(null);
 	let error = $state('');
@@ -17,10 +17,11 @@
 		['refusal', 'Refusal', 'declines exactly when the data can’t answer']
 	];
 
-	const COMPARE_GROUPS: ['dev' | 'test' | 'heldout_v2', string][] = [
+	const COMPARE_GROUPS: [CompareGroup, string][] = [
+		['heldout_v3', 'Fresh held-out (v3)'],
 		['dev', 'Tuned'],
-		['test', 'Old held-out (contaminated)'],
-		['heldout_v2', 'Fresh held-out']
+		['heldout_v2', 'Held-out v2 (contaminated)'],
+		['test', 'Old held-out (contaminated)']
 	];
 
 	// The "Passed" row (case counts) followed by the five metrics, for the narrow-screen cards.
@@ -45,9 +46,9 @@
 	{@const changes = splitChanges(sb.what_changed)}
 	{#if sb.comparison?.length}
 		<p class="lede">
-			43 test questions, each with facts checked against SQL on the raw tables, never against the model: 14 tuned
-			on, 14 first held out (now contaminated), and 15 fresh held-out questions written and committed before the
-			latest fixes.
+			58 test questions, each with facts checked against SQL on the raw tables, never against the model: 14 tuned
+			on, two held-out sets of 14 and 15 that were read while choosing fixes (now contaminated), and 15 fresh
+			held-out questions written and committed before the latest fixes.
 		</p>
 	{:else}
 		<p class="lede">
@@ -75,8 +76,9 @@
 	{#if sb.comparison?.length}
 		<h2>Models compared</h2>
 		<p class="small">
-			Cases passed, then pass^3: the cases passed on all 3 runs. "Before" and "after" are the code before and after the
-			latest fixes, on the same model.
+			Cases passed (the mean over 3 runs), then pass^3: the cases passed on all 3 runs. Code: "latest" is after the
+			latest fixes; "v2 before" and "v2 after" are the previous round of fixes, and "first" the first published run,
+			kept for the record.
 		</p>
 		<div class="scroll">
 			<table class="compare">
@@ -228,7 +230,7 @@
 
 <style>
 	.headline .big {
-		font-size: 2rem;
+		font-size: clamp(1.35rem, 5vw, 2rem);
 		font-weight: 700;
 		margin: 0;
 		line-height: 1.1;
