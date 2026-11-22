@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { DEMO, recorded } from '#lib/api.ts';
+	import { DEMO } from '#lib/api.ts';
 	import favicon from '#lib/assets/favicon.svg';
 	import type { LayoutProps } from './$types';
 	import '../app.css';
@@ -35,13 +35,8 @@
 	{@render children()}
 </main>
 
-<footer class="wrap foot">
-	<p>
-		Fictional demo data: Riverbend Votes (GOTV) and Riverbend Registers (voter registration).
-		{#if DEMO}
-			Demo mode: answers are recorded runs of {recorded.model.replace('ollama/', '')}.
-		{:else}
-			Live mode.
-		{/if}
-	</p>
-</footer>
+{#if !DEMO}
+	<footer class="wrap foot">
+		<p>Live mode.</p>
+	</footer>
+{/if}

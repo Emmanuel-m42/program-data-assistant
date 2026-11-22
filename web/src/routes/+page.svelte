@@ -84,8 +84,8 @@
 			{:else if ex.status === 'nomatch'}
 				<div class="panel note">
 					<p>
-						This demo only has recorded answers for the example questions, and this one doesn't match any of them
-						closely. Pick one from the list above.
+						This demo only answers the example questions, and this one doesn't match any of them closely. Pick one
+						from the list above.
 					</p>
 				</div>
 			{:else if ex.status === 'error'}
@@ -94,7 +94,7 @@
 				{@const a = ex.answered}
 				<div class="panel">
 					{#if a.recorded && !a.matchedExactly}
-						<p class="matched">Closest recorded question: {a.recorded.question}</p>
+						<p class="matched">Closest example question: {a.recorded.question}</p>
 					{/if}
 					{#if a.recorded?.baseline}
 						<div class="toggle" role="group" aria-label="Which run to show">
