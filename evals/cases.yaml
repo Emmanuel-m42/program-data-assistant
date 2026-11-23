@@ -335,7 +335,8 @@ cases:
         abs: 0.2
       # Program-wide, QC got better: 8 flags in 184 shifts last week, 7 in 205 this week.
       - name: program-wide QC is getting better
-        any_of: [getting better, is better, got better, improving overall, improved overall, improving program-wide]
+        any_of: [getting better, is better, got better, improving overall, improved overall, improving program-wide,
+                 qc is improving, qc has improved, qc improved]
       - name: program flags per 100 shifts this week
         sql: |
           SELECT 100.0 * (SELECT count(*) FROM qc_flags WHERE flag_date >= '2026-10-12') / count(*)
