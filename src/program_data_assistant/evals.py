@@ -84,7 +84,7 @@ FIRST_SENTENCE = re.compile(r"^\s*(.+?)(?:(?<=[.!?])\s|\n|$)", re.DOTALL)
 DATA_NUMBER = re.compile(r"\d[\d,]*\d|\d\.\d")
 
 
-def declined(text: str) -> bool:
+def declined(text: str, question: str = "") -> bool:
     from .agent import REFUSAL
 
     if REFUSAL.search(text or ""):
@@ -93,6 +93,9 @@ def declined(text: str) -> bool:
     if not m:
         return False
     first = CITE_MARK.sub(" ", m.group(1))
+    # Scorer fix: a number the question itself gives ("the 2024 cycle") is an echo, not data the answer carries.
+    for n in set(DATA_NUMBER.findall(question or "")):
+        first = re.sub(rf"(?<![\d.,]){re.escape(n)}(?![\d.,]*\d)", " ", first)
     return bool(DECLINE.search(first) or NONEXIST.search(first)) and not DATA_NUMBER.search(first)
 
 
@@ -161,7 +164,7 @@ def score_case(case: dict, answer: dict, truth: dict, retrieved: list[str], defa
     called = tools_called(answer)
     scores: dict[str, float | None] = dict.fromkeys(METRICS)
     details = []
-    refused = answer["refused"] or declined(answer["answer"])
+    refused = answer["refused"] or declined(answer["answer"], case.get("question", ""))
     scores["refusal"] = 1.0 if refused == should_refuse else 0.0
     if case.get("expected_docs"):
         exp = case["expected_docs"]

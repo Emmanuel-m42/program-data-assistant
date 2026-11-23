@@ -237,6 +237,15 @@ def test_non_existence_look_alikes_that_answer_still_count_as_answers():
         assert not evals.declined(text), text
 
 
+def test_a_number_echoed_from_the_question_is_not_data():
+    q = "How does our contact rate this year compare to the 2024 cycle?"
+    assert evals.declined("I can't compare this year's rate to the 2024 cycle, there is no data on earlier cycles.", q)
+    assert not evals.declined("I can't compare this year's rate to the 2024 cycle, there is no data on earlier cycles.")
+    # A number the question doesn't give still makes the sentence an answer, even next to an echoed one.
+    assert not evals.declined("There's no 2024 data, but this year's rate is 27.9% [table:v_contact_rates_total].", q)
+    assert not evals.declined("There is no Oct 25 data; Oct 18 had 1,657 doors.", "How many doors did we knock on Oct 25?")
+
+
 def test_a_clear_decline_passes_a_refusal_case():
     case = {"id": "t5", "should_refuse": True}
     ans = answer("I can't provide the phone number, VAN never returns phone numbers.", refused=False, tools=())
