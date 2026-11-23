@@ -47,6 +47,7 @@ VIEWS = {
 _WEEKLY = {"v_contact_rates", "v_weekly_report", "v_weekly_pace", "v_weekly_shifts", "v_vr_weekly", "v_qc_weekly"}
 WEEK_COLUMN = _WEEKLY | {f"{v}_total" for v in _WEEKLY} | {"v_weekly_hours", "v_shifts_to_fix", "v_qc_flags_detail"}
 OFFICE_COLUMN = {v for v in VIEWS if not v.endswith("_total")} - {"v_site_options"}
+COUNT_BY_WEEK = {"v_qc_flags_detail", "v_shifts_to_fix", "v_weekly_hours"}  # one row per flag, shift or person-week
 ALL_OFFICES = {"all", "all offices", "all_offices", "any", "*", "program", "total"}
 OFFICES = ["Northside", "Eastgate", "Harbor"]
 WEEKS = ["2026-09-21", "2026-09-28", "2026-10-05", "2026-10-12"]  # Mondays; data runs Sep 21 to Sun Oct 18
@@ -276,6 +277,16 @@ class Toolbox:
         res = self._run_select(sql, [view], args, "get_view", params)
         if res.ok and not res.rows and (office or week):
             res.content += "\n(No rows for that filter. Offices are Northside, Eastgate and Harbor; leave office out for all.)"
+        # Lists of single flags, shifts or people across weeks: say how many rows each week has, so a reader picking
+        # out one week's rows can check the count.
+        if res.ok and res.rows and not week and view in COUNT_BY_WEEK and "week_start" in res.columns:
+            i = res.columns.index("week_start")
+            counts: dict[str, int] = {}
+            for r in res.rows:
+                counts[str(r[i])] = counts.get(str(r[i]), 0) + 1
+            line = "Rows per week_start: " + ", ".join(f"{w}: {n}" for w, n in sorted(counts.items(), reverse=True))
+            lines = res.content.split("\n")
+            res.content = "\n".join(lines[:2] + [line] + lines[2:])  # after the table and grain lines
         return res
 
     def column_hint(self, tables: list[str]) -> str:
