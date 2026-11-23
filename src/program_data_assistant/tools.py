@@ -257,13 +257,14 @@ class Toolbox:
             note = f"\n({len(rows)}{'+' if truncated else ''} rows, first {len(shown)} shown; filter or aggregate to see the rest)"
         about = [f"{t}: {VIEW_NOTES[t]}" for t in checked.tables if t in VIEW_NOTES]
         note += date_lint(sql, checked.tables) if tool == "query_program_data" else ""
-        # Rows from several offices of an office view: say where the program total is (a pointer, never a number,
-        # so nothing here can be added into the office rows).
+        # Rows from several offices of an office view: say where the program total is, at the top with the grain line
+        # (a pointer, never a number, so nothing here can be added into the office rows).
+        pointer = ""
         if "office" in columns and len({r[columns.index("office")] for r in rows}) > 1:
             totals = [f"{t}_total" for t in checked.tables if t in _OFFICE_VIEWS and f"{t}_total" not in checked.tables]
             if totals:
-                note += f"\n(Office rows only; the program total is in {', '.join(totals)}.)"
-        content = (f"tables: {', '.join(checked.tables)}\n" + "".join(f"rows of {a}\n" for a in about)
+                pointer = f"Office rows only; the program total is in {', '.join(totals)}.\n"
+        content = (f"tables: {', '.join(checked.tables)}\n" + "".join(f"rows of {a}\n" for a in about) + pointer
                    + "\n".join(lines) + note)
         summary = f"{len(rows)}{'+' if truncated else ''} row{'s' if len(rows) != 1 else ''} from {', '.join(checked.tables) or 'query'}"
         return ToolResult(tool, args, True, content, summary, checked.tables, columns, rows)
