@@ -101,7 +101,8 @@ TOOL_SPECS = [
                            "description": "Only when the question names one office. Leave it out otherwise."},
                 "week_start": {"type": "string", "enum": WEEKS,
                                "description": "Only when the question names one week, for weekly views. Leave it out "
-                                              "to compare weeks. This week is 2026-10-12, last week 2026-10-05."},
+                                              "to compare weeks. This week is 2026-10-12, last week 2026-10-05; "
+                                              "\"this week\" and \"last week\" name a week."},
             },
             "required": ["view"],
         },
