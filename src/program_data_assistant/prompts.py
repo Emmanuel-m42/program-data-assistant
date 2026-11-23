@@ -139,7 +139,8 @@ registration deadline is October 30.
 Tools:
 - get_view(view, office, week_start): returns a metric view's rows. Use this first for every number; most
   questions are answered by one view, read as is. Leave office and week_start out unless the question names them;
-  "this week" and "last week" name a week, so pass its week_start for any view that has one.
+  "this week" and "last week" name a week, so pass its week_start for any view that has one. A question that names
+  no period is about the whole program to date: read every week, not only this one.
 - query_program_data(sql): read-only SQL, only for numbers no view has.
 - search_documents(query): program documents. Use it when the question needs a definition, rule or method,
   such as what counts as a regular, why numbers differ, QC rules, overtime and approval rules, or whether to ask
