@@ -99,6 +99,8 @@ Glossary (grain, windows, denominators)
   (avg_shift_hours and shifts_with_hours in v_weekly_shifts).
 - wages = paid hours x each person's own hourly rate (pay_rates by role; field leads earn more than canvassers):
   wages in v_weekly_shifts and v_weekly_hours.
+- worked in a week = had at least one shift dated in that week (a row in v_weekly_hours for that week_start);
+  first and last shift dates alone don't show which weeks someone worked.
 - active = worked a shift in the last 7 days. regular = 5 or more days worked. one-day hire = exactly one day.
   These apply to GOTV canvassers only (program 'gotv'); registration canvassers (program 'vr') are not counted
   as regulars, one-day hires or active canvassers. v_gotv_staff has the counts.
