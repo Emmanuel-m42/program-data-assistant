@@ -120,7 +120,8 @@ def fact_matches(fact: dict, truth: float | None, answer: str, defaults: dict) -
     if "any_of" in fact:
         low = answer.lower()
         listed = expand_name_lists(answer).lower()
-        return any(s.lower() in low or s.lower() in listed for s in fact["any_of"])
+        # str(): YAML reads an unquoted 2026-10-30 as a date; it is matched as its text.
+        return any(str(s).lower() in low or str(s).lower() in listed for s in fact["any_of"])
     if truth is None:
         return False
     target = abs(truth)

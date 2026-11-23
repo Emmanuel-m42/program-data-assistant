@@ -252,6 +252,14 @@ def test_a_clear_decline_passes_a_refusal_case():
     assert evals.score_case(case, ans, {}, [], {})["scores"]["refusal"] == 1.0
 
 
+def test_dates_in_any_of_lists_match_as_text():
+    import datetime
+
+    fact = {"any_of": ["Oct 30", datetime.date(2026, 10, 30)]}  # how YAML loads an unquoted 2026-10-30
+    assert evals.fact_matches(fact, None, "The deadline is 2026-10-30.", {})
+    assert not evals.fact_matches(fact, None, "The deadline is Nov 3.", {})
+
+
 def test_plural_labels_before_number_lists_name_each_item():
     fact = {"any_of": ["P37", "Precinct 37"]}
     assert evals.fact_matches(fact, None, "Harbor: Precincts 39, 37, 40 and 38 are untouched", {})
