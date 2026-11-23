@@ -203,9 +203,10 @@ def summarize(rows: list[dict]) -> dict:
 
 
 # Reporting groups, in order. The first held-out half (test) and heldout_v2 are contaminated: their failures were read
-# while choosing fixes. heldout_v3 and the larger heldout_v4 are clean held-out sets.
+# while choosing fixes. heldout_v4 was clean until the tuning rounds that started at b410d6d read its misses; it is
+# tuned now. heldout_v3 and heldout_v5 (run once, after the tuning) are the clean held-out sets.
 GROUPS = {"dev": "dev (tuned)", "test": "old held-out (contaminated)", "heldout_v2": "held-out v2 (contaminated)",
-          "heldout_v3": "held-out v3", "heldout_v4": "held-out v4", "heldout_v5": "held-out v5"}
+          "heldout_v3": "held-out v3", "heldout_v4": "held-out v4 (tuned)", "heldout_v5": "held-out v5"}
 
 
 def groups(rows: list[dict], splits: dict[str, str]) -> list[dict]:

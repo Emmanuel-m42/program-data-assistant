@@ -39,7 +39,7 @@
   "groups": [
     {
       "split": "heldout_v4",
-      "label": "held-out v4",
+      "label": "held-out v4 (tuned)",
       "cases": 82,
       "pass": 82,
       "pass_all": 82,
@@ -28364,5 +28364,5 @@
       ]
     }
   ],
-  "rescored_at": "2026-11-23T21:46:13+00:00"
+  "rescored_at": "2026-11-23T23:32:36+00:00"
 }

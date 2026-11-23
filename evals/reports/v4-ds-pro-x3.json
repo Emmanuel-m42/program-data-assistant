@@ -26,7 +26,7 @@
   "groups": [
     {
       "split": "heldout_v4",
-      "label": "held-out v4",
+      "label": "held-out v4 (tuned)",
       "cases": 82,
       "pass": 77,
       "pass_all": 76,
@@ -28297,5 +28297,5 @@
     "prompt_cache_miss_tokens": 109585
   },
   "api_calls": 612,
-  "rescored_at": "2026-11-23T21:46:10+00:00"
+  "rescored_at": "2026-11-23T23:32:32+00:00"
 }

@@ -16,7 +16,7 @@ By group:
 
 | group | cases | pass | pass^3 | tool choice | retrieval | facts | citation | refusal |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| held-out v4 | 82 | 82 of 82 | 82 of 82 | 1.00 | 0.84 | 1.00 | 1.00 | 1.00 |
+| held-out v4 (tuned) | 82 | 82 of 82 | 82 of 82 | 1.00 | 0.84 | 1.00 | 1.00 | 1.00 |
 
 Average latency 0.0 s per question.
 
