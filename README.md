@@ -12,7 +12,7 @@ What's in this repository:
 - **Backend**: Python and FastAPI, with read-only tools over Postgres and pgvector document search.
 - **Model**: a self-hosted open model through Ollama (qwen3.8:27b in the first results below), with Claude on the Anthropic API or Vertex AI, or any OpenAI-compatible API such as DeepSeek's, as a configuration switch.
 - **Infrastructure**: Terraform for Google Cloud in `infra/` (Cloud Run, Cloud SQL Postgres with pgvector, Secret Manager, Artifact Registry, per-service accounts) and Dockerfiles. Checked with `terraform validate` and a plan against a placeholder project; never applied, so nothing is deployed.
-- **Evals**: 140 test questions scored against SQL ground truth: 14 tuned on, two held-out sets of 14 and 15 that were read while choosing fixes (now contaminated), and two clean held-out sets of 15 and 82, each written and committed before it was first run.
+- **Evals**: 190 test questions scored against SQL ground truth: 96 tuned on (14 from the start, and 82 held out until the latest tuning used them), two held-out sets of 14 and 15 read while choosing earlier fixes (contaminated), and two clean sets of 15 and 50, each written and committed before the fixes it measures; the 50 ran once, after the tuning.
 
 ## Why
 
@@ -90,7 +90,7 @@ Settings:
 | `src/program_data_assistant/` | FastAPI app (`api.py`), agent loop, tools, SQL guard, retrieval, model providers, eval runner, data generator and loader |
 | `src/program_data_assistant/sql/schema.sql` | tables, metric views, the read-only role |
 | `data/csv/`, `corpus/` | the fictional program data and its six documents |
-| `evals/` | `cases.yaml` (140 cases: dev, the first held-out split, `heldout_v2`, `heldout_v3` and the fresh `heldout_v4` set) and every report |
+| `evals/` | `cases.yaml` (190 cases: dev, the first held-out split, `heldout_v2`, `heldout_v3`, `heldout_v4` (tuned) and the fresh `heldout_v5` set) and every report |
 | `demo/` | recorded runs the web app's demo mode uses |
 | `web/` | SvelteKit and TypeScript front end |
 | `docs/api.md` | the API contract |
@@ -106,13 +106,15 @@ Nothing has been deployed. The Terraform passes `validate`, `tflint` and `checko
 
 ## Evals
 
-`evals/cases.yaml` has 140 cases. The first 28: the 19 demo questions, three paraphrases, three questions only the documents can answer, and three the assistant should refuse (turnout, a staff member's phone number, a past cycle). Then two held-out sets of 15 (n01 to n15 and v01 to v15) and one of 82 (w01 to w82), described below. Each case lists the tools it needs, the passages a retriever should find, and the facts the answer has to contain. Numeric facts are SQL against the raw tables, written separately from the views, so ground truth never comes from the model or from the views it reads.
+`evals/cases.yaml` has 190 cases. The first 28: the 19 demo questions, three paraphrases, three questions only the documents can answer, and three the assistant should refuse (turnout, a staff member's phone number, a past cycle). Then held-out sets of 15 (n01 to n15), 15 (v01 to v15), 82 (w01 to w82) and 50 (y01 to y50), described below. Each case lists the tools it needs, the passages a retriever should find, and the facts the answer has to contain. Numeric facts are SQL against the raw tables, written separately from the views, so ground truth never comes from the model or from the views it reads.
 
 The first held-out half (`split: test`) is now contaminated: its misses were read and discussed while choosing the next fixes. It stays on record and is still reported, labelled that way. A fresh held-out set of 15 new questions (`split: heldout_v2`, n01 to n15: the same categories plus two refusals, ground truth by SQL on the raw tables) was written and committed before any of those fixes, so the git history shows the order.
 
 `heldout_v2` is now contaminated too: its failures in the DeepSeek runs were read case by case and quoted in the analysis that chose the next round of fixes. A third set of 15 new questions (`split: heldout_v3`, v01 to v15, new wording, same categories plus two refusals) was written after that analysis and committed before those fixes. Each of its 18 numeric truths was checked against a second, independently written query before the commit; all agreed (one differs only by the view's rounding to 2 decimals, inside the case's tolerance).
 
 Fifteen clean questions only bound the miss rate loosely (15 of 15 gives a 95% interval of 79.6% to 100%), so a fourth set of 82 (`split: heldout_v4`, w01 to w82) was written after the eval-v3 results and committed before any run on it; no code change went with it. It mixes 41 new questions, 21 paraphrases of the v3 questions (`extra: paraphrase of vNN`), 12 to decline and 8 that need two steps. Each of its 93 numeric truths was checked against a second, independently written query (a view or a different formulation of the raw query); none disagree beyond the views' rounding, which is inside each case's tolerance.
+
+`heldout_v4` was then used to tune DeepSeek-V4.1-Flash and DeepSeek-V4-Pro (from b410d6d), so it is now tuned. Before the first of those fixes, a fifth set of 50 (`split: heldout_v5`, y01 to y50: 32 new questions in new wording, 4 answerable look-alikes of refusals, 8 to decline, 6 two-step) was written, committed unseen and pushed on its own branch (360c566), so the git history shows it existed before the tuning. It was run once, after the last fix, and nothing changed after its results were seen. Each of its 50 numeric truths was checked the same way, against a second independently written query; none disagree beyond rounding.
 
 `uv run evals --label <name>` runs every case against the model and writes `evals/reports/<name>.json` and `.md`. Metrics:
 
@@ -135,6 +137,10 @@ Measurement fixes since the first reports, each followed by a rescore of every s
 - **Case and scorer fixes, q01, q04 and names** (2e08425): q01's not-on-pace fact also accepts "short" and "shortfall"; a plural label before a list ("Precincts 39, 37 and 40") names each one; a case's expected tools can list alternatives, so q04's definition can come from the program plan or the staff view; facts can be optional (reported, not scored), and q04's active total is optional because the question asks for one number. No published report changed; the DeepSeek v2 reports moved on q01, q04 and q08.
 - **Scorer fix, totals views** (f57db07): reading a view's `*_total` counts as reading the view for those alternatives, since the program totals moved to separate views. Only q04 moved, in V4-Pro's old held-out (12 to 13 of 14).
 - **Scorer fix, non-existence declines** (17e6b33): a first sentence saying the asked-for role, field, record or other entity doesn't exist in the data ("There's no site manager role in the pay rates") is a decline, under the same rule: not if the sentence carries data. The "there's no" form needs a data-scope noun after it, so "There are no open flags at Harbor" stays an answer. Across every run of every saved report one answer moved: DeepSeek-V4.1-Flash's w66, run 2.
+- **Scorer fix, numbers echoed from the question** (efc2c97): a decline's first sentence that repeats the question's own number ("I can't compare this year's rate to the 2024 cycle") no longer counts as carrying data; any other number still does. No published report changed; it moved one answer in a tuning round.
+- **Case fix, q13** (618ab73): the program-wide direction also accepts "QC is improving", "QC has improved" and "QC improved", phrases with QC itself as the subject, so "Harbor is improving" still doesn't count. No published report changed.
+- **Case fix, n12** (e460351): n12 asks only what the overtime premium costs; the name it also required is now reported, not scored (like q04's active total). No published report changed; on the final code it moved Flash's n12 in the regression run.
+- **Scorer fix, dates in name lists** (74e3967): YAML reads an unquoted `2026-10-30` in an `any_of` list as a date; entries are now compared as text instead of crashing the scorer. No saved report changed.
 
 ### An outside agent as the model
 
@@ -149,19 +155,64 @@ Each traced call is replayed through a fresh Toolbox and has to return what the 
 
 ## Model comparison
 
-Five groups of questions, scored the same way against SQL on the raw tables:
+Six groups of questions, scored the same way against SQL on the raw tables:
 
-- **Fresh held-out, v4** (82, the largest clean set, the headline): `heldout_v4`, w01 to w82, written and committed before any run on it (8496f0f): 41 new questions across all eight categories in organizer phrasing (casual, long, typos, multi-part), 21 paraphrases of the v3 questions, 12 to decline (after the data ends, personal data, predictions, near misses) and 8 that need two results or a comparison across views. Two of the new questions look like refusals but are answerable (supporter IDs in aggregate, a candidate site's rent), to catch over-refusal.
+- **Fresh held-out, v5** (50, clean, the headline): `heldout_v5`, y01 to y50, written and committed unseen (360c566, pushed on its own branch) before the tuning rounds on v4, and run once after them with no change after: 32 new questions in new wording across all eight categories, 4 answerable look-alikes of refusals, 8 to decline and 6 that need two results.
 - **Held-out v3** (15, clean): `heldout_v3`, v01 to v15, written and committed before the eval-v3 fixes (02cbcd5, then the fixes).
-- **Tuned** (14): the half the prompts and tools were adjusted against.
+- **Held-out v4** (82, tuned): `heldout_v4`, w01 to w82, clean when first measured (below), then used to choose the latest fixes, so it now counts as tuned.
+- **Tuned** (14): the half the prompts and tools were first adjusted against.
 - **Held-out v2** (15, contaminated): written before an earlier round of fixes, but its DeepSeek failures were read case by case while choosing the eval-v3 fixes.
 - **Old held-out** (14, contaminated): the first held-out half; its misses were read while choosing earlier fixes.
 
-Rows marked "latest" are the current code. The app hasn't changed since the eval-v3 fixes, in order: a data layer with program totals in separate `*_total` views, untouched doors as one number, and weekly goal, shift and registration views (52b0ed2); a prompt with each view's grain, the `*_total` convention and a glossary for this week, last week, untouched doors, shift length and wages (cd3f061); Ollama run logging (306a6ac); and an optional strict tool-schema mode for DeepSeek (e322795, off by default). Since then only the eval cases, the scorer and the web page changed.
+"pass" is the mean over the 3 runs; pass^3 counts the questions passed on all 3. The 95% intervals are Wilson score intervals on pass^3, the recommended method at this sample size (the CLT-based standard error is too narrow under a few hundred questions).
 
-### Fresh held-out v4 (82 questions, 3 runs each)
+### Fresh held-out v5 (50 questions, run once after the tuning, 3 runs each)
 
-heldout_v4 is now tuned: from b410d6d on, its DeepSeek misses are read and used to choose fixes, so from that commit it counts like the tuned set. The numbers in this section were measured before any of those fixes. A fifth set (`heldout_v5`, y01 to y50) was committed unseen before the first fix (360c566) and is run once at the end.
+| model and mode | pass | pass^3 | 95% interval | over-refusals | false answers | s per answer |
+| --- | --- | --- | --- | --- | --- | --- |
+| DeepSeek-V4.1-Flash-1017 (open weights), DeepSeek hosted API, the app's own agent loop, thinking on, effort high | 50 of 50 | 50 | 92.9% to 100% | 0 of 126 | 0 of 24 | 4.9 |
+| DeepSeek-V4-Pro (open weights, the Aug 13 GA release), DeepSeek hosted API, the app's own agent loop, thinking off, temperature 0 | 46.7 of 50 | 46 | 81.2% to 96.8% | 0 of 126 | 0 of 24 | 5.0 |
+
+- **DeepSeek-V4-Pro's misses**: y09 (registration canvassers at Eastgate without the lead) 9 where it is 8, its SQL kept the lead; y14 (precincts 90% or more knocked) 31 where it is 29, counting 40 rows by eye; y17 (gap flags and how many are open) the open count for all flag types (4) where 1 gap flag is open: `v_qc_to_date`, added in the tuning, has open flags only for all types, and the model stopped there; y45, 1 of 3 runs, said no view has an office duplicate rate (true) and didn't compute it. The first two are model misses; the last two are gaps in the data layer, one of them from a tuning change.
+- **One disclosure.** One DeepSeek-V4.1-Flash slice of the run stopped in the scorer before writing results: YAML reads an unquoted `2026-10-30` in an `any_of` list as a date, and the name matcher failed on it. The scorer now compares as text (74e3967; the cases are unchanged; a rescore of every saved report changed nothing), and that slice's 13 questions then ran once. No answer was run again after being seen.
+- Claude Opus 5.5 was not run on the latest code; its results below are on the code before the tuning.
+
+### Tuning rounds on held-out v4 (DeepSeek only)
+
+After the v4 results were published, both DeepSeek models were tuned against v4 and the tuned set until both passed every question on all 3 runs. Each change is its own commit with its reason; scorer and case fixes are measurement fixes applied to every saved report (listed under Evals).
+
+| round, code | V4.1-Flash v4 pass^3 | V4.1-Flash tuned pass^3 | V4-Pro v4 pass^3 | V4-Pro tuned pass^3 |
+| --- | --- | --- | --- | --- |
+| as measured (eval-v3 code) | 82 | 14 | 76 | 11 |
+| 1 (aea5330) | 81 (82 rescored) | 14 | 79 | 12 |
+| 2 (74fc912) | 82 | 14 | 80 | 13 |
+| 3 (562c9d1) | 81 | 14 | 81 | 11 (12 rescored) |
+| 4 (9470c86) | 82 | 14 | 80 | 13 |
+| 5 (577a186) | 81 | 14 | 82 | 13 |
+| 6, final (2a8be50) | 82 | 14 | 82 | 14 |
+
+The changes, in order (all general, none worded for a case):
+
+- Data layer: `doors_touched` and `pct_turf_touched` in `v_office_pace` (b410d6d); `pct_of_goal_total`, `capacity_days_left` and `pct_of_card_goal` (d4744ae); `v_client_vs_dashboard(_total)`, the client's daily sheet next to our dashboard by day (44e8581); the client's sheets summed per week and the gap in `v_weekly_report` (fccc79e); `v_qc_to_date(_total)`, QC flags to date per office (a83a440); `v_vr_daily(_total)`, cards per office per day (989f378).
+- Prompt and schema guide: compute totals, shares and differences no view has in SQL, not by hand (8101fa9); "this week" and "last week" name a week (6a19d49), and a question with no period is about the program to date (6b3eee1); when no office is named, program totals come first (74fc912); `v_weekly_report` is our report and `client_daily_report` the client's sheets (1f883fb); `v_turf_summary` has no precinct names (0df2e38); `qc_flags.knocks_rolled_back` is true/false, not a count (a3b94c6); what "worked in a week" means (562c9d1); `survey_answer`'s values (39182a8).
+- Tools and agent loop: lists of flags, shifts and person-weeks say how many rows each week has (07f3acf); office rows point to their `*_total` view (9470c86, 577a186); a program question answered from office rows gets one nudge to read the program total, like the existing look-first and citation checks (2a8be50).
+
+On the final code, the regression run on every other set passed: the old held-out 14 of 14, held-out v2 15 of 15 and held-out v3 15 of 15 for both models on all 3 runs, after one case fix (n12, below).
+
+### All sets on the latest code
+
+| model and mode | sets | questions | pass | pass^3 | 95% interval (pass^3) |
+| --- | --- | --- | --- | --- | --- |
+| DeepSeek-V4.1-Flash-1017, thinking on, effort high | tuned, old held-out, held-out v2, v3, v4 (tuned) and v5 | 190 | 190 | 190 | 98.0% to 100% |
+| DeepSeek-V4-Pro, thinking off, temperature 0 | the same six | 190 | 186.7 | 186 | 94.7% to 99.2% |
+| Claude Opus 5.5 as the agent through the tool CLI | not run on the latest code | | | | |
+| self-hosted open model | not run on the latest code | | | | |
+
+On the two clean sets alone (v3 and v5, 65 questions), DeepSeek-V4.1-Flash passes all 65 on all 3 runs (94.4% to 100%) and DeepSeek-V4-Pro 61 (85.2% to 97.6%). The tuned and contaminated sets are in the totals but say less about new questions.
+
+### Held-out v4 as first measured (eval-v3 code, before the tuning, 3 runs each)
+
+These numbers were measured while v4 was still clean, before any of the tuning above. Paraphrases share content with other questions, so the interval is also given for the 61 questions that aren't paraphrases.
 
 "pass" is the mean over the 3 runs; pass^3 counts the questions passed on all 3. The 95% intervals are Wilson score intervals on pass^3, the recommended method at this sample size (the CLT-based standard error is too narrow under a few hundred questions). Paraphrases share content with other questions, so the interval is also given for the 61 questions that aren't paraphrases.
 
@@ -178,24 +229,23 @@ heldout_v4 is now tuned: from b410d6d on, its DeepSeek misses are read and used 
 - **Claude**'s three runs were each answered by four separate agents of about 20 questions (questions dealt round-robin, so paraphrase pairs went to different agents). Every tool call was replayed through the real tools and matched what the agent was shown; the traces and answers are in `evals/reports/claude-agent-runs-v4/`.
 - **Retrieval** was 84% on v4 for every model; it scores the retriever on the question, not the model, and several new questions have no expected passage.
 
-### All sets on the latest code
+### All sets on the eval-v3 code (before the tuning)
 
-| model and mode | sets run on the latest code | questions | pass | pass^3 | 95% interval (pass^3) |
+| model and mode | sets run on that code | questions | pass | pass^3 | 95% interval (pass^3) |
 | --- | --- | --- | --- | --- | --- |
 | Claude Opus 5.5 as the agent through the tool CLI | tuned, held-out v3, held-out v4 | 111 | 110.3 | 110 | 95.1% to 99.8% |
 | DeepSeek-V4.1-Flash-1017, thinking on, effort high | tuned, old held-out, held-out v2, held-out v3, held-out v4 | 140 | 140 | 140 | 97.3% to 100% |
 | DeepSeek-V4-Pro, thinking off, temperature 0 | tuned, old held-out, held-out v2, held-out v3, held-out v4 | 140 | 131.7 | 129 | 86.5% to 95.6% |
-| self-hosted open model | none yet | | | | |
 
-On the two clean held-out sets together (v3 and v4, 97 questions), Claude Opus 5.5 and DeepSeek-V4.1-Flash each pass all 97 on all 3 runs (96.2% to 100%); DeepSeek-V4-Pro passes 90 (85.8% to 96.5%). The tuned and contaminated sets are included in the totals above but say less about new questions.
+On that code, on the two clean held-out sets of the time (v3 and v4, 97 questions), Claude Opus 5.5 and DeepSeek-V4.1-Flash each passed all 97 on all 3 runs (96.2% to 100%); DeepSeek-V4-Pro passed 90 (85.8% to 96.5%).
 
-Per group, on the latest code (cases passed, then pass^3):
+Per group, on the eval-v3 code (cases passed, then pass^3):
 
-| model and mode | code | fresh held-out v4 | held-out v3 | tuned | held-out v2 (contaminated) | old held-out (contaminated) |
+| model and mode | code | held-out v4 (as first measured) | held-out v3 | tuned | held-out v2 (contaminated) | old held-out (contaminated) |
 | --- | --- | --- | --- | --- | --- | --- |
-| Claude Opus 5.5 as the agent through the tool CLI | latest | 82 of 82, pass^3 82 | 15 of 15, pass^3 15 | 13 of 14, pass^3 13 | not run | not run |
-| DeepSeek-V4.1-Flash-1017, thinking on, effort high | latest | 82 of 82, pass^3 82 | 15 of 15, pass^3 15 | 14 of 14, pass^3 14 | 15 of 15, pass^3 15 | 14 of 14, pass^3 14 |
-| DeepSeek-V4-Pro, thinking off, temperature 0 | latest | 77.3 of 82, pass^3 76 | 15 of 15, pass^3 14 | 12 of 14, pass^3 11 | 15 of 15, pass^3 15 | 13 of 14, pass^3 13 |
+| Claude Opus 5.5 as the agent through the tool CLI | eval-v3 | 82 of 82, pass^3 82 | 15 of 15, pass^3 15 | 13 of 14, pass^3 13 | not run | not run |
+| DeepSeek-V4.1-Flash-1017, thinking on, effort high | eval-v3 | 82 of 82, pass^3 82 | 15 of 15, pass^3 15 | 14 of 14, pass^3 14 | 15 of 15, pass^3 15 | 14 of 14, pass^3 14 |
+| DeepSeek-V4-Pro, thinking off, temperature 0 | eval-v3 | 77.3 of 82, pass^3 76 | 15 of 15, pass^3 14 | 12 of 14, pass^3 11 | 15 of 15, pass^3 15 | 13 of 14, pass^3 13 |
 
 - **Claude's tuned miss.** On q05 (more doors against a second pass), Claude gave 1,489.1 doors a day for 16 days without the 23,826 total in 2 of 3 runs. The case asks for that total, so it stays a miss; the scorer was not loosened for it.
 - **Strict mode, tried and dropped.** DeepSeek's strict tool schemas (`PDA_OPENAI_STRICT=1`, beta) on Flash, tuned set: 14 of 14, pass^3 14, the same as without it. No gain, so it stays off.
@@ -246,6 +296,7 @@ What changed between the baseline and the final code:
   - A model that answers without calling any tool is told to look first.
   - An answer whose citations aren't among the sources actually returned gets the list of valid ids and one rewrite.
   - An answer with numbers that appear in no tool result gets one rewrite; if they're still unsupported, it's withheld as "I can't confirm".
+  - Added in the v4 tuning: a question that names no office, answered from office rows without the matching `*_total` view, gets one nudge to read the program total and lead with it.
 - For qwen3.x, Ollama's `think` flag is set to false, and any leaked `<think>` block is stripped from the answer.
 
 Two earlier attempts at the improved code were stopped after a few cases because the model still made up numbers after empty results. A qwen2.5:14b attempt was also stopped: it answered without calling tools, and the grounding check withheld those answers. None of these are reported as runs. The demo (`demo/recorded_runs.json`) uses the qwen3.8:27b run, with the CPU baseline shown alongside.

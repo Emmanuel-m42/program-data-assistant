@@ -216,13 +216,13 @@ def test_evals_and_recorded_endpoints_serve_the_demo_file():
     c, _ = client([])
     ev = c.get("/evals").json()
     assert ev["scoreboard"]["after"]["heldout"]["pass"] == 12 and ev["scoreboard"]["after"]["tuned"]["pass"] == 12
-    claude, flash = ev["scoreboard"]["comparison"][:2]
-    for row in (claude, flash):
+    flash, pro = ev["scoreboard"]["comparison"][:2]
+    for row in (flash, pro):
         assert row["code"] == "latest" and row.get("status") is None
-        assert row["groups"]["heldout_v3"]["pass"] == row["groups"]["heldout_v3"]["pass_all_runs"] == 15
         assert row["groups"]["heldout_v4"]["pass"] == row["groups"]["heldout_v4"]["pass_all_runs"] == 82
+    assert flash["groups"]["heldout_v5"]["pass_all_runs"] == 50 and pro["groups"]["heldout_v5"]["pass_all_runs"] == 46
     assert not any(r.get("status") == "running" for r in ev["scoreboard"]["comparison"])
-    assert ev["scoreboard"]["headline"].startswith("82 fresh held-out questions (written before any run): Claude Opus 5.5 82 of 82")
+    assert ev["scoreboard"]["headline"].startswith("50 fresh held-out questions (written before the latest tuning")
     assert len(ev["questions"]) == 19 and "answer" not in ev["questions"][0]
     q13 = next(q for q in ev["questions"] if q["id"] == "q13")
     assert q13["eval"]["after"]["pass"] == 0 and "program-wide direction" in q13["eval"]["note"]

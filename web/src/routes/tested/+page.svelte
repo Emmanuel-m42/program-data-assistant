@@ -18,7 +18,8 @@
 	];
 
 	const COMPARE_GROUPS: [CompareGroup, string][] = [
-		['heldout_v4', 'Fresh held-out (v4, 82)'],
+		['heldout_v5', 'Fresh held-out (v5, 50)'],
+		['heldout_v4', 'Held-out v4 (tuned)'],
 		['heldout_v3', 'Held-out v3 (clean)'],
 		['dev', 'Tuned'],
 		['heldout_v2', 'Held-out v2 (contaminated)'],
@@ -47,9 +48,10 @@
 	{@const changes = splitChanges(sb.what_changed)}
 	{#if sb.comparison?.length}
 		<p class="lede">
-			140 test questions, each with facts checked against SQL on the raw tables, never against the model: 14 tuned
-			on, two held-out sets of 14 and 15 that were read while choosing fixes (now contaminated), and two clean
-			held-out sets of 15 and 82, each written and committed before it was first run.
+			190 test questions, each with facts checked against SQL on the raw tables, never against the model: 96 tuned
+			on (14 from the start, and 82 held out until the latest tuning used them), two held-out sets of 14 and 15
+			read while choosing earlier fixes (contaminated), and two clean sets of 15 and 50, each written and committed
+			before the fixes it measures. The 50 ran once, after the tuning.
 		</p>
 	{:else}
 		<p class="lede">
@@ -77,9 +79,9 @@
 	{#if sb.comparison?.length}
 		<h2>Models compared</h2>
 		<p class="small">
-			Cases passed (the mean over 3 runs), then pass^3: the cases passed on all 3 runs. Code: "latest" is after the
-			latest fixes; "v2 before" and "v2 after" are the previous round of fixes, and "first" the first published run,
-			kept for the record.
+			Cases passed (the mean over 3 runs), then pass^3: the cases passed on all 3 runs. Code: "latest" is the current
+			code, after the tuning on held-out v4; "eval-v3" the code before it, with held-out v4 as first measured; "v2
+			before" and "v2 after" an earlier round of fixes, and "first" the first published run, kept for the record.
 		</p>
 		<div class="scroll">
 			<table class="compare">
