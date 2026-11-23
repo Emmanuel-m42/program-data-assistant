@@ -40,6 +40,9 @@ v_qc_weekly*  QC rate [office, week] (office, week_start, shifts, flags, flash_k
 v_qc_call_outcomes*  registration QC calls [office, outcome] (office, outcome ['confirmed','unreachable','wrong_info'],
   calls, share_pct)
 v_daily_doors*  [office, day] (knock_date, office, doors, contacts, attempts, rolled_back_attempts)
+v_client_vs_dashboard*  the client's daily sheet next to our dashboard [office, day] (report_date, office,
+  doors_reported [attempts before rollbacks], contacts_reported, doors, contacts, attempts, rolled_back_attempts,
+  gap [doors_reported - doors])
 v_precinct_coverage  turf [precinct] (precinct_id, name, office, target_doors, doors_touched, doors_untouched, pct_touched,
   not_home_doors, doors_per_sq_mi, area_sq_mi, km_to_office, coverage ['untouched','light','partial','covered'], lat, lon)
 v_site_options  candidate sites for a new office [site] (site_id, name, address, monthly_rent, avg_km_to_untouched_doors

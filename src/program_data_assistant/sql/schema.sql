@@ -182,6 +182,23 @@ FROM o GROUP BY knock_date;
 CREATE VIEW v_daily_doors AS SELECT * FROM all_daily_doors WHERE office <> 'All offices';
 CREATE VIEW v_daily_doors_total AS SELECT * FROM all_daily_doors WHERE office = 'All offices';
 
+-- The client's daily sheet next to our dashboard, per office per day (v_client_vs_dashboard_total: per day for the
+-- program). doors_reported counts attempts before rollbacks; gap = doors_reported - our doors.
+CREATE VIEW all_client_vs_dashboard AS
+WITH o AS (
+    SELECT r.report_date, r.office, r.doors_reported, r.contacts_reported, d.doors, d.contacts, d.attempts,
+           d.rolled_back_attempts
+    FROM client_daily_report r JOIN v_daily_doors d ON d.knock_date = r.report_date AND d.office = r.office
+)
+SELECT *, doors_reported - doors AS gap FROM o
+UNION ALL
+SELECT report_date, 'All offices', sum(doors_reported)::bigint, sum(contacts_reported)::bigint, sum(doors)::bigint,
+       sum(contacts)::bigint, sum(attempts)::bigint, sum(rolled_back_attempts)::bigint,
+       (sum(doors_reported) - sum(doors))::bigint
+FROM o GROUP BY report_date;
+CREATE VIEW v_client_vs_dashboard AS SELECT * FROM all_client_vs_dashboard WHERE office <> 'All offices';
+CREATE VIEW v_client_vs_dashboard_total AS SELECT * FROM all_client_vs_dashboard WHERE office = 'All offices';
+
 -- Door pace and projection per office (v_office_pace_total: the program). doors_untouched is every turf door never
 -- knocked (rollbacks removed), in every precinct, including the untouched doors of partly covered precincts.
 CREATE VIEW all_office_pace AS
