@@ -196,8 +196,9 @@ def test_evals_and_recorded_endpoints_serve_the_demo_file():
     for row in (claude, flash):
         assert row["code"] == "latest" and row.get("status") is None
         assert row["groups"]["heldout_v3"]["pass"] == row["groups"]["heldout_v3"]["pass_all_runs"] == 15
+        assert row["groups"]["heldout_v4"]["pass"] == row["groups"]["heldout_v4"]["pass_all_runs"] == 82
     assert not any(r.get("status") == "running" for r in ev["scoreboard"]["comparison"])
-    assert ev["scoreboard"]["headline"].startswith("Fresh held-out (written before the latest fixes): Claude Opus 5.5 15 of 15")
+    assert ev["scoreboard"]["headline"].startswith("82 fresh held-out questions (written before any run): Claude Opus 5.5 82 of 82")
     assert len(ev["questions"]) == 19 and "answer" not in ev["questions"][0]
     q13 = next(q for q in ev["questions"] if q["id"] == "q13")
     assert q13["eval"]["after"]["pass"] == 0 and "program-wide direction" in q13["eval"]["note"]

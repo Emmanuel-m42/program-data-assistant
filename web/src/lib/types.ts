@@ -67,8 +67,9 @@ export interface ComparisonCell extends SplitBlock {
 	label: string;
 }
 
-// Question groups: dev (tuned), test (old held-out) and heldout_v2 (both contaminated), heldout_v3 (the clean one).
-export type CompareGroup = 'dev' | 'test' | 'heldout_v2' | 'heldout_v3';
+// Question groups: dev (tuned), test (old held-out) and heldout_v2 (both contaminated), heldout_v3 and heldout_v4
+// (the clean ones).
+export type CompareGroup = 'dev' | 'test' | 'heldout_v2' | 'heldout_v3' | 'heldout_v4';
 
 // One model and code version, scored per group.
 export interface ComparisonRow {

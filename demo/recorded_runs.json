@@ -1,6 +1,6 @@
 {
   "program": "Riverbend Votes (GOTV) and Riverbend Registers (voter registration), fictional programs",
-  "generated_at": "2026-11-22T01:17:53+00:00",
+  "generated_at": "2026-11-23T21:46:57+00:00",
   "model": "ollama/qwen3.8:27b",
   "scoreboard": {
     "before": {
@@ -70,13 +70,13 @@
       }
     },
     "what_changed": "Before: qwen2.5:7b on the server's 8-core CPU, writing free SQL from a short schema list (86 s per answer). After: qwen3.8:27b through Ollama on a laptop RTX 3080 (16 GB) with part of the model on the CPU, thinking off, 16k context. Changes in between: helper views for the common questions and a get_view tool that returns a whole metric view; tool descriptions that say what each tool answers and doesn't, with a routing policy (views first, SQL only when no view has it, documents for rules and reasons); a schema guide and a glossary of definitions; an answer template with three examples that are not eval questions; real column names sent back on SQL errors with one retry; a note on 0-row results; a look-first nudge when a model answers without a tool; a citation check that lists the valid ids, and citations to ids no tool returned are dropped; a grounding check that withholds answers whose numbers are not in the tool results.",
-    "headline": "Fresh held-out (written before the latest fixes): Claude Opus 5.5 15 of 15 and DeepSeek-V4.1-Flash 15 of 15, the same on each of 3 runs",
+    "headline": "82 fresh held-out questions (written before any run): Claude Opus 5.5 82 of 82, DeepSeek-V4.1-Flash 82 of 82, the same on each of 3 runs",
     "split_note": "The split was made partway through tuning: the 28 questions were split into 14 tuned and 14 held-out after the earlier fixes, which were made while looking at all 28. The held-out half is held out from the later changes (tool descriptions, glossary, citation handling). Shown answers are run 1 of 3 for each question.",
     "shown_answers_avg_latency_ms": 70787,
     "latency_note": "shown_answers_avg_latency_ms averages the answers shown on the page (one run per demo question). Each half's avg_latency_ms averages every eval answer in that half across all runs, including fast document and refusal questions.",
     "comparison": [
       {
-        "model": "Claude Opus 5.5, agent through the tool CLI",
+        "model": "Claude Opus 5.5 as the agent through the tool CLI (same tools and prompt, not the app's own agent loop)",
         "code": "latest",
         "groups": {
           "dev": {
@@ -104,11 +104,24 @@
             "citation": 1.0,
             "refusal": 1.0,
             "avg_latency_ms": 0
+          },
+          "heldout_v4": {
+            "label": "held-out v4",
+            "cases": 82,
+            "pass": 82,
+            "pass_all_runs": 82,
+            "runs_per_case": 3,
+            "tool_choice": 1.0,
+            "retrieval": 0.842,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "avg_latency_ms": 0
           }
         }
       },
       {
-        "model": "DeepSeek-V4.1-Flash (open weights), DeepSeek hosted API, thinking on, effort high",
+        "model": "DeepSeek-V4.1-Flash-1017 (open weights), DeepSeek hosted API, the app's own agent loop, thinking on, effort high",
         "code": "latest",
         "groups": {
           "dev": {
@@ -162,11 +175,24 @@
             "citation": 1.0,
             "refusal": 1.0,
             "avg_latency_ms": 5701
+          },
+          "heldout_v4": {
+            "label": "held-out v4",
+            "cases": 82,
+            "pass": 82,
+            "pass_all_runs": 82,
+            "runs_per_case": 3,
+            "tool_choice": 1.0,
+            "retrieval": 0.842,
+            "facts": 1.0,
+            "citation": 1.0,
+            "refusal": 1.0,
+            "avg_latency_ms": 5917
           }
         }
       },
       {
-        "model": "DeepSeek-V4-Pro (open weights), DeepSeek hosted API, thinking off, temperature 0",
+        "model": "DeepSeek-V4-Pro (open weights, the Aug 13 GA release), DeepSeek hosted API, the app's own agent loop, thinking off, temperature 0",
         "code": "latest",
         "groups": {
           "dev": {
@@ -220,11 +246,24 @@
             "citation": 1.0,
             "refusal": 1.0,
             "avg_latency_ms": 3830
+          },
+          "heldout_v4": {
+            "label": "held-out v4",
+            "cases": 82,
+            "pass": 77,
+            "pass_all_runs": 76,
+            "runs_per_case": 3,
+            "tool_choice": 1.0,
+            "retrieval": 0.842,
+            "facts": 0.94,
+            "citation": 0.99,
+            "refusal": 0.992,
+            "avg_latency_ms": 4584
           }
         }
       },
       {
-        "model": "Claude Opus 5.5, agent through the tool CLI",
+        "model": "Claude Opus 5.5 as the agent through the tool CLI (same tools and prompt, not the app's own agent loop)",
         "code": "v2 after",
         "groups": {
           "dev": {
@@ -256,7 +295,7 @@
         }
       },
       {
-        "model": "DeepSeek-V4.1-Flash (open weights), DeepSeek hosted API, thinking on, effort high",
+        "model": "DeepSeek-V4.1-Flash-1017 (open weights), DeepSeek hosted API, the app's own agent loop, thinking on, effort high",
         "code": "v2 after",
         "groups": {
           "dev": {
@@ -301,7 +340,7 @@
         }
       },
       {
-        "model": "DeepSeek-V4.1-Flash (open weights), DeepSeek hosted API, thinking on, effort high",
+        "model": "DeepSeek-V4.1-Flash-1017 (open weights), DeepSeek hosted API, the app's own agent loop, thinking on, effort high",
         "code": "v2 before",
         "groups": {
           "dev": {
@@ -346,7 +385,7 @@
         }
       },
       {
-        "model": "DeepSeek-V4-Pro (open weights), DeepSeek hosted API, thinking off, temperature 0",
+        "model": "DeepSeek-V4-Pro (open weights, the Aug 13 GA release), DeepSeek hosted API, the app's own agent loop, thinking off, temperature 0",
         "code": "v2 after",
         "groups": {
           "dev": {
@@ -391,7 +430,7 @@
         }
       },
       {
-        "model": "DeepSeek-V4-Pro (open weights), DeepSeek hosted API, thinking off, temperature 0",
+        "model": "DeepSeek-V4-Pro (open weights, the Aug 13 GA release), DeepSeek hosted API, the app's own agent loop, thinking off, temperature 0",
         "code": "v2 before",
         "groups": {
           "dev": {
@@ -468,8 +507,8 @@
         }
       }
     ],
-    "comparison_note": "Held-out v3 is the clean set: 15 questions written and committed before the latest fixes. The other held-out sets were read while choosing fixes, so they are marked contaminated. The first published qwen3.8:27b run's old held-out half was first scored 11 of 14; it is 12 of 14 since the scorer reads counts written as words. DeepSeek's strict tool schemas were tried on the tuned set (14 of 14, no gain) and stay off. A self-hosted run on the latest code has not been run yet. Every measurement fix is listed in the README.",
-    "headline_note": "Claude Opus 5.5 ran as the agent through the tool CLI (same tools and prompt, not the app's own agent loop; the in-loop guardrail rewrites don't apply). DeepSeek-V4.1-Flash (open weights) ran through the app's own agent loop on DeepSeek's hosted API, thinking on, effort high (temperature doesn't apply with thinking on). Both on the code after the latest fixes.",
+    "comparison_note": "Held-out v4 and v3 are clean: written and committed before any run on them. The other held-out sets were read while choosing fixes, so they are marked contaminated. Rows marked latest are the current code; the v3 and v4 sets ran on it. The first published qwen3.8:27b run's old held-out half was first scored 11 of 14; it is 12 of 14 since the scorer reads counts written as words. DeepSeek's strict tool schemas were tried on the tuned set (14 of 14, no gain) and stay off. A self-hosted run on the latest code has not been run yet. Every measurement fix is listed in the README.",
+    "headline_note": "95% intervals (Wilson, on the questions passed on all 3 runs): Claude Opus 5.5 and DeepSeek-V4.1-Flash each 95.5% to 100%, and 94.1% to 100% on the 61 questions that aren't paraphrases. DeepSeek-V4-Pro: 76 of 82, 84.9% to 96.6%. Claude Opus 5.5 ran as the agent through the tool CLI (same tools and prompt, not the app's own agent loop). The DeepSeek models ran through the app's own agent loop on DeepSeek's hosted API: DeepSeek-V4.1-Flash-1017 with thinking on, effort high; DeepSeek-V4-Pro with thinking off, temperature 0.",
     "shown_run_note": "The answers shown in this demo are the recorded answers of qwen3.8:27b, the run in the table below."
   },
   "questions": [

@@ -18,7 +18,8 @@
 	];
 
 	const COMPARE_GROUPS: [CompareGroup, string][] = [
-		['heldout_v3', 'Fresh held-out (v3)'],
+		['heldout_v4', 'Fresh held-out (v4, 82)'],
+		['heldout_v3', 'Held-out v3 (clean)'],
 		['dev', 'Tuned'],
 		['heldout_v2', 'Held-out v2 (contaminated)'],
 		['test', 'Old held-out (contaminated)']
@@ -46,9 +47,9 @@
 	{@const changes = splitChanges(sb.what_changed)}
 	{#if sb.comparison?.length}
 		<p class="lede">
-			58 test questions, each with facts checked against SQL on the raw tables, never against the model: 14 tuned
-			on, two held-out sets of 14 and 15 that were read while choosing fixes (now contaminated), and 15 fresh
-			held-out questions written and committed before the latest fixes.
+			140 test questions, each with facts checked against SQL on the raw tables, never against the model: 14 tuned
+			on, two held-out sets of 14 and 15 that were read while choosing fixes (now contaminated), and two clean
+			held-out sets of 15 and 82, each written and committed before it was first run.
 		</p>
 	{:else}
 		<p class="lede">
