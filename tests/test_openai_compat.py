@@ -70,7 +70,9 @@ def test_ask_through_the_api_with_tool_calls_and_usage(env):
         completion("Eastgate costs the most per door at $2.07 [table:v_cost_per_door]."),
     ])
     p = llm.OpenAICompatProvider(client=http)
-    body = TestClient(create_app(Assistant(p))).post("/ask", json={"question": "Which office costs the most per door?"}).json()
+    # Names an office, so the program-total check doesn't add a step to this wiring test.
+    body = TestClient(create_app(Assistant(p))).post(
+        "/ask", json={"question": "Does Eastgate cost the most per door?"}).json()
     assert body["model"] == "openai_compat/test-model" and body["refused"] is False
     assert body["tool_calls"][0]["name"] == "get_view" and body["sources"][0]["table"] == "v_cost_per_door"
     first, second = http.bodies

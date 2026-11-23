@@ -1,6 +1,6 @@
 import json
 
-from conftest import ScriptedProvider, search_call, sql_call
+from conftest import ScriptedProvider, search_call, sql_call, view_call
 from fastapi.testclient import TestClient
 
 from program_data_assistant.agent import EMPTY_NUDGE, LOOK_NUDGE, RETRY_NUDGE, Assistant
@@ -27,12 +27,16 @@ def test_ask_runs_tools_and_returns_sources():
         search_call("how is the projection calculated"),
         Reply("Eastgate and Harbor will miss goal [table:v_office_pace], using the 7-day projection "
               "[doc:program-plan#pace-and-projection]."),
+        view_call("v_office_pace_total"),  # after the program-total nudge
+        Reply("Eastgate and Harbor will miss goal [table:v_office_pace], and so will the program "
+              "[table:v_office_pace_total], using the 7-day projection [doc:program-plan#pace-and-projection]."),
     ])
     r = c.post("/ask", json={"question": "Which offices will miss their goal, and by how much?"})
     assert r.status_code == 200
     body = r.json()
     assert body["refused"] is False
-    assert [t["name"] for t in body["tool_calls"]] == ["query_program_data", "search_documents"]
+    assert "v_office_pace_total" in provider.seen[3]["content"]  # the nudge names the total view
+    assert [t["name"] for t in body["tool_calls"]] == ["query_program_data", "search_documents", "get_view"]
     rows = [s for s in body["sources"] if s["type"] == "rows"]
     assert rows[0]["table"] == "v_office_pace"
     assert [r[0] for r in rows[0]["rows"]] == ["Eastgate", "Harbor"]
@@ -56,11 +60,13 @@ def test_bad_column_gets_the_real_columns_and_a_retry():
         sql_call("SELECT office, shifts_needed FROM v_office_pace"),
         sql_call("SELECT office, extra_shifts_per_day_needed FROM v_office_pace"),
         Reply("Eastgate needs the most extra shifts [table:v_office_pace]."),
+        view_call("v_office_pace_total"),
+        Reply("The program and Eastgate need the most extra shifts [table:v_office_pace_total] [table:v_office_pace]."),
     ])
     body = c.post("/ask", json={"question": "How many more shifts a day does each office need?"}).json()
     assert "Columns of v_office_pace:" in provider.seen[1]["content"]
     assert "extra_shifts_per_day_needed" in provider.seen[1]["content"]
-    assert [t["ok"] for t in body["tool_calls"]] == [False, True]
+    assert [t["ok"] for t in body["tool_calls"]] == [False, True, True]
 
 
 def test_refusal_flag_after_looking_first():
@@ -82,12 +88,29 @@ def test_an_empty_reply_gets_one_retry():
 def test_missing_citations_get_one_rewrite_with_the_valid_ids():
     c, provider = client([
         sql_call("SELECT office, cost_per_door FROM v_cost_per_door"),
+        view_call("v_cost_per_door_total"),
         Reply("Eastgate is most expensive at $2.07 per door."),
         Reply("Eastgate is most expensive at $2.07 per door [table:v_cost_per_door]."),
     ])
     body = c.post("/ask", json={"question": "Which office costs the most per door?"}).json()
-    assert "[table:v_cost_per_door]" in provider.seen[2]["content"]
+    assert "[table:v_cost_per_door]" in provider.seen[3]["content"]
     assert body["answer"].endswith("[table:v_cost_per_door].")
+
+
+def test_program_question_answered_from_office_rows_gets_one_total_nudge():
+    c, provider = client([
+        view_call("v_client_vs_dashboard"),
+        Reply("Eastgate's sheet shows more doors than the dashboard [table:v_client_vs_dashboard]."),
+        sql_call("SELECT doors_reported, doors FROM v_client_vs_dashboard_total WHERE report_date = '2026-10-12'"),
+        Reply("The program's sheet shows 1,484 doors against 1,281 [table:v_client_vs_dashboard_total]."),
+    ])
+    body = c.post("/ask", json={"question": "Why does the client's report show more doors for Oct 12?"}).json()
+    assert "names no office" in provider.seen[2]["content"] and "v_client_vs_dashboard_total" in provider.seen[2]["content"]
+    assert body["answer"].startswith("The program's sheet shows 1,484")
+    # A question about one office, or an answer that already read the total view, gets no nudge.
+    c, provider = client([view_call("v_client_vs_dashboard"), Reply("Eastgate's gap was 156 [table:v_client_vs_dashboard].")])
+    c.post("/ask", json={"question": "Why does Eastgate's sheet show more doors on Oct 12?"})
+    assert len(provider.seen) == 2
 
 
 def test_step_limit_forces_an_answer():
@@ -164,6 +187,7 @@ def test_citations_are_rendered_from_provenance_and_unknown_ids_dropped(monkeypa
     ]}
     provider = ScriptedProvider([
         sql_call("SELECT office, cost_per_door FROM v_cost_per_door"),
+        view_call("v_cost_per_door_total"),
         Reply("Eastgate is the most expensive office.\n- Eastgate: $2.07 per door"),
         Reply(json.dumps(lines)),
     ])

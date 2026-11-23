@@ -61,6 +61,7 @@ def test_messages_conversion_keeps_turns_alternating():
 def test_ask_through_the_api_with_claude_shows_the_model():
     p, fake = provider([
         tool_use("get_view", {"view": "v_cost_per_door"}),
+        tool_use("get_view", {"view": "v_cost_per_door_total"}),
         text("Eastgate costs the most per door at $2.07 [table:v_cost_per_door]."),
     ])
     body = TestClient(create_app(Assistant(p))).post("/ask", json={"question": "Which office costs the most per door?"}).json()

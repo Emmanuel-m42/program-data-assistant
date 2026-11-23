@@ -10,7 +10,7 @@ from dataclasses import asdict, dataclass, field
 
 from . import prompts
 from .llm import Provider, Reply, ToolCall
-from .tools import TOOL_SPECS, Toolbox, ToolResult
+from .tools import _OFFICE_VIEWS, OFFICES, TOOL_SPECS, Toolbox, ToolResult
 
 MAX_STEPS = 7
 SOURCE_ROWS = 8
@@ -34,6 +34,8 @@ WITHHELD = ("I can't confirm that from the program data or documents. My draft a
 EMPTY_NUDGE = "Your last reply was empty. Answer the question now from the tool results above, with citations."
 GROUNDING_NUDGE = ("These numbers in your answer do not appear in any tool result: {numbers}. Rewrite the answer using "
                    "only numbers from the tool results above. If you need a number you don't have, query for it first.")
+TOTAL_NUDGE = ("The question names no office, so it is about the whole program, but your answer rests on office rows. "
+               "Read the program total from {views} and give it in the first line, then the offices.")
 INLINE_CALL = re.compile(r"\{\s*\"name\"\s*:\s*\"(query_program_data|search_documents)\".*\}", re.DOTALL)
 
 
@@ -134,6 +136,23 @@ def ungrounded_numbers(answer: str, question: str, results: list[ToolResult]) ->
         if close(n, base) or close(n * 100, base) or close(n / 100, base) or close(n, derived):
             continue
         out.append(n)
+    return out
+
+
+def missing_totals(question: str, results: list[ToolResult]) -> list[str]:
+    """The *_total views not yet read for office views whose rows from several offices are in the results, when the
+    question names no office (so it is about the whole program)."""
+    if any(o.lower() in question.lower() for o in OFFICES):
+        return []
+    read = {t for r in results if r.ok for t in r.tables}
+    out = []
+    for r in results:
+        if not (r.ok and "office" in r.columns):
+            continue
+        offices = {row[r.columns.index("office")] for row in r.rows}
+        for t in r.tables:
+            if t in _OFFICE_VIEWS and len(offices) > 1 and f"{t}_total" not in read and f"{t}_total" not in out:
+                out.append(f"{t}_total")
     return out
 
 
@@ -249,7 +268,7 @@ class Assistant:
         calls_log: list[dict] = []
         reply = Reply("")
         steps = 0
-        nudged = revised = looked = cite_fixed = emptied = False
+        nudged = revised = looked = cite_fixed = emptied = totalled = False
         self.toolbox.reset()
         for steps in range(1, MAX_STEPS + 1):
             reply = self.provider.chat(messages, TOOL_SPECS)
@@ -274,6 +293,13 @@ class Assistant:
                     shown = ", ".join(f"{n:g}" for n in missing[:8])
                     messages.append({"role": "assistant", "content": reply.content, "reasoning": reply.reasoning})
                     messages.append({"role": "user", "content": GROUNDING_NUDGE.format(numbers=shown)})
+                    continue
+                # Program question answered from office rows only: read the program total too.
+                totals = [] if REFUSAL.search(reply.content or "") else missing_totals(question, results)
+                if totals and not totalled and steps < MAX_STEPS:
+                    totalled = True
+                    messages.append({"role": "assistant", "content": reply.content, "reasoning": reply.reasoning})
+                    messages.append({"role": "user", "content": TOTAL_NUDGE.format(views=", ".join(totals))})
                     continue
                 # Answering (or refusing) without having looked at anything: look first.
                 if not results and not looked and steps < MAX_STEPS:

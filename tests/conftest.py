@@ -52,6 +52,10 @@ def search_call(query):
     return Reply("", [ToolCall("c2", "search_documents", {"query": query})])
 
 
+def view_call(view):
+    return Reply("", [ToolCall("c3", "get_view", {"view": view})])
+
+
 @pytest.fixture
 def scripted():
     return ScriptedProvider
