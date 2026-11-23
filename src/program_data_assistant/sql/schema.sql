@@ -236,7 +236,9 @@ SELECT office,
        round(greatest(greatest(goal_total - doors_to_date, 0) / knocking_days_left::numeric / (doors_last_7d::numeric / shifts_last_7d)
            - shifts_last_7d / 7.0, 0), 1) AS extra_shifts_per_day_needed,
        turf_doors,
-       turf_doors - doors_touched AS doors_untouched
+       turf_doors - doors_touched AS doors_untouched,
+       doors_touched,
+       round(100.0 * doors_touched / turf_doors, 1) AS pct_turf_touched
 FROM u;
 CREATE VIEW v_office_pace AS SELECT * FROM all_office_pace WHERE office <> 'All offices';
 CREATE VIEW v_office_pace_total AS SELECT * FROM all_office_pace WHERE office = 'All offices';

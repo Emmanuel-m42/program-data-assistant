@@ -13,7 +13,8 @@ v_office_pace*  door pace to date and the election day projection [office]
   (office, goal_total, goal_to_date, doors_to_date, pct_of_goal_to_date, avg_daily_doors_last_7d, knocking_days_left,
    projected_total, projected_vs_goal [negative = will miss goal by that many doors], projected_pct_of_goal,
    avg_shifts_per_day_last_7d, doors_per_shift_last_7d, shifts_per_day_needed, extra_shifts_per_day_needed,
-   turf_doors, doors_untouched [turf doors never knocked, in every precinct])
+   turf_doors, doors_untouched [turf doors never knocked, in every precinct], doors_touched [turf doors knocked at
+   least once, each counted once], pct_turf_touched)
 v_weekly_pace*  doors against the door goal [office, week] (office, week_start, door_goal, doors, contacts,
   doors_vs_goal, pct_of_goal)
 v_contact_rates*  contact rate [office, week] (office, week_start, doors, contacts, contact_rate_pct)
@@ -82,6 +83,8 @@ Glossary (grain, windows, denominators)
   2026-10-05). Weeks start on Monday. A "last_7d" column covers this week, not last week.
 - untouched doors (doors left in our turf, never knocked) = turf doors minus doors knocked, across every precinct,
   including the untouched doors of partly covered precincts: doors_untouched in v_office_pace / v_office_pace_total.
+- doors_to_date counts a door again on each day it is knocked (the dashboard count). doors_touched counts each turf
+  door once, however often it was knocked: use it (and pct_turf_touched) for how much of the turf has been reached.
 - shift length = paid hours / shifts with a clock out. A shift with no clock out has no length yet and is left out
   (avg_shift_hours and shifts_with_hours in v_weekly_shifts).
 - wages = paid hours x each person's own hourly rate (pay_rates by role; field leads earn more than canvassers):
