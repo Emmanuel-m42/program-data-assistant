@@ -161,6 +161,8 @@ Rows marked "latest" are the current code. The app hasn't changed since the eval
 
 ### Fresh held-out v4 (82 questions, 3 runs each)
 
+heldout_v4 is now tuned: from b410d6d on, its DeepSeek misses are read and used to choose fixes, so from that commit it counts like the tuned set. The numbers in this section were measured before any of those fixes. A fifth set (`heldout_v5`, y01 to y50) was committed unseen before the first fix (360c566) and is run once at the end.
+
 "pass" is the mean over the 3 runs; pass^3 counts the questions passed on all 3. The 95% intervals are Wilson score intervals on pass^3, the recommended method at this sample size (the CLT-based standard error is too narrow under a few hundred questions). Paraphrases share content with other questions, so the interval is also given for the 61 questions that aren't paraphrases.
 
 | model and mode | pass | pass^3 | 95% interval | 61 non-paraphrase questions | paraphrases agreeing with the v3 original | over-refusals | false answers | s per answer |
