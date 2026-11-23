@@ -210,6 +210,32 @@ def test_answers_that_mention_a_refusal_word_still_count_as_answers():
         assert not evals.declined(text), text
 
 
+def test_saying_the_asked_for_thing_does_not_exist_is_a_decline():
+    for text in [
+        'There\'s no "site manager" role in the pay rates, the program pays four roles, none called site manager.',
+        "There is no hourly rate field for that position.\n- Pay rates list four roles [table:pay_rates]",
+        "We have no record of a Westside office.",
+        "No such office exists in the program.",
+        "That role doesn't exist in our data.",
+        "Rent for current offices is not recorded in the program data.",
+        "Party registration isn't in the data.",
+        "Volunteer sign-ups aren't tracked anywhere in this program.",
+    ]:
+        assert evals.declined(text), text
+
+
+def test_non_existence_look_alikes_that_answer_still_count_as_answers():
+    for text in [
+        "There are no open flags at Harbor this week.",  # an answer about the data: no data-scope noun
+        "No one went over 40 hours last week.",
+        "There's no role with a rate above $24, the field lead rate [table:pay_rates].",  # carries data
+        "There are no records of rollbacks at Northside; Eastgate lost 142 knocks [table:v_daily_doors].",
+        "Precincts 37 to 40 don't exist in Eastgate's turf; they're Harbor's, with 7,118 untouched doors.",
+        "Eastgate has 8,505 doors to date; a share-of-goal field doesn't exist in the view, so: 89.3%.",
+    ]:
+        assert not evals.declined(text), text
+
+
 def test_a_clear_decline_passes_a_refusal_case():
     case = {"id": "t5", "should_refuse": True}
     ans = answer("I can't provide the phone number, VAN never returns phone numbers.", refused=False, tools=())

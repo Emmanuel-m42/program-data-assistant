@@ -65,6 +65,21 @@ DECLINE = re.compile(
     r"|\bisn(?:'|’)?t something I can\b|\bis not something I can\b",
     re.IGNORECASE,
 )
+# Scorer fix, non-existence: a first sentence saying the asked-for role, field, record or other entity doesn't
+# exist in the data ("There's no site manager role in the pay rates", "No such field is recorded", "That role
+# doesn't exist in our data") is a decline too, under the same rule: not if the sentence carries data. A bare
+# "There are no open flags at Harbor" is an answer about the data, not a decline, so the "there's no" form needs
+# a data-scope noun (role, field, column, record, data...) after it.
+NONEXIST = re.compile(
+    r"\b(?:there(?:'|’)?s|there is|there are|we have)\s+no\b[^.!?\n]{0,60}?\b(?:role|roles|position|title|field|column|"
+    r"category|record|records|data|information|entry|entries)\b"
+    r"|\bno such\s+\w+"
+    r"|\b(?:doesn(?:'|’)?t|does not|don(?:'|’)?t|do not)\s+exist\b"
+    r"|\b(?:is|are)(?:n(?:'|’)?t|\s+not)\s+(?:in|recorded in|tracked in|part of|kept in)\s+(?:the|our|any)\s+"
+    r"(?:program\s+)?(?:data|records|pay rates|tables|documents)\b"
+    r"|(?:\bnot|n(?:'|’)?t)\s+(?:recorded|tracked)\s+(?:in|anywhere)\b",
+    re.IGNORECASE,
+)
 FIRST_SENTENCE = re.compile(r"^\s*(.+?)(?:(?<=[.!?])\s|\n|$)", re.DOTALL)
 DATA_NUMBER = re.compile(r"\d[\d,]*\d|\d\.\d")
 
@@ -78,7 +93,7 @@ def declined(text: str) -> bool:
     if not m:
         return False
     first = CITE_MARK.sub(" ", m.group(1))
-    return bool(DECLINE.search(first)) and not DATA_NUMBER.search(first)
+    return bool(DECLINE.search(first) or NONEXIST.search(first)) and not DATA_NUMBER.search(first)
 
 
 def numbers_in(text: str) -> list[float]:
