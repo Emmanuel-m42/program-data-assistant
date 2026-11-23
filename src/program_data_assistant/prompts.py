@@ -52,7 +52,7 @@ v_canvasser_status  [person] (canvasser_id, full_name, office, program, role, da
   'registration' for registration canvassers, who are never regulars or one-day hires])
 v_qc_flags_detail  QC flags with names [flag] (flag_id, flag_date, week_start, office, canvasser_id, full_name, shift_id,
   flag_type ['flash_knocking','householding','gap'], status ['open' = needs a conversation,'reviewed'], evidence,
-  evidence_start, evidence_end, knock_count, knocks_rolled_back)
+  evidence_start, evidence_end, knock_count, knocks_rolled_back [true/false, not a count])
 v_vr_canvassers  registration results [person] (canvasser_id, full_name, office, cards_collected, duplicate_cards,
   duplicate_rate_pct, qc_calls, qc_confirmed, qc_unreachable, qc_wrong_info)
 v_weekly_hours  paid hours and wages [person, week] (canvasser_id, full_name, office, program, role, week_start, shifts,
@@ -71,7 +71,9 @@ knocks(knock_id, shift_id, canvasser_id, office, precinct_id, knocked_at, addres
   ['canvassed','not home','refused','inaccessible'], survey_answer, rolled_back)  one row per attempt
 daily_goals(goal_date, office, door_goal)
 client_daily_report(report_date, office, doors_reported, contacts_reported)  the client's sheet; doors_reported counts attempts
-qc_flags(flag_id, shift_id, canvasser_id, office, flag_date, flag_type, evidence, evidence_start, evidence_end, knock_count, status, knocks_rolled_back)
+qc_flags(flag_id, shift_id, canvasser_id, office, flag_date, flag_type, evidence, evidence_start, evidence_end, knock_count, status,
+  knocks_rolled_back [true/false: whether this flag's knocks were rolled back, not a count])
+  Rolled-back knocks are counted from knocks.rolled_back, or rolled_back_attempts in v_daily_doors.
 candidate_office_sites(site_id, name, address, lat, lon, monthly_rent)
 vr_goals(office, card_goal)
 vr_cards(card_id, shift_id, canvasser_id, office, collected_at, registrant_name, duplicate_group_id, is_duplicate)
