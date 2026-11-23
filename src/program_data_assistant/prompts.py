@@ -20,8 +20,9 @@ v_weekly_pace*  doors against the door goal [office, week] (office, week_start, 
   doors_vs_goal, pct_of_goal)
 v_contact_rates*  contact rate [office, week] (office, week_start, doors, contacts, contact_rate_pct)
 v_cost_per_door*  GOTV wages per door to date [office] (office, paid_hours, wages, doors, cost_per_door)
-v_weekly_report*  the weekly client report [office, week] (office, week_start, doors, contacts, valid_cards,
-  paid_hours, shifts_missing_clock_out)
+v_weekly_report*  the weekly client report we send, in our dashboard counts [office, week] (office, week_start, doors,
+  contacts, valid_cards, paid_hours, shifts_missing_clock_out). Not the client's own daily sheets: those are the
+  client_daily_report table.
 v_weekly_shifts*  shifts, shift length and wages [office, program, week] (office, program ['gotv','vr'], week_start,
   shifts, shifts_with_hours, shifts_missing_clock_out, paid_hours, avg_shift_hours, wages)
 v_vr_weekly*  registration by week [office, week] (office, week_start, valid_cards, duplicate_cards, paid_hours,
