@@ -238,7 +238,9 @@ SELECT office,
        turf_doors,
        turf_doors - doors_touched AS doors_untouched,
        doors_touched,
-       round(100.0 * doors_touched / turf_doors, 1) AS pct_turf_touched
+       round(100.0 * doors_touched / turf_doors, 1) AS pct_turf_touched,
+       round(100.0 * doors_to_date / goal_total, 1) AS pct_of_goal_total,
+       round(doors_last_7d / 7.0 * knocking_days_left) AS capacity_days_left
 FROM u;
 CREATE VIEW v_office_pace AS SELECT * FROM all_office_pace WHERE office <> 'All offices';
 CREATE VIEW v_office_pace_total AS SELECT * FROM all_office_pace WHERE office = 'All offices';
@@ -306,6 +308,7 @@ u AS (
 )
 SELECT office, card_goal, cards_collected, duplicate_cards, valid_cards,
        card_goal - valid_cards AS cards_remaining,
+       round(100.0 * valid_cards / card_goal, 1) AS pct_of_card_goal,
        hours_to_date,
        round(valid_cards / hours_to_date, 2) AS cards_per_hour_to_date,
        round(valid_cards_last_7d / hours_last_7d, 2) AS cards_per_hour_last_7d,

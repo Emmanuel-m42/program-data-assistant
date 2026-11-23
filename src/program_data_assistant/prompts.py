@@ -14,7 +14,8 @@ v_office_pace*  door pace to date and the election day projection [office]
    projected_total, projected_vs_goal [negative = will miss goal by that many doors], projected_pct_of_goal,
    avg_shifts_per_day_last_7d, doors_per_shift_last_7d, shifts_per_day_needed, extra_shifts_per_day_needed,
    turf_doors, doors_untouched [turf doors never knocked, in every precinct], doors_touched [turf doors knocked at
-   least once, each counted once], pct_turf_touched)
+   least once, each counted once], pct_turf_touched, pct_of_goal_total [doors to date as a share of the full
+   Election Day goal], capacity_days_left [doors we can knock in the days left at the last 7 days' pace])
 v_weekly_pace*  doors against the door goal [office, week] (office, week_start, door_goal, doors, contacts,
   doors_vs_goal, pct_of_goal)
 v_contact_rates*  contact rate [office, week] (office, week_start, doors, contacts, contact_rate_pct)
@@ -26,7 +27,7 @@ v_weekly_shifts*  shifts, shift length and wages [office, program, week] (office
 v_vr_weekly*  registration by week [office, week] (office, week_start, valid_cards, duplicate_cards, paid_hours,
   cards_per_hour)
 v_vr_pace*  registration pace to date [office] (office, card_goal, cards_collected, duplicate_cards, valid_cards,
-  cards_remaining, hours_to_date, cards_per_hour_to_date, cards_per_hour_last_7d [Oct 12 to 18], avg_daily_hours_last_7d,
+  cards_remaining, pct_of_card_goal [valid cards as a share of the card goal], hours_to_date, cards_per_hour_to_date, cards_per_hour_last_7d [Oct 12 to 18], avg_daily_hours_last_7d,
   days_left, projected_valid_cards, cards_per_hour_needed [v_vr_pace_total has the program-wide rate needed])
 v_gotv_staff*  GOTV staff counts by the program plan's definitions [office] (office, gotv_canvassers, active_canvassers,
   active_regulars, active_occasional, active_one_day_hires, regulars_all_time, one_day_hires_all_time)
@@ -77,7 +78,9 @@ Glossary (grain, windows, denominators)
 - door: one door_id on one day, rollbacks removed. attempt: one knocks row. contact: a 'canvassed' knock.
 - contact rate = contacts / doors for the same office and week. cost per door = GOTV wages / doors, to date.
 - pace = doors to date vs goal to date. projection = doors to date + last 7 days' average daily doors x 16
-  knocking days left (Oct 19 to Nov 3). A negative projected_vs_goal is the shortfall.
+  knocking days left (Oct 19 to Nov 3). A negative projected_vs_goal is the shortfall. capacity for the rest of the
+  program = last 7 days' average daily doors x knocking days left (capacity_days_left), the number the program plan
+  compares with untouched doors to choose more doors or a second pass; projected_total adds doors to date to it.
 - Dates: the data ends Sunday, Oct 18, so this week is complete. "this week" = Oct 12 to 18 (week_start
   2026-10-12), the same days as "last 7 days". "last week" = the week before it, Oct 5 to 11 (week_start
   2026-10-05). Weeks start on Monday. A "last_7d" column covers this week, not last week.
