@@ -60,7 +60,7 @@ VIEW_NOTES = {
     "v_contact_rates": "one row per office per week (week_start = Monday)",
     "v_cost_per_door": "one row per office, GOTV wages and doors to date",
     "v_weekly_report": "one row per office per week (week_start = Monday); the weekly report we send, in our "
-                       "dashboard counts, not the client's daily sheets (client_daily_report)",
+                       "dashboard counts; client_* columns are the client's daily sheets summed for the week",
     "v_weekly_pace": "one row per office per week: door goal, doors, contacts for that week",
     "v_weekly_shifts": "one row per office, program and week; avg_shift_hours counts only shifts with a clock out",
     "v_vr_weekly": "one row per office per week: valid registration cards, hours, cards per hour",

@@ -506,14 +506,21 @@ h AS (
            count(*) FILTER (WHERE clock_out IS NULL) AS shifts_missing_clock_out
     FROM shifts GROUP BY 1, 2
 ),
+r AS (
+    SELECT office, date_trunc('week', report_date)::date AS week_start, sum(doors_reported) AS client_doors_reported,
+           sum(contacts_reported) AS client_contacts_reported
+    FROM client_daily_report GROUP BY 1, 2
+),
 o AS (
     SELECT office, week_start, d.doors, d.contacts, coalesce(c.valid_cards, 0) AS valid_cards, h.paid_hours,
-           h.shifts_missing_clock_out
-    FROM h LEFT JOIN d USING (office, week_start) LEFT JOIN c USING (office, week_start)
+           h.shifts_missing_clock_out, r.client_doors_reported, r.client_contacts_reported,
+           r.client_doors_reported - d.doors AS client_doors_gap
+    FROM h LEFT JOIN d USING (office, week_start) LEFT JOIN c USING (office, week_start) LEFT JOIN r USING (office, week_start)
 )
 SELECT * FROM o
 UNION ALL
-SELECT 'All offices', week_start, sum(doors), sum(contacts), sum(valid_cards), sum(paid_hours), sum(shifts_missing_clock_out)
+SELECT 'All offices', week_start, sum(doors), sum(contacts), sum(valid_cards), sum(paid_hours), sum(shifts_missing_clock_out),
+       sum(client_doors_reported), sum(client_contacts_reported), sum(client_doors_gap)
 FROM o GROUP BY week_start;
 CREATE VIEW v_weekly_report AS SELECT * FROM all_weekly_report WHERE office <> 'All offices';
 CREATE VIEW v_weekly_report_total AS SELECT * FROM all_weekly_report WHERE office = 'All offices';
