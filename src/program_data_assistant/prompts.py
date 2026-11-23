@@ -33,7 +33,8 @@ v_vr_pace*  registration pace to date [office] (office, card_goal, cards_collect
 v_gotv_staff*  GOTV staff counts by the program plan's definitions [office] (office, gotv_canvassers, active_canvassers,
   active_regulars, active_occasional, active_one_day_hires, regulars_all_time, one_day_hires_all_time)
 v_turf_summary*  turf by coverage and density band [office, coverage, density] (office, coverage, density ['dense' over
-  2,000 doors per sq mi,'medium','sparse' under 1,000], precincts, target_doors, doors_untouched, not_home_doors)
+  2,000 doors per sq mi,'medium','sparse' under 1,000], precincts, target_doors, doors_untouched, not_home_doors).
+  Counts per band only, no precinct names: to name precincts, use v_precinct_coverage.
 v_qc_weekly*  QC rate [office, week] (office, week_start, shifts, flags, flash_knocking, householding, gaps,
   flags_per_100_shifts)
 v_qc_call_outcomes*  registration QC calls [office, outcome] (office, outcome ['confirmed','unreachable','wrong_info'],

@@ -63,7 +63,8 @@ VIEW_NOTES = {
     "v_weekly_shifts": "one row per office, program and week; avg_shift_hours counts only shifts with a clock out",
     "v_vr_weekly": "one row per office per week: valid registration cards, hours, cards per hour",
     "v_gotv_staff": "one row per office, GOTV canvassers only",
-    "v_turf_summary": "one row per office, coverage band and density band",
+    "v_turf_summary": "one row per office, coverage band and density band; counts only, no precinct names "
+                      "(v_precinct_coverage names each precinct)",
     "v_qc_weekly": "one row per office per week; flags per 100 GOTV shifts",
     "v_vr_pace": "one row per office, registration to date; last_7d = Oct 12 to 18 (this week)",
     "v_qc_call_outcomes": "one row per office per call outcome",
