@@ -68,7 +68,8 @@ canvassers(canvasser_id, full_name, office, program ['gotv','vr'], role, start_d
 shifts(shift_id, program, shift_date, canvasser_id, office, clock_in, clock_out, paid_hours, approval_status, fix_note)
 precincts(precinct_id, name, office, lat, lon, area_sq_mi, target_doors, doors_per_sq_mi)
 knocks(knock_id, shift_id, canvasser_id, office, precinct_id, knocked_at, address_id, unit, door_id, result
-  ['canvassed','not home','refused','inaccessible'], survey_answer, rolled_back)  one row per attempt
+  ['canvassed','not home','refused','inaccessible'], survey_answer ['supporter','leaning','undecided','opposed', on
+  canvassed knocks; supporter IDs are 'supporter' answers], rolled_back)  one row per attempt
 daily_goals(goal_date, office, door_goal)
 client_daily_report(report_date, office, doors_reported, contacts_reported)  the client's sheet; doors_reported counts attempts
 qc_flags(flag_id, shift_id, canvasser_id, office, flag_date, flag_type, evidence, evidence_start, evidence_end, knock_count, status,
