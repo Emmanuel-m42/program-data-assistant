@@ -33,6 +33,7 @@ _OFFICE_VIEWS = {
     "v_daily_doors": "knock_date DESC, office",
     "v_client_vs_dashboard": "report_date DESC, office",
     "v_qc_to_date": "flags DESC",
+    "v_vr_daily": "collect_date DESC, office",
 }
 VIEWS = {
     **_OFFICE_VIEWS,
@@ -65,6 +66,7 @@ VIEW_NOTES = {
     "v_weekly_pace": "one row per office per week: door goal, doors, contacts for that week",
     "v_weekly_shifts": "one row per office, program and week; avg_shift_hours counts only shifts with a clock out",
     "v_vr_weekly": "one row per office per week: valid registration cards, hours, cards per hour",
+    "v_vr_daily": "one row per office per collection day: cards collected, valid (duplicates removed) and duplicates",
     "v_gotv_staff": "one row per office, GOTV canvassers only",
     "v_turf_summary": "one row per office, coverage band and density band; counts only, no precinct names "
                       "(v_precinct_coverage names each precinct)",
@@ -96,7 +98,7 @@ TOOL_SPECS = [
             "cost per door, the weekly client report, the client's daily sheet against our dashboard by day, shifts, "
             "shift length and wages by week, turf coverage, sites for "
             "a new office, staff counts (active, regulars, one-day hires), QC flags and QC rate by week and to date, registration "
-            "pace and cards per hour by week, duplicates, QC call outcomes, weekly hours and overtime, shifts waiting "
+            "pace and cards per hour by week, cards by day, duplicates, QC call outcomes, weekly hours and overtime, shifts waiting "
             "for a fix or approval. Office views have one row per office; for the whole program read the matching "
             "*_total view. "
             "Don't call it for: one specific day or shift, custom joins, rules or definitions. "

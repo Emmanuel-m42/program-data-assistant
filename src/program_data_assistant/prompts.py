@@ -28,6 +28,8 @@ v_weekly_shifts*  shifts, shift length and wages [office, program, week] (office
   shifts, shifts_with_hours, shifts_missing_clock_out, paid_hours, avg_shift_hours, wages)
 v_vr_weekly*  registration by week [office, week] (office, week_start, valid_cards, duplicate_cards, paid_hours,
   cards_per_hour)
+v_vr_daily*  registration cards by day [office, day] (collect_date, office, cards_collected, valid_cards,
+  duplicate_cards)
 v_vr_pace*  registration pace to date [office] (office, card_goal, cards_collected, duplicate_cards, valid_cards,
   cards_remaining, pct_of_card_goal [valid cards as a share of the card goal], hours_to_date, cards_per_hour_to_date, cards_per_hour_last_7d [Oct 12 to 18], avg_daily_hours_last_7d,
   days_left, projected_valid_cards, cards_per_hour_needed [v_vr_pace_total has the program-wide rate needed])

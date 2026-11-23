@@ -421,6 +421,20 @@ u AS (
 SELECT office, week_start, valid_cards, duplicate_cards, paid_hours,
        round(valid_cards / nullif(paid_hours, 0), 2) AS cards_per_hour
 FROM u;
+-- Registration cards per office per day (v_vr_daily_total: per day for the program). Valid cards exclude duplicates.
+CREATE VIEW all_vr_daily AS
+WITH o AS (
+    SELECT collected_at::date AS collect_date, office, count(*) AS cards_collected,
+           count(*) FILTER (WHERE NOT is_duplicate) AS valid_cards, count(*) FILTER (WHERE is_duplicate) AS duplicate_cards
+    FROM vr_cards GROUP BY 1, 2
+)
+SELECT * FROM o
+UNION ALL
+SELECT collect_date, 'All offices', sum(cards_collected)::bigint, sum(valid_cards)::bigint, sum(duplicate_cards)::bigint
+FROM o GROUP BY collect_date;
+CREATE VIEW v_vr_daily AS SELECT * FROM all_vr_daily WHERE office <> 'All offices';
+CREATE VIEW v_vr_daily_total AS SELECT * FROM all_vr_daily WHERE office = 'All offices';
+
 CREATE VIEW v_vr_weekly AS SELECT * FROM all_vr_weekly WHERE office <> 'All offices';
 CREATE VIEW v_vr_weekly_total AS SELECT * FROM all_vr_weekly WHERE office = 'All offices';
 
