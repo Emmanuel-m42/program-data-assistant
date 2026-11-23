@@ -32,6 +32,7 @@ _OFFICE_VIEWS = {
     "v_qc_call_outcomes": "office, calls DESC",
     "v_daily_doors": "knock_date DESC, office",
     "v_client_vs_dashboard": "report_date DESC, office",
+    "v_qc_to_date": "flags DESC",
 }
 VIEWS = {
     **_OFFICE_VIEWS,
@@ -68,6 +69,7 @@ VIEW_NOTES = {
     "v_turf_summary": "one row per office, coverage band and density band; counts only, no precinct names "
                       "(v_precinct_coverage names each precinct)",
     "v_qc_weekly": "one row per office per week; flags per 100 GOTV shifts",
+    "v_qc_to_date": "one row per office, QC flags to date (Sep 21 to Oct 18) by type, open flags, flags per 100 GOTV shifts",
     "v_vr_pace": "one row per office, registration to date; last_7d = Oct 12 to 18 (this week)",
     "v_qc_call_outcomes": "one row per office per call outcome",
     "v_daily_doors": "one row per office per knocking day",
@@ -93,7 +95,7 @@ TOOL_SPECS = [
             "projection and shortfall, untouched doors, shifts needed, doors and goal by week, contact rate by week, "
             "cost per door, the weekly client report, the client's daily sheet against our dashboard by day, shifts, "
             "shift length and wages by week, turf coverage, sites for "
-            "a new office, staff counts (active, regulars, one-day hires), QC flags and QC rate by week, registration "
+            "a new office, staff counts (active, regulars, one-day hires), QC flags and QC rate by week and to date, registration "
             "pace and cards per hour by week, duplicates, QC call outcomes, weekly hours and overtime, shifts waiting "
             "for a fix or approval. Office views have one row per office; for the whole program read the matching "
             "*_total view. "

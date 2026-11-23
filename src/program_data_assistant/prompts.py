@@ -38,6 +38,8 @@ v_turf_summary*  turf by coverage and density band [office, coverage, density] (
   Counts per band only, no precinct names: to name precincts, use v_precinct_coverage.
 v_qc_weekly*  QC rate [office, week] (office, week_start, shifts, flags, flash_knocking, householding, gaps,
   flags_per_100_shifts)
+v_qc_to_date*  QC flags to date [office] (office, shifts, flags, flash_knocking, householding, gaps, open_flags,
+  flags_per_100_shifts)
 v_qc_call_outcomes*  registration QC calls [office, outcome] (office, outcome ['confirmed','unreachable','wrong_info'],
   calls, share_pct)
 v_daily_doors*  [office, day] (knock_date, office, doors, contacts, attempts, rolled_back_attempts)

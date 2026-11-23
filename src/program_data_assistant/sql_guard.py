@@ -19,12 +19,12 @@ ALLOWED_TABLES = {
     "v_daily_doors", "v_office_pace", "v_precinct_coverage", "v_site_options", "v_vr_pace", "v_weekly_hours",
     "v_qc_weekly", "v_contact_rates", "v_cost_per_door", "v_weekly_report", "v_canvasser_status", "v_qc_flags_detail",
     "v_shifts_to_fix", "v_vr_canvassers", "v_qc_call_outcomes", "v_gotv_staff", "v_turf_summary",
-    "v_weekly_pace", "v_weekly_shifts", "v_vr_weekly", "v_client_vs_dashboard",
+    "v_weekly_pace", "v_weekly_shifts", "v_vr_weekly", "v_client_vs_dashboard", "v_qc_to_date",
     # program totals, one view per office view
     "v_daily_doors_total", "v_office_pace_total", "v_vr_pace_total", "v_qc_weekly_total", "v_contact_rates_total",
     "v_cost_per_door_total", "v_weekly_report_total", "v_gotv_staff_total", "v_turf_summary_total",
     "v_qc_call_outcomes_total", "v_weekly_pace_total", "v_weekly_shifts_total", "v_vr_weekly_total",
-    "v_client_vs_dashboard_total",
+    "v_client_vs_dashboard_total", "v_qc_to_date_total",
 }
 ALLOWED_SCHEMAS = {"", "program"}
 DENIED_FUNCTIONS = re.compile(

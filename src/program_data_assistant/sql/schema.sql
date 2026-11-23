@@ -456,6 +456,33 @@ SELECT *, round(100.0 * flags / shifts, 1) AS flags_per_100_shifts FROM u;
 CREATE VIEW v_qc_weekly AS SELECT * FROM all_qc_weekly WHERE office <> 'All offices';
 CREATE VIEW v_qc_weekly_total AS SELECT * FROM all_qc_weekly WHERE office = 'All offices';
 
+-- QC flags to date per office (v_qc_to_date_total: the program), with open flags and the rate per 100 GOTV shifts.
+CREATE VIEW all_qc_to_date AS
+WITH sh AS (SELECT office, count(*) AS shifts FROM shifts WHERE program = 'gotv' GROUP BY office),
+f AS (
+    SELECT office, count(*) AS flags,
+           count(*) FILTER (WHERE flag_type = 'flash_knocking') AS flash_knocking,
+           count(*) FILTER (WHERE flag_type = 'householding') AS householding,
+           count(*) FILTER (WHERE flag_type = 'gap') AS gaps,
+           count(*) FILTER (WHERE status = 'open') AS open_flags
+    FROM qc_flags GROUP BY office
+),
+o AS (
+    SELECT sh.office, sh.shifts, coalesce(f.flags, 0) AS flags, coalesce(f.flash_knocking, 0) AS flash_knocking,
+           coalesce(f.householding, 0) AS householding, coalesce(f.gaps, 0) AS gaps, coalesce(f.open_flags, 0) AS open_flags
+    FROM sh LEFT JOIN f USING (office)
+),
+u AS (
+    SELECT * FROM o
+    UNION ALL
+    SELECT 'All offices', sum(shifts)::bigint, sum(flags)::bigint, sum(flash_knocking)::bigint, sum(householding)::bigint,
+           sum(gaps)::bigint, sum(open_flags)::bigint
+    FROM o
+)
+SELECT *, round(100.0 * flags / shifts, 1) AS flags_per_100_shifts FROM u;
+CREATE VIEW v_qc_to_date AS SELECT * FROM all_qc_to_date WHERE office <> 'All offices';
+CREATE VIEW v_qc_to_date_total AS SELECT * FROM all_qc_to_date WHERE office = 'All offices';
+
 -- ---------- helper views for common questions ----------
 
 -- Contact rate per office per week, Monday start (v_contact_rates_total: all offices).
