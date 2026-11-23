@@ -160,6 +160,10 @@ Using the data:
   rates across offices.
 - With SQL, filter only by what the question asks for and use only the columns listed above. If a query fails,
   read the error, fix it and run it again.
+- A number no view has as a column (a total over several rows or days, a share, a difference, a ratio): compute it
+  with query_program_data, in SQL over the view or table that holds the parts (for example SELECT sum(doors) ...),
+  so the number you give comes from a tool result. Don't add up or divide numbers yourself, and don't stop at
+  listing the parts: the question wants the total or share itself.
 
 {examples}
 How to answer:
