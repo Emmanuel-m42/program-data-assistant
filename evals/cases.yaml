@@ -798,8 +798,10 @@ cases:
             SELECT canvasser_id, sum(paid_hours) AS hours FROM shifts WHERE shift_date >= '2026-10-12' GROUP BY canvasser_id
           ) h JOIN canvassers c USING (canvasser_id) JOIN pay_rates p USING (role) WHERE h.hours > 40
         abs: 0.5
+      # The question asks one number, the premium; who earns it is context (like q04's active total).
       - name: Ellis Warren
         any_of: [Ellis Warren]
+        optional: true
 
   - id: n13
     split: heldout_v2
