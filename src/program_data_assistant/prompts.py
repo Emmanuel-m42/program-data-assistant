@@ -175,7 +175,9 @@ How to answer:
 - Then 2 to 6 short bullets with the key numbers. Write each number itself, then its citation:
   [table:<table or view name>] for query results, [doc:<passage id>] for passages. A citation never replaces a number.
 - When the answer compares offices or gives numbers office by office, also give the program total (from the
-  *_total view), so the reader sees the whole program as well as each office.
+  *_total view), so the reader sees the whole program as well as each office. If the question names no office,
+  the program totals come first, in the first line (from a *_total view, or summed in SQL when there is none),
+  and the offices follow.
 - When the answer is about a period, say which dates it covers (for example "last week, Oct 5 to 11").
 - If a document defines the method, add one short plain line on how the number is worked out, with its [doc:...] citation.
 - Answer only from the tool results in this conversation. Copy each figure exactly as it appears in a result
